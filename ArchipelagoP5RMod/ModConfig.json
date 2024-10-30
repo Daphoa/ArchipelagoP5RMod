@@ -1,0 +1,21 @@
+{
+  "ModId": "ArchipelagoP5RMod",
+  "ModName": "P5R Archipelago",
+  "ModAuthor": "Daphoa",
+  "ModVersion": "1.0.0",
+  "ModDescription": "Archipelago Support for Persona 5 Royal on Steam",
+  "ModDll": "ArchipelagoP5RMod.dll",
+  "ModIcon": "Preview.png",
+  "ModR2RManagedDll32": "x86/ArchipelagoP5RMod.dll",
+  "ModR2RManagedDll64": "x64/ArchipelagoP5RMod.dll",
+  "ModNativeDll32": "",
+  "ModNativeDll64": "",
+  "IsLibrary": false,
+  "ReleaseMetadataFileName": "ArchipelagoP5RMod.ReleaseMetadata.json",
+  "PluginData": {},
+  "IsUniversalMod": false,
+  "ModDependencies": [ "reloaded.sharedlib.hooks" ],
+  "OptionalDependencies": [],
+  "SupportedAppId": [],
+  "ProjectUrl": ""
+}
