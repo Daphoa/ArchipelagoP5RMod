@@ -17,20 +17,20 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ReloadedLinkRoots Include="ArchipelagoP5RMod"/>
+        <ReloadedLinkRoots Include="ArchipelagoP5RMod" />
         <!-- Add assemblies to be trimmed. You might need to add their dependencies too!  -->
         <!-- <ReloadedLinkAssemblies Include="Reloaded.Memory" /> -->
     </ItemGroup>
 
-    <Import Project="Reloaded.Trimming.targets"/>
-    <Import Project="Reloaded.Checks.targets"/>
+    <Import Project="Reloaded.Trimming.targets" />
+    <Import Project="Reloaded.Checks.targets" />
 
     <ItemGroup>
-        <None Remove="ModConfig.json"/>
-        <None Remove="Publish.ps1"/>
-        <None Remove="BuildLinked.ps1"/>
-        <None Remove="Reloaded.Trimming.targets"/>
-        <None Remove="Reloaded.Checks.targets"/>
+        <None Remove="ModConfig.json" />
+        <None Remove="Publish.ps1" />
+        <None Remove="BuildLinked.ps1" />
+        <None Remove="Reloaded.Trimming.targets" />
+        <None Remove="Reloaded.Checks.targets" />
     </ItemGroup>
 
     <ItemGroup>
@@ -43,9 +43,12 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.NET.ILLink.Tasks" Version="8.0.8"/>
-        <PackageReference Include="Reloaded.Mod.Interfaces" Version="2.4.0" ExcludeAssets="runtime"/>
-        <PackageReference Include="Reloaded.SharedLib.Hooks" Version="1.9.0"/>
+        <PackageReference Include="Microsoft.NET.ILLink.Tasks" Version="8.0.8" />
+        <PackageReference Include="p5rpc.flowscriptframework.interfaces" Version="1.0.1" />
+        <PackageReference Include="Reloaded.Memory.Sigscan" Version="3.1.9" />
+        <PackageReference Include="Reloaded.Memory.SigScan.ReloadedII.Interfaces" Version="1.2.0" />
+        <PackageReference Include="Reloaded.Mod.Interfaces" Version="2.4.0" ExcludeAssets="runtime" />
+        <PackageReference Include="Reloaded.SharedLib.Hooks" Version="1.9.0" />
     </ItemGroup>
 
 </Project>

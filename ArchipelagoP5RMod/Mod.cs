@@ -1,7 +1,9 @@
-﻿using Reloaded.Hooks.ReloadedII.Interfaces;
+﻿using System.Timers;
+using Reloaded.Hooks.ReloadedII.Interfaces;
 using Reloaded.Mod.Interfaces;
 using ArchipelagoP5RMod.Template;
 using ArchipelagoP5RMod.Configuration;
+using ArchipelagoP5RMod.Types;
 
 namespace ArchipelagoP5RMod;
 
@@ -19,7 +21,7 @@ public class Mod : ModBase // <= Do not Remove.
     /// Provides access to the Reloaded.Hooks API.
     /// </summary>
     /// <remarks>This is null if you remove dependency on Reloaded.SharedLib.Hooks in your mod.</remarks>
-    private readonly IReloadedHooks? _hooks;
+    private readonly IReloadedHooks _hooks;
 
     /// <summary>
     /// Provides access to the Reloaded logger.
@@ -41,10 +43,12 @@ public class Mod : ModBase // <= Do not Remove.
     /// </summary>
     private readonly IModConfig _modConfig;
 
+    private readonly DateManipulator _dateManipulator;
+    
     public Mod(ModContext context)
     {
         _modLoader = context.ModLoader;
-        _hooks = context.Hooks;
+        _hooks = context.Hooks ?? throw new ArgumentNullException(nameof(context), "context.hooks cannot be null");
         _logger = context.Logger;
         _owner = context.Owner;
         _configuration = context.Configuration;
@@ -58,6 +62,20 @@ public class Mod : ModBase // <= Do not Remove.
         // and some other neat features, override the methods in ModBase.
 
         // TODO: Implement some mod logic
+        AddressScanner.Scan(_logger);
+
+        _dateManipulator = new DateManipulator(_hooks, _logger);
+
+        var logTimer = new System.Timers.Timer(10000);
+        logTimer.Elapsed += LogStuff;
+        logTimer.AutoReset = true;
+        logTimer.Enabled = true;
+    }
+
+    private unsafe void LogStuff(object? sender, ElapsedEventArgs elapsedEventArgs)
+    {
+        // _logger.WriteLine($"DateInfo Adr - {(int)AddressScanner.DateInfoAddress:X8}");
+        _logger.WriteLine($"DateInfo - {AddressScanner.DateInfoAddress->ToString()}");
     }
 
     #region Standard Overrides

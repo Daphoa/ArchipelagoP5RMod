@@ -1,5 +1,5 @@
 {
-  "ModId": "ArchipelagoP5RMod",
+  "ModId": "p5rpc.randomizer.archipelago_randomizer",
   "ModName": "P5R Archipelago",
   "ModAuthor": "Daphoa",
   "ModVersion": "1.0.0",
@@ -14,7 +14,9 @@
   "ReleaseMetadataFileName": "ArchipelagoP5RMod.ReleaseMetadata.json",
   "PluginData": {},
   "IsUniversalMod": false,
-  "ModDependencies": [ "reloaded.sharedlib.hooks" ],
+  "ModDependencies": [
+    "reloaded.sharedlib.hooks"
+  ],
   "OptionalDependencies": [],
   "SupportedAppId": [],
   "ProjectUrl": ""
