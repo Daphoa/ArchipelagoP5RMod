@@ -18,7 +18,9 @@ public class DateManipulator
     private readonly IHook<AdvanceToNextDay> _advanceToNextDayHook;
     private readonly IHook<UnknownTimeAdvanceFunc> _unknownTimeAdvanceFunc;
 
-
+    /**
+     * Delegates *
+     */
     [Function(CallingConventions.Fastcall)]
     private delegate short NextTime();
 
@@ -26,21 +28,20 @@ public class DateManipulator
     private delegate long GetTime();
 
     [Function(CallingConventions.Fastcall)]
-    private delegate void UpdateCurrentTotalDays(short totalDays);
-
-    [Function(CallingConventions.Fastcall)]
     private delegate void AdvanceToNextDay(IntPtr totalDays);
 
     [Function(CallingConventions.Fastcall)]
     private delegate long UnknownTimeAdvanceFunc(long param1, float param2, long param3, long param4);
 
+    // private const short LoopDay = 26;
+    private readonly short[] _loopDates;
 
     public DateManipulator(IReloadedHooks hooks, ILogger logger)
     {
+        _loopDates = [22];
+
         _logger = logger;
         _nextTimeHook = hooks.CreateHook<NextTime>(NextTimeImpl, AddressScanner.NextTimeFunAddress).Activate();
-
-        _getTimeHook = hooks.CreateHook<GetTime>(GetTimeImpl, AddressScanner.GetTimeFunAddress).Activate();
 
         _advanceToNextDayHook =
             hooks.CreateHook<AdvanceToNextDay>(AdvanceToNextDayImpl, AddressScanner.AdvanceToNextDayAddress).Activate();
@@ -49,34 +50,42 @@ public class DateManipulator
             hooks.CreateHook<UnknownTimeAdvanceFunc>(UnknownTimeAdvanceImpl,
                 AddressScanner.UnknownTimeAdvanceFuncAddress).Activate();
 
-        // _updateCurrentTotalDaysHook = hooks.CreateHook<UpdateCurrentTotalDays>(UpdateCurrentTotalDaysImpl, 
-        // AddressScanner.UpdateCurrentTotalDaysAddress).Activate();
-
         logger.WriteLine("Created DateManipulator Hooks");
     }
 
-    private const short LOOP_DAY = 26;
 
-    private long GetTimeImpl()
+    private short NextDay(short currentDay)
     {
-        // _logger.WriteLine("DateManipulator::GetTimeImpl called");
+        foreach (var date in _loopDates)
+        {
+            if (currentDay < date)
+            {
+                return date;
+            }
+        }
 
-        return _getTimeHook.OriginalFunction();
+        return _loopDates[0];
+    }
+
+    private unsafe void ManipulateInGameDate()
+    {
+        var dateInfo = AddressScanner.DateInfoAddress;
+        
+        if (dateInfo->currTime < 6) return; // Only mess with dates at the end of the day.
+
+        dateInfo->nextTime = 0;
+        dateInfo->nextTotalDays = NextDay(dateInfo->currTotalDays);
+        if (dateInfo->nextTotalDays > dateInfo->currTotalDays)
+        {
+            dateInfo->currTotalDays = (short)(dateInfo->nextTotalDays - 1);
+        }
     }
 
     private void AdvanceToNextDayImpl(IntPtr param1)
     {
         _logger.WriteLine("DateManipulator::AdvanceToNextDayImpl called");
 
-        unsafe
-        {
-            var dateInfo = AddressScanner.DateInfoAddress;
-
-            if (dateInfo->nextTime == 0)
-            {
-                dateInfo->nextTotalDays = LOOP_DAY;
-            }
-        }
+        // manipulateGameDate();
 
         _advanceToNextDayHook.OriginalFunction(param1);
     }
@@ -86,33 +95,19 @@ public class DateManipulator
         _logger.WriteLine("DateManipulator::UnknownTimeAdvanceImpl called");
 
         uint state;
-        
+
         unsafe
         {
             var stateAdr = (uint**)(param1 + 0x48);
             state = **stateAdr;
         }
-        
+
         _logger.WriteLine($"State: {state}");
 
         // Only mess with the date on the early entries to this function. 
         if (state is >= 11 or < 2)
         {
-            unsafe
-            {
-                var dateInfo = AddressScanner.DateInfoAddress;
-
-                if (dateInfo->currTime >= 6)
-                {
-                    // dateInfo->cur
-                    dateInfo->nextTime = 0;
-                    dateInfo->nextTotalDays = LOOP_DAY;
-                }
-                // if (dateInfo->nextTime == 0)
-                // {
-                //     dateInfo->nextTotalDays = LOOP_DAY;
-                // }
-            }
+            ManipulateInGameDate();
         }
 
         return _unknownTimeAdvanceFunc.OriginalFunction(param1, param2, param3, param4);
@@ -126,31 +121,13 @@ public class DateManipulator
         short retVal;
         unsafe
         {
-            var dateInfo = AddressScanner.DateInfoAddress;
-
-            if (dateInfo->currTime == 7)
-            {
-                dateInfo->currTotalDays = LOOP_DAY - 1;
-            }
+            ManipulateInGameDate();
 
             retVal = _nextTimeHook.OriginalFunction();
 
-            // ReSharper disable once InvertIf
-            if (dateInfo->currTime == 7)
-            {
-                dateInfo->nextTime = 0;
-                dateInfo->nextTotalDays = LOOP_DAY;
-            }
+            ManipulateInGameDate();
         }
 
         return retVal;
     }
-
-    // private void UpdateCurrentTotalDaysImpl(short totalDays)
-    // {
-    //     _logger.WriteLine("DateManipulator::UpdateCurrentTotalDaysImpl called");
-    //     _logger.WriteLine(Environment.StackTrace);
-    //
-    //     _updateCurrentTotalDaysHook.OriginalFunction(totalDays);
-    // }
 }
