@@ -12,9 +12,7 @@ public class DateManipulator
 
     private readonly IHook<NextTime> _nextTimeHook;
 
-    private readonly IHook<GetTime> _getTimeHook;
-
-    // private readonly IHook<UpdateCurrentTotalDays> _updateCurrentTotalDaysHook;
+    // private readonly IHook<Update> _updateCurrentTotalDaysHook;
     private readonly IHook<AdvanceToNextDay> _advanceToNextDayHook;
     private readonly IHook<UnknownTimeAdvanceFunc> _unknownTimeAdvanceFunc;
 
@@ -56,7 +54,7 @@ public class DateManipulator
 
     private short NextDay(short currentDay)
     {
-        foreach (var date in _loopDates)
+        foreach (short date in _loopDates)
         {
             if (currentDay < date)
             {

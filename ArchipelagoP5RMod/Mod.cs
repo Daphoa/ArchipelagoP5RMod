@@ -1,4 +1,6 @@
-﻿using System.Timers;
+﻿#define DEBUG
+
+using System.Timers;
 using Reloaded.Hooks.ReloadedII.Interfaces;
 using Reloaded.Mod.Interfaces;
 using ArchipelagoP5RMod.Template;
@@ -43,8 +45,16 @@ public class Mod : ModBase // <= Do not Remove.
     /// </summary>
     private readonly IModConfig _modConfig;
 
+    /// <summary>
+    /// 
+    /// </summary>
+    private event EventHandler OnGameLoaded;
+
     private readonly DateManipulator _dateManipulator;
-    
+    private readonly FlagManipulator _flagManipulator;
+
+    private readonly System.Timers.Timer _checkGameLoaded;
+
     public Mod(ModContext context)
     {
         _modLoader = context.ModLoader;
@@ -61,15 +71,57 @@ public class Mod : ModBase // <= Do not Remove.
         // If you want to implement e.g. unload support in your mod,
         // and some other neat features, override the methods in ModBase.
 
-        // TODO: Implement some mod logic
         AddressScanner.Scan(_logger);
+        
+        FlowFunctionWrapper.SetLogger(_logger);
+        FlowFunctionWrapper.Setup(_hooks);
 
         _dateManipulator = new DateManipulator(_hooks, _logger);
+        _flagManipulator = new FlagManipulator(_hooks, _logger);
+
+        OnGameLoaded += TestFlowFuncWrapper;
+        OnGameLoaded += TestBitManipulator;
 
         var logTimer = new System.Timers.Timer(10000);
         logTimer.Elapsed += LogStuff;
         logTimer.AutoReset = true;
-        logTimer.Enabled = true;
+
+        OnGameLoaded += (_, _) => logTimer.Start();
+
+        _checkGameLoaded = new System.Timers.Timer(1000);
+        _checkGameLoaded.Elapsed += CheckGameLoaded;
+        _checkGameLoaded.AutoReset = false;
+        _checkGameLoaded.Enabled = true;
+        
+        _logger.WriteLine("End Mod Constructor");
+    }
+
+    private void CheckGameLoaded(object? sender, ElapsedEventArgs elapsedEventArgs)
+    {
+        _logger.WriteLine("Checking if game loaded");
+
+        unsafe
+        {
+            if (AddressScanner.DateInfoAddress is null || AddressScanner.DateInfoAddress->currTotalDays == 0)
+            {
+                _checkGameLoaded.Start();
+                return;
+            }
+        }
+        
+        _logger.WriteLine("Game seemingly loaded, waiting 3 seconds");
+        
+        var logTimer = new System.Timers.Timer(3000);
+        logTimer.AutoReset = false;
+        logTimer.Elapsed += (_, _) =>
+        {
+            _logger.WriteLine("Game loaded, calling onGameLoaded");
+            OnGameLoaded?.Invoke(this, EventArgs.Empty);
+        };
+        logTimer.Start();
+
+        _checkGameLoaded.Stop();
+        _checkGameLoaded.Close();
     }
 
     private unsafe void LogStuff(object? sender, ElapsedEventArgs elapsedEventArgs)
@@ -78,6 +130,35 @@ public class Mod : ModBase // <= Do not Remove.
         _logger.WriteLine($"DateInfo - {AddressScanner.DateInfoAddress->ToString()}");
     }
 
+    private void TestBitManipulator(object? sender, EventArgs eventArgs)
+    {
+        uint[] TEST_VALS = [1244, 0x20000000 + 54, 0x30000000 + 1, 0x40000000 + 54];
+        _logger.WriteLine("Testing bit manipulator");
+
+        foreach (uint testVal in TEST_VALS)
+        {
+            bool preVal = _flagManipulator.CheckBit(testVal);
+            _logger.WriteLine($"Pretest {testVal:X} bit value: {preVal}");
+            _flagManipulator.SetBit(testVal, true);
+            bool val = _flagManipulator.CheckBit(testVal);
+            _logger.WriteLine(val ? $"TestBitManipulator test{testVal:X} on passed" : $"TestBitManipulator test{testVal:X} on failed!!!!!!!!!!!!!");
+
+            _flagManipulator.SetBit(testVal, false);
+            val = _flagManipulator.CheckBit(testVal);
+            _logger.WriteLine(!val ? $"TestBitManipulator test{testVal:X} off passed" : $"TestBitManipulator test{testVal:X} off failed!!!!!!!!!!!!!");
+
+            _flagManipulator.SetBit(testVal, preVal);
+        }
+        _logger.WriteLine("Ended TestBitManipulator");
+    }
+
+    private void TestFlowFuncWrapper(object? sender, EventArgs eventArgs)
+    {
+        _logger.WriteLine("Starting flow func wrapper test");
+        var success = FlowFunctionWrapper.TestFlowscriptWrapper(5);
+        _logger.WriteLine(success ? "FlowFuncWrapper test Success" : "FlowFuncWrapper test Failed!!!!!!!!!!!!!!!!");
+    }
+    
     #region Standard Overrides
 
     public override void ConfigurationUpdated(Config configuration)
