@@ -43,6 +43,7 @@
     </ItemGroup>
 
     <ItemGroup>
+        <PackageReference Include="Archipelago.MultiClient.Net" Version="6.3.1" />
         <PackageReference Include="Microsoft.NET.ILLink.Tasks" Version="8.0.8" />
         <PackageReference Include="p5rpc.flowscriptframework.interfaces" Version="1.0.1" />
         <PackageReference Include="Reloaded.Memory.Sigscan" Version="3.1.9" />
