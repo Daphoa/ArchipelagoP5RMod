@@ -52,8 +52,10 @@ public class Mod : ModBase // <= Do not Remove.
 
     private readonly DateManipulator _dateManipulator;
     private readonly FlagManipulator _flagManipulator;
+    private readonly ItemManipulator _itemManipulator;
 
     private readonly System.Timers.Timer _checkGameLoaded;
+    private readonly DebugTools _debugTools;
 
     public Mod(ModContext context)
     {
@@ -78,6 +80,8 @@ public class Mod : ModBase // <= Do not Remove.
 
         _dateManipulator = new DateManipulator(_hooks, _logger);
         _flagManipulator = new FlagManipulator(_hooks, _logger);
+        _itemManipulator = new ItemManipulator(_hooks, _logger);
+        _debugTools = new DebugTools();
 
         OnGameLoaded += TestFlowFuncWrapper;
         OnGameLoaded += TestBitManipulator;
@@ -127,11 +131,18 @@ public class Mod : ModBase // <= Do not Remove.
     private unsafe void LogStuff(object? sender, ElapsedEventArgs elapsedEventArgs)
     {
         // _logger.WriteLine($"DateInfo Adr - {(int)AddressScanner.DateInfoAddress:X8}");
-        _logger.WriteLine($"DateInfo - {AddressScanner.DateInfoAddress->ToString()}");
+        // _logger.WriteLine($"DateInfo - {AddressScanner.DateInfoAddress->ToString()}");
+        if (_debugTools.HasFlagBackup)
+        {
+            _debugTools.FindChangedFlags(_logger);
+        }
+        
+        _debugTools.BackupCurrentFlags();
     }
 
     private void TestBitManipulator(object? sender, EventArgs eventArgs)
     {
+        return;
         uint[] TEST_VALS = [1244, 0x20000000 + 54, 0x30000000 + 1, 0x40000000 + 54];
         _logger.WriteLine("Testing bit manipulator");
 

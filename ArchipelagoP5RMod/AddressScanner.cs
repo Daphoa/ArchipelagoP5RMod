@@ -17,11 +17,13 @@ public static class AddressScanner
     public static IntPtr ChkBitFuncAddress { get; private set; }
     public static IntPtr BitOnFlowFuncAddress { get; private set; }
     public static IntPtr BitOffFlowFuncAddress { get; private set; }
+    public static IntPtr OpenChestFuncAddress { get; private set; }
 
     //Debug
     public static IntPtr GetFlowscriptInt4ArgAddress { get; private set; }
 
     public static unsafe DateInfo* DateInfoAddress => *_dateInfoRefAddress;
+    public static unsafe BitFlagArrayInfo* BitFlagSectionMap { get; private set; }
 
     public static unsafe FlowCommandData* FlowCommandDataAddress
     {
@@ -79,6 +81,9 @@ public static class AddressScanner
 
             BitOffFlowFuncAddress = FindAsmMethod(scanner, "40 53 48 83 EC 20 31 C9 E8 ?? ?? ?? ?? 31 C9 89 C3");
 
+            OpenChestFuncAddress = FindAsmMethod(scanner, "48 8B C4 48 89 58 ?? 48 89 48 ?? 55 56 57 41 54 41 " +
+                                                          "55 41 56 41 57 48 8D A8 ?? ?? ?? ?? 48 81 EC 70 08 00 00");
+
             // DEBUG
             GetFlowscriptInt4ArgAddress = FindAsmMethod(scanner, "4C 8B 05 ?? ?? ?? ?? 41 8B 50 ?? 29 CA");
 
@@ -87,6 +92,7 @@ public static class AddressScanner
             // TODO get these from sig searching instead
             _dateInfoRefAddress = (DateInfo**)(_baseAddress + 0x286c188);
             _flowCommanderDataRefAddress = (FlowCommandData**)(_baseAddress + 0x293d008);
+            BitFlagSectionMap = (BitFlagArrayInfo*)(_baseAddress + 0x2511310);
         }
     }
 

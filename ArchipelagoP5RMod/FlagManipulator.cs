@@ -68,6 +68,5 @@ public class FlagManipulator
         uint bit = (uint)section * 0x10000000 + bitIndex;
         SetBit(bit, value);
     }
-    
 
 }
