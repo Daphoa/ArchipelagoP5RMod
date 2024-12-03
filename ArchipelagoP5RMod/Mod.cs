@@ -1,10 +1,10 @@
 ﻿#define DEBUG
 
 using System.Timers;
+using ArchipelagoP5RMod.Configuration;
 using Reloaded.Hooks.ReloadedII.Interfaces;
 using Reloaded.Mod.Interfaces;
 using ArchipelagoP5RMod.Template;
-using ArchipelagoP5RMod.Configuration;
 using ArchipelagoP5RMod.Types;
 
 namespace ArchipelagoP5RMod;
@@ -92,7 +92,7 @@ public class Mod : ModBase // <= Do not Remove.
         logTimer.Elapsed += LogStuff;
         logTimer.AutoReset = true;
 
-        OnGameLoaded += (_, _) => logTimer.Start();
+        // OnGameLoaded += (_, _) => logTimer.Start();
 
         _checkGameLoaded = new System.Timers.Timer(1000);
         _checkGameLoaded.Elapsed += CheckGameLoaded;

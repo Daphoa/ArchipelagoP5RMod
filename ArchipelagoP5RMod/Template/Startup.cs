@@ -3,11 +3,11 @@
  * to make it easier to upgrade to newer versions of the template.
  */
 
+using ArchipelagoP5RMod.Configuration;
 using Reloaded.Hooks.ReloadedII.Interfaces;
 using Reloaded.Mod.Interfaces;
 using Reloaded.Mod.Interfaces.Internal;
 using ArchipelagoP5RMod.Template.Configuration;
-using ArchipelagoP5RMod.Configuration;
 
 namespace ArchipelagoP5RMod.Template;
 

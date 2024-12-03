@@ -2,7 +2,7 @@
   "ModId": "p5rpc.randomizer.archipelago_randomizer",
   "ModName": "P5R Archipelago",
   "ModAuthor": "Daphoa",
-  "ModVersion": "1.0.0",
+  "ModVersion": "0.0.1",
   "ModDescription": "Archipelago Support for Persona 5 Royal on Steam",
   "ModDll": "ArchipelagoP5RMod.dll",
   "ModIcon": "Preview.png",

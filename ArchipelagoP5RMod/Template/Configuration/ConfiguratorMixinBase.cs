@@ -1,5 +1,5 @@
-﻿using Reloaded.Mod.Interfaces;
-using ArchipelagoP5RMod.Configuration;
+﻿using ArchipelagoP5RMod.Configuration;
+using Reloaded.Mod.Interfaces;
 
 namespace ArchipelagoP5RMod.Template.Configuration;
 

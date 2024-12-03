@@ -1,6 +1,6 @@
-﻿using Reloaded.Mod.Interfaces;
+﻿using ArchipelagoP5RMod.Configuration;
+using Reloaded.Mod.Interfaces;
 using IReloadedHooks = Reloaded.Hooks.ReloadedII.Interfaces.IReloadedHooks;
-using ArchipelagoP5RMod.Configuration;
 
 namespace ArchipelagoP5RMod.Template;
 
