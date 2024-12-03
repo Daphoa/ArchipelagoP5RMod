@@ -17,8 +17,11 @@ public static class AddressScanner
     public static IntPtr ChkBitFuncAddress { get; private set; }
     public static IntPtr BitOnFlowFuncAddress { get; private set; }
     public static IntPtr BitOffFlowFuncAddress { get; private set; }
-    public static IntPtr OpenChestFuncAddress { get; private set; }
+    public static IntPtr OpenChestOnUpdateFuncAddress { get; private set; }
+    public static IntPtr StartOpenChestFuncAddress { get; private set; }
+    public static IntPtr OnCompleteOpenChestFuncAddress { get; private set; }
     public static IntPtr GetItemNameFuncAddress { get; private set; }
+    public static IntPtr GetTboxFlagFlowFuncAddress { get; private set; }
 
     //Debug
     public static IntPtr GetFlowscriptInt4ArgAddress { get; private set; }
@@ -82,9 +85,14 @@ public static class AddressScanner
 
             BitOffFlowFuncAddress = FindAsmMethod(scanner, "40 53 48 83 EC 20 31 C9 E8 ?? ?? ?? ?? 31 C9 89 C3");
 
-            OpenChestFuncAddress = FindAsmMethod(scanner, "48 8B C4 48 89 58 ?? 48 89 48 ?? 55 56 57 41 54 41 " +
+            OpenChestOnUpdateFuncAddress = FindAsmMethod(scanner, "48 8B C4 48 89 58 ?? 48 89 48 ?? 55 56 57 41 54 41 " +
                                                           "55 41 56 41 57 48 8D A8 ?? ?? ?? ?? 48 81 EC 70 08 00 00");
-
+            
+            StartOpenChestFuncAddress = FindAsmMethod(scanner, "48 89 5C 24 ?? 48 89 6C 24 ?? 48 89 74 24 ?? 57 " +
+                                                               "41 56 41 57 48 83 EC 60 48 8B FA 4C 8B F9");
+            
+            GetTboxFlagFlowFuncAddress = FindAsmMethod(scanner, "48 83 EC 28 E8 ?? ?? ?? ?? 48 85 C0 74 ?? 4C 8B " +
+                                                                "48 ?? 4D 85 C9 74 ?? 49 8B 91 ?? ?? ?? ??");
             // DEBUG
             GetFlowscriptInt4ArgAddress = FindAsmMethod(scanner, "4C 8B 05 ?? ?? ?? ?? 41 8B 50 ?? 29 CA");
 
@@ -95,6 +103,7 @@ public static class AddressScanner
             _flowCommanderDataRefAddress = (FlowCommandData**)(_baseAddress + 0x293d008);
             BitFlagSectionMap = (BitFlagArrayInfo*)(_baseAddress + 0x2511310);
             GetItemNameFuncAddress = _baseAddress + 0xd68530;
+            OnCompleteOpenChestFuncAddress = _baseAddress + 0x102cdd0;
         }
     }
 

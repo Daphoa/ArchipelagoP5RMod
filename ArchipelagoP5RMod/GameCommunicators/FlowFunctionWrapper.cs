@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Runtime.InteropServices;
 using ArchipelagoP5RMod.Types;
 using Reloaded.Hooks.Definitions;
 using Reloaded.Hooks.Definitions.X86;
@@ -15,7 +16,7 @@ public static class FlowFunctionWrapper
     public delegate void BitToggleType();
 
     private static unsafe FlowCommandData* backupCommandData;
-    private static FlowCommandData temporaryCommandData;
+    private static GCHandle temporaryCommandDataHandle;
     // private static int addedStack = 0;
 
     [Function(CallingConventions.Fastcall)]
@@ -39,50 +40,14 @@ public static class FlowFunctionWrapper
                 out _getFlowscriptInt4ArgPtr);
     }
 
-    // public static unsafe long CallFlowFunction<T>(Func<T>  func, params long[] args)
-    // {
-    //     var flowCommandDataAddress = CallFlowFunctionSetup(args, out var backupCommandData);
-    //
-    //     // Call function
-    //     func.Invoke();
-    //
-    //     long retVal = flowCommandDataAddress->ReturnValue;
-    //
-    //     CallFlowFunctionCleanup(flowCommandDataAddress, backupCommandData);
-    //
-    //     return retVal;
-    // }
-
-    // public static unsafe long CallFlowFunction<T>(T func, params long[] args) where T: Delegate
-    // {
-    //     var flowCommandDataAddress = CallFlowFunctionSetup(args, out var backupCommandData);
-    //
-    //     // Call function
-    //     func.Invoke();
-    //
-    //     long retVal = flowCommandDataAddress->ReturnValue;
-    //
-    //     CallFlowFunctionCleanup(flowCommandDataAddress, backupCommandData);
-    //
-    //     return retVal;
-    // }
-
-
     public static unsafe void CallFlowFunctionSetup(params long[] args)
     {
-        // _logger?.WriteLine($"Got flowCommandDataAddress {(int)AddressScanner.FlowCommandDataAddress}");
-
         backupCommandData = AddressScanner.FlowCommandDataAddress;
-        // _logger?.WriteLine($"Backed up command data adr {(int)backupCommandData:X}");
 
-        temporaryCommandData = new FlowCommandData();
-        fixed (FlowCommandData* adr = &temporaryCommandData)
-        {
-            AddressScanner.FlowCommandDataAddress = adr;
-        }
+        temporaryCommandDataHandle = GCHandle.Alloc(new FlowCommandData(), GCHandleType.Pinned);
+        AddressScanner.FlowCommandDataAddress = (FlowCommandData*)temporaryCommandDataHandle.AddrOfPinnedObject();
 
         AddressScanner.FlowCommandDataAddress->StackSize = 1;
-        // _logger?.WriteLine($"Set stack size to {AddressScanner.FlowCommandDataAddress->StackSize}");
 
         int newStackSize = AddressScanner.FlowCommandDataAddress->StackSize + args.Length;
         if (newStackSize > 47)
@@ -102,12 +67,10 @@ public static class FlowFunctionWrapper
 
     public static unsafe long CallFlowFunctionCleanup()
     {
-        _logger?.WriteLine($"Beginning Flow Function cleanup");
         long retVal = AddressScanner.FlowCommandDataAddress->ReturnValue;
 
         AddressScanner.FlowCommandDataAddress = backupCommandData;
-        // flowCommandDataAddress->StackSize -= addedStack;
-        // addedStack = 0;
+        temporaryCommandDataHandle.Free();
 
         return retVal;
     }
@@ -139,7 +102,20 @@ public static class FlowFunctionWrapper
                 }
             }
 
-            CallFlowFunctionCleanup();
+            long testRetVal = random.NextInt64();
+            unsafe
+            {
+                ((FlowCommandData*)temporaryCommandDataHandle.AddrOfPinnedObject())->ReturnValue = testRetVal;
+            }
+
+            long actualRetVal = CallFlowFunctionCleanup();
+
+            if (testRetVal != actualRetVal)
+            {
+                success = false;
+                _logger?.WriteLine(
+                    $"Test {testNum} failed on retVal. Expected value ({testRetVal:X}) is not equal to actual value ({actualRetVal:X}).");
+            }
         }
 
         return success;

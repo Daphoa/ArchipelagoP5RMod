@@ -11,40 +11,81 @@ public class ItemManipulator
 {
     private readonly ILogger _logger;
 
-    private readonly IHook<OpenChest> _openChestHook;
+    private const long DUMMY_ITEM = 0;
+
+    private readonly IHook<OpenChestOnUpdate> _openChestHook;
+    private readonly IHook<StartOpenChest> _startOpenChestHook;
+    private readonly IHook<OnCompleteOpenChest> _onCompleteOpenChestHook;
     private readonly IHook<GetItemName> _getItemNameHook;
+
+    private readonly IntPtr _getTboxFlagFlowAdr;
 
     private GCHandle _itemNameOverrideAdr;
 
     [Function(CallingConventions.Fastcall)]
-    private unsafe delegate long OpenChest(int* param1, float param2, long param3, float param4);
+    private unsafe delegate long OpenChestOnUpdate(int* param1, float param2, long param3, float param4);
+
+    [Function(CallingConventions.Fastcall)]
+    private delegate IntPtr StartOpenChest(IntPtr param1, long param2, ushort param3);
+
+    [Function(CallingConventions.Fastcall)]
+    private delegate void OnCompleteOpenChest(long param1, IntPtr param2, long param3, int param4);
 
     [Function(CallingConventions.Fastcall)]
     private unsafe delegate char* GetItemName(ushort itemId);
+
+    [Function(CallingConventions.Fastcall)]
+    private delegate long GetTboxFlagFlow();
+
+    private GetTboxFlagFlow? _getTboxFlag { get; set; }
 
     public ItemManipulator(IReloadedHooks hooks, ILogger logger)
     {
         _logger = logger;
         unsafe
         {
-            _openChestHook = hooks.CreateHook<OpenChest>(OpenChestImpl, AddressScanner.OpenChestFuncAddress).Activate();
+            _openChestHook = hooks
+                .CreateHook<OpenChestOnUpdate>(OpenChestOnUpdateImpl, AddressScanner.OpenChestOnUpdateFuncAddress)
+                .Activate();
+            _startOpenChestHook =
+                hooks.CreateHook<StartOpenChest>(StartOpenChestImpl, AddressScanner.StartOpenChestFuncAddress)
+                    .Activate();
+            _onCompleteOpenChestHook =
+                hooks.CreateHook<OnCompleteOpenChest>(OnCompleteOpenChestImpl,
+                    AddressScanner.OnCompleteOpenChestFuncAddress).Activate();
             _getItemNameHook = hooks.CreateHook<GetItemName>(GetItemNameImpl, AddressScanner.GetItemNameFuncAddress)
                 .Activate();
+            _getTboxFlag = hooks.CreateWrapper<GetTboxFlagFlow>(AddressScanner.GetTboxFlagFlowFuncAddress,
+                out _getTboxFlagFlowAdr);
         }
 
         logger.WriteLine("Created ItemManipulator Hooks");
     }
 
-    private unsafe long OpenChestImpl(int* param1, float param2, long param3, float param4)
+    private unsafe long OpenChestOnUpdateImpl(int* param1, float param2, long param3, float param4)
     {
-        SetItemNameOverride("Item2");
-        var debugTools = new DebugTools();
-        debugTools.BackupCurrentFlags();
-
         long retVal = _openChestHook.OriginalFunction(param1, param2, param3, param4);
 
-        debugTools.FindChangedFlags(_logger);
         return retVal;
+    }
+
+    private IntPtr StartOpenChestImpl(IntPtr param1, long param2, ushort param3)
+    {
+        SetItemNameOverride("Item2");
+
+        var retVal = _startOpenChestHook.OriginalFunction(param1, param2, param3);
+        
+        long flag = GetCurrentTboxFlag();
+        _logger.WriteLine($"StartOpenChest got flag: {flag:X}");
+
+        return retVal;
+    }
+
+    private void OnCompleteOpenChestImpl(long param1, IntPtr param2, long param3, int param4)
+    {
+        _onCompleteOpenChestHook.OriginalFunction(param1, param2, param3, param4);
+
+        ClearItemNameOverride();
     }
 
     private unsafe char* GetItemNameImpl(ushort itemId)
@@ -53,8 +94,10 @@ public class ItemManipulator
         {
             return (char*)_itemNameOverrideAdr.AddrOfPinnedObject();
         }
-
-        return _getItemNameHook.OriginalFunction(itemId);
+        else
+        {
+            return _getItemNameHook.OriginalFunction(itemId);
+        }
     }
 
     public void SetItemNameOverride(string itemName)
@@ -63,9 +106,9 @@ public class ItemManipulator
         {
             _itemNameOverrideAdr.Free();
         }
-     
+
         byte[] utf8Str = Encoding.Convert(Encoding.Unicode, Encoding.UTF8, Encoding.Unicode.GetBytes(itemName));
-        
+
         _itemNameOverrideAdr = GCHandle.Alloc(utf8Str, GCHandleType.Pinned);
     }
 
@@ -75,6 +118,17 @@ public class ItemManipulator
         {
             _itemNameOverrideAdr.Free();
         }
+    }
+
+    private long GetCurrentTboxFlag()
+    {
+        if (_getTboxFlag is null) return 0;
+
+        FlowFunctionWrapper.CallFlowFunctionSetup();
+
+        _getTboxFlag();
+
+        return FlowFunctionWrapper.CallFlowFunctionCleanup();
     }
 
     private unsafe ItemRewardPackage[]* findItemRewardPackage(int* param1)
