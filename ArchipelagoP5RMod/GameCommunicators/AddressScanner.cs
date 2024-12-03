@@ -18,6 +18,7 @@ public static class AddressScanner
     public static IntPtr BitOnFlowFuncAddress { get; private set; }
     public static IntPtr BitOffFlowFuncAddress { get; private set; }
     public static IntPtr OpenChestFuncAddress { get; private set; }
+    public static IntPtr GetItemNameFuncAddress { get; private set; }
 
     //Debug
     public static IntPtr GetFlowscriptInt4ArgAddress { get; private set; }
@@ -93,6 +94,7 @@ public static class AddressScanner
             _dateInfoRefAddress = (DateInfo**)(_baseAddress + 0x286c188);
             _flowCommanderDataRefAddress = (FlowCommandData**)(_baseAddress + 0x293d008);
             BitFlagSectionMap = (BitFlagArrayInfo*)(_baseAddress + 0x2511310);
+            GetItemNameFuncAddress = _baseAddress + 0xd68530;
         }
     }
 

@@ -81,6 +81,8 @@ public class Mod : ModBase // <= Do not Remove.
         _dateManipulator = new DateManipulator(_hooks, _logger);
         _flagManipulator = new FlagManipulator(_hooks, _logger);
         _itemManipulator = new ItemManipulator(_hooks, _logger);
+        
+        _itemManipulator.SetItemNameOverride("Test");
         _debugTools = new DebugTools();
 
         OnGameLoaded += TestFlowFuncWrapper;

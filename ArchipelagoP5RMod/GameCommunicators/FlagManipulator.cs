@@ -29,7 +29,7 @@ public class FlagManipulator
         BitOn = hooks.CreateWrapper<BitToggleType>(AddressScanner.BitOnFlowFuncAddress, out _bitOnWrapperAdr);
         BitOff = hooks.CreateWrapper<BitToggleType>(AddressScanner.BitOffFlowFuncAddress, out _bitOffWrapperAdr);
 
-        logger.WriteLine("Created DateManipulator Hooks");
+        logger.WriteLine("Created FlagManipulator Hooks");
     }
 
     // ReSharper disable once MemberCanBePrivate.Global
