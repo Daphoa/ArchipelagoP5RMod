@@ -50,9 +50,12 @@ public class Mod : ModBase // <= Do not Remove.
     /// </summary>
     private event EventHandler OnGameLoaded;
 
+    private readonly ApConnector _apConnector;
     private readonly DateManipulator _dateManipulator;
     private readonly FlagManipulator _flagManipulator;
     private readonly ItemManipulator _itemManipulator;
+    private readonly FlagManager _flagManager;
+    private readonly ChestRewardDirector _chestRewardDirector;
 
     private readonly System.Timers.Timer _checkGameLoaded;
     private readonly DebugTools _debugTools;
@@ -81,24 +84,40 @@ public class Mod : ModBase // <= Do not Remove.
         _dateManipulator = new DateManipulator(_hooks, _logger);
         _flagManipulator = new FlagManipulator(_hooks, _logger);
         _itemManipulator = new ItemManipulator(_hooks, _logger);
+        _apConnector = new ApConnector();
+        _flagManager = new FlagManager();
+        _chestRewardDirector = new ChestRewardDirector();
         
-        _itemManipulator.SetItemNameOverride("Test");
         _debugTools = new DebugTools();
+        
+        _apConnector.Init(config: _configuration, logger: _logger);
 
         OnGameLoaded += TestFlowFuncWrapper;
         OnGameLoaded += TestBitManipulator;
+        OnGameLoaded += (_, _) => _flagManager.Setup(_flagManipulator);
 
+        _chestRewardDirector.Setup(_apConnector, _itemManipulator);
+        
         var logTimer = new System.Timers.Timer(10000);
         logTimer.Elapsed += LogStuff;
         logTimer.AutoReset = true;
 
-        // OnGameLoaded += (_, _) => logTimer.Start();
+        OnGameLoaded += (_, _) => logTimer.Start();
 
         _checkGameLoaded = new System.Timers.Timer(1000);
         _checkGameLoaded.Elapsed += CheckGameLoaded;
         _checkGameLoaded.AutoReset = false;
         _checkGameLoaded.Enabled = true;
+
+        _itemManipulator.OnChestOpened += id =>
+        {
+            _logger.WriteLine($"StartOpenChest got flag: 0x{id:X}");
+        };
         
+        _itemManipulator.OnChestOpened += id =>
+        {
+            _apConnector.ReportLocationCheck(id);
+        };
         _logger.WriteLine("End Mod Constructor");
     }
 

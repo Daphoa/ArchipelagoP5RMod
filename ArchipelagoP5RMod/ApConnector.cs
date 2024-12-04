@@ -1,5 +1,6 @@
 ﻿using Archipelago.MultiClient.Net;
 using Archipelago.MultiClient.Net.Enums;
+using Archipelago.MultiClient.Net.Models;
 using ArchipelagoP5RMod.Configuration;
 using Reloaded.Mod.Interfaces;
 
@@ -21,7 +22,7 @@ public class ApConnector
         try
         {
             result = session.TryConnectAndLogin(
-                "Persona 5 Royal", config.ConfigName, ItemsHandlingFlags.IncludeStartingInventory, 
+                "Persona 5 Royal", config.SlotName, ItemsHandlingFlags.AllItems, 
                 version: null, tags: null, uuid: null, password: config.ServerPassword, requestSlotData: true);
         }
         catch (Exception e)
@@ -55,12 +56,11 @@ public class ApConnector
         session.Locations.CompleteLocationChecksAsync(locationIds);
     }
 
-    public async void ScoutLocations(long[] locationIds, Action<Dictionary<long, long>> scoutLocationsCallback)
+    public async void ScoutLocations(long[] locationIds, Action<Dictionary<long, ScoutedItemInfo>> scoutLocationsCallback)
     {
         var results = session.Locations.ScoutLocationsAsync(locationIds);
         await results.WaitAsync(new TimeSpan(0, 0, 0, 30));
 
-        // TODO need to finish up this method
-        // results.Result[0].
+        scoutLocationsCallback.Invoke(results.Result);
     }
 }

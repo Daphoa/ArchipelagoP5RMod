@@ -39,6 +39,9 @@ public class ItemManipulator
 
     private GetTboxFlagFlow? _getTboxFlag { get; set; }
 
+    public event OnChestOpenedEvent OnChestOpened = (_) => { }; 
+    public delegate void OnChestOpenedEvent(long chestId);
+    
     public ItemManipulator(IReloadedHooks hooks, ILogger logger)
     {
         _logger = logger;
@@ -71,12 +74,11 @@ public class ItemManipulator
 
     private IntPtr StartOpenChestImpl(IntPtr param1, long param2, ushort param3)
     {
-        SetItemNameOverride("Item2");
-
-        var retVal = _startOpenChestHook.OriginalFunction(param1, param2, param3);
+        IntPtr retVal = _startOpenChestHook.OriginalFunction(param1, param2, param3);
         
         long flag = GetCurrentTboxFlag();
-        _logger.WriteLine($"StartOpenChest got flag: {flag:X}");
+        
+        OnChestOpened.Invoke(flag);
 
         return retVal;
     }
