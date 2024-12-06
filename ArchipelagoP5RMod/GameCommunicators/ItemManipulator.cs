@@ -17,8 +17,12 @@ public class ItemManipulator
     private readonly IHook<StartOpenChest> _startOpenChestHook;
     private readonly IHook<OnCompleteOpenChest> _onCompleteOpenChestHook;
     private readonly IHook<GetItemName> _getItemNameHook;
+    private readonly IHook<GetItemNum> _getItemNumHook;
+    private readonly IHook<SetItemNum> _setItemNumHook;
 
     private readonly IntPtr _getTboxFlagFlowAdr;
+    private readonly IntPtr _getItemWindowAdr;
+    private readonly IntPtr _getItemWindowFlowAdr;
 
     private GCHandle _itemNameOverrideAdr;
 
@@ -37,11 +41,25 @@ public class ItemManipulator
     [Function(CallingConventions.Fastcall)]
     private delegate long GetTboxFlagFlow();
 
-    private GetTboxFlagFlow? _getTboxFlag { get; set; }
+    [Function(CallingConventions.Fastcall)]
+    private delegate byte GetItemNum(ushort itemId);
 
-    public event OnChestOpenedEvent OnChestOpened = (_) => { }; 
+    [Function(CallingConventions.Fastcall)]
+    private delegate void SetItemNum(ushort itemId, byte newItemCount, byte shouldUpdateRecentItem);
+
+    [Function(CallingConventions.Fastcall)]
+    private unsafe delegate IntPtr GetItemWindow(short* itemIds, int* itemNum, uint length, int flag);
+
+    private delegate bool GetItemWindowFlow();
+
+    private GetTboxFlagFlow? _getTboxFlag { get; set; }
+    private GetItemWindow? _getItemWindow { get; set; }
+    private GetItemWindowFlow? _getItemWindowFlow { get; set; }
+
+    public event OnChestOpenedEvent OnChestOpened = _ => { };
+
     public delegate void OnChestOpenedEvent(long chestId);
-    
+
     public ItemManipulator(IReloadedHooks hooks, ILogger logger)
     {
         _logger = logger;
@@ -58,8 +76,16 @@ public class ItemManipulator
                     AddressScanner.OnCompleteOpenChestFuncAddress).Activate();
             _getItemNameHook = hooks.CreateHook<GetItemName>(GetItemNameImpl, AddressScanner.GetItemNameFuncAddress)
                 .Activate();
+            _getItemNumHook = hooks.CreateHook<GetItemNum>(GetItemNumImpl, AddressScanner.GetItemNumFuncAddress)
+                .Activate();
+            _setItemNumHook = hooks.CreateHook<SetItemNum>(SetItemNumImpl, AddressScanner.SetItemNumFuncAddress)
+                .Activate();
             _getTboxFlag = hooks.CreateWrapper<GetTboxFlagFlow>(AddressScanner.GetTboxFlagFlowFuncAddress,
                 out _getTboxFlagFlowAdr);
+            _getItemWindow = hooks.CreateWrapper<GetItemWindow>(AddressScanner.GetItemWindowFuncAddress,
+                out _getItemWindowAdr);
+            _getItemWindowFlow = hooks.CreateWrapper<GetItemWindowFlow>(AddressScanner.GetItemWindowFlowFuncAddress,
+                out _getItemWindowFlowAdr);
         }
 
         logger.WriteLine("Created ItemManipulator Hooks");
@@ -75,12 +101,22 @@ public class ItemManipulator
     private IntPtr StartOpenChestImpl(IntPtr param1, long param2, ushort param3)
     {
         IntPtr retVal = _startOpenChestHook.OriginalFunction(param1, param2, param3);
-        
+
         long flag = GetCurrentTboxFlag();
-        
+
         OnChestOpened.Invoke(flag);
 
         return retVal;
+    }
+
+    private byte GetItemNumImpl(ushort itemId)
+    {
+        return _getItemNumHook.OriginalFunction(itemId);
+    }
+
+    private void SetItemNumImpl(ushort itemId, byte newItemCount, byte shouldUpdateRecentItem)
+    {
+        _setItemNumHook.OriginalFunction(itemId, newItemCount, shouldUpdateRecentItem);
     }
 
     private void OnCompleteOpenChestImpl(long param1, IntPtr param2, long param3, int param4)
@@ -131,6 +167,50 @@ public class ItemManipulator
         _getTboxFlag();
 
         return FlowFunctionWrapper.CallFlowFunctionCleanup();
+    }
+
+    private unsafe long CStrLen(char* str)
+    {
+        char *s;
+        for (s = str; *s == (char)0; ++s) { }
+        return s - str;
+    } 
+
+    public void RewardItem(ushort itemId, byte count, bool showWindow)
+    {
+        _logger.WriteLine($"Rewarding item {itemId:X} x{count}");
+        byte newCount = GetItemNumImpl(itemId);
+        newCount += count;
+        SetItemNumImpl(itemId, newCount, 1);
+        if (showWindow)
+        {
+            _logger.WriteLine($"Opening item window for item {itemId:X}");
+            OpenItemWindow(itemId, count);
+        }
+    }
+
+    public unsafe string GetOriginalItemName(ushort itemId)
+    {
+
+        char* str = _getItemNameHook.OriginalFunction(itemId);
+        int len = (int)CStrLen(str);
+
+        var managedArray = new byte[len];
+
+        Marshal.Copy((IntPtr)str, managedArray, 0, len);
+        return Encoding.UTF8.GetString(managedArray);
+    }
+
+    public unsafe char* GetOriginalItemNamePtr(ushort itemId)
+    {
+        return _getItemNameHook.OriginalFunction(itemId);
+    }
+
+    private void OpenItemWindow(ushort itemId, byte count)
+    {
+        FlowFunctionWrapper.CallFlowFunctionSetup(itemId, count, 0);
+        _getItemWindowFlow?.Invoke();
+        FlowFunctionWrapper.CallFlowFunctionCleanup();
     }
 
     private unsafe ItemRewardPackage[]* findItemRewardPackage(int* param1)

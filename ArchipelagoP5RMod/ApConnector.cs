@@ -11,14 +11,16 @@ public class ApConnector
     private ArchipelagoSession session = null!;
     private LoginSuccessful loginSuccessful = null!;
     private ILogger logger = null!;
-
+    private int lastRewardIndex = 0;
+    private Func<long, bool> rewardHandler;
+    
     public void Init(Config config, ILogger logger)
     {
         session = ArchipelagoSessionFactory.CreateSession(config.ServerAddress);
         this.logger = logger;
 
         LoginResult result;
-        
+
         try
         {
             result = session.TryConnectAndLogin(
@@ -49,6 +51,39 @@ public class ApConnector
         }
         
         loginSuccessful = (LoginSuccessful)result;
+
+        session.Items.ItemReceived += receivedItemsHelper =>
+        {
+            long itemId = receivedItemsHelper.PeekItem().ItemId;
+            bool success = rewardHandler.Invoke(itemId);
+
+            logger.WriteLine($"Got item {itemId:X}");
+            
+            if (success)
+            {
+                receivedItemsHelper.DequeueItem();
+            }
+        };
+    }
+
+    public void SetItemRewarder(Func<long, bool> rewardHandler)
+    {
+        this.rewardHandler = rewardHandler;
+    }
+
+    public int RegisterForCollection(int processedNum, Func<long, bool> rewardHandler)
+    {
+        logger.WriteLine("Collecting items from archipelago");
+        while (session.Items.AllItemsReceived.Count > processedNum)
+        {
+            logger.WriteLine($"Collecting item {processedNum}: {session.Items.AllItemsReceived[processedNum].ItemName}");
+            rewardHandler(session.Items.AllItemsReceived[processedNum].ItemId);
+            processedNum++;
+        }
+
+        this.rewardHandler = rewardHandler;
+
+        return processedNum;
     }
 
     public void ReportLocationCheck(params long[] locationIds)

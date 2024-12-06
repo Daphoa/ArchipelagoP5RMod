@@ -92,8 +92,17 @@ public class Mod : ModBase // <= Do not Remove.
         
         _apConnector.Init(config: _configuration, logger: _logger);
 
-        OnGameLoaded += TestFlowFuncWrapper;
-        OnGameLoaded += TestBitManipulator;
+        OnGameLoaded += (_, _) =>
+        {
+            _apConnector.RegisterForCollection(0, itemId =>
+            {
+                _itemManipulator.RewardItem((ushort)itemId, 1, true);
+                return true;
+            });
+        };
+
+        // OnGameLoaded += TestFlowFuncWrapper;
+        // OnGameLoaded += TestBitManipulator;
         OnGameLoaded += (_, _) => _flagManager.Setup(_flagManipulator);
 
         _chestRewardDirector.Setup(_apConnector, _itemManipulator);
@@ -163,7 +172,6 @@ public class Mod : ModBase // <= Do not Remove.
 
     private void TestBitManipulator(object? sender, EventArgs eventArgs)
     {
-        return;
         uint[] TEST_VALS = [1244, 0x20000000 + 54, 0x30000000 + 1, 0x40000000 + 54];
         _logger.WriteLine("Testing bit manipulator");
 
