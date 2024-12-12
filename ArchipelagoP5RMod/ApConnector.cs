@@ -19,20 +19,23 @@ public class ApConnector
     private bool _isTryingToConnect = false;
     private bool _closeConnection = false;
 
-    private string serverPassword { get; set; }
-    private string slotName { get; set; }
+    private string ServerPassword { get; set; }
+    private string SlotName { get; set; }
 
-    public void Init(string serverAddress, string serverPassword, string slotName, ILogger logger)
+    public ApConnector(string serverAddress, string serverPassword, string slotName, ILogger logger)
     {
         _session = ArchipelagoSessionFactory.CreateSession(serverAddress);
         this._logger = logger;
-        this.serverPassword = serverPassword;
-        this.slotName = slotName;
+        this.ServerPassword = serverPassword;
+        this.SlotName = slotName;
 
         _session.MessageLog.OnMessageReceived += OnMessageReceived;
 
         _session.Items.ItemReceived += receivedItemsHelper =>
         {
+            if (rewardHandler is null)
+                return;
+
             ApItem item = new ApItem(receivedItemsHelper.PeekItem().ItemId);
             bool success = rewardHandler.Invoke(item);
 
@@ -49,17 +52,24 @@ public class ApConnector
 
     private async Task ConnectToServerAsync()
     {
-        byte failureCount = 0;
+        ushort failureCount = 0;
         _isTryingToConnect = true;
 
         while (true)
         {
-            int waitTime = 250 * (1 << failureCount); // 250 * (2 to the power of failureCount)
-            if (waitTime > 30000) waitTime = 30000;
+            int waitTime;
+            if (failureCount < 8)
+            {
+                waitTime = 250 * (1 << failureCount); // 250 * (2 to the power of failureCount)
+            }
+            else
+            {
+                waitTime = 60000;
+            }
 
             await Task.Delay(waitTime);
 
-            _logger.WriteLine($"Connecting as {slotName}...");
+            _logger.WriteLine($"Connecting as {SlotName}...");
 
             try
             {
@@ -78,8 +88,8 @@ public class ApConnector
             LoginResult? loginResult;
             try
             {
-                var loginTask = _session.LoginAsync("Persona 5 Royal", slotName, ItemsHandlingFlags.AllItems,
-                    version: null, tags: null, uuid: null, password: serverPassword, requestSlotData: true);
+                var loginTask = _session.LoginAsync("Persona 5 Royal", SlotName, ItemsHandlingFlags.AllItems,
+                    version: null, tags: null, uuid: null, password: ServerPassword, requestSlotData: true);
 
                 loginResult = await loginTask;
             }
@@ -89,18 +99,21 @@ public class ApConnector
                 failureCount++;
                 continue;
             }
-            
+
             if (loginResult.Successful)
             {
                 break;
             }
 
+            failureCount++;
+
             var failure = (LoginFailure)loginResult;
-            var errorMessage = $"Failed to Connect as {slotName}:";
+            var errorMessage = $"Failed to Connect as {SlotName} ({failureCount} failures):";
             foreach (string error in failure.Errors)
             {
                 errorMessage += $"\n    {error}";
             }
+
             foreach (ConnectionRefusedError error in failure.ErrorCodes)
             {
                 errorMessage += $"\n    {error}";
@@ -108,7 +121,6 @@ public class ApConnector
 
             _logger.WriteLine(errorMessage);
 
-            failureCount++;
         }
 
         _isTryingToConnect = false;
@@ -124,7 +136,7 @@ public class ApConnector
             {
                 break;
             }
-            
+
             if (_session.Socket.Connected)
             {
                 continue;
@@ -148,9 +160,9 @@ public class ApConnector
 
     private bool CheckConnection()
     {
-        if (_session.Socket.Connected) 
+        if (_session.Socket.Connected)
             return true;
-        
+
         _logger.WriteLine("No connection to server.");
 
         if (!_isTryingToConnect)
@@ -178,7 +190,7 @@ public class ApConnector
     {
         _closeConnection = true;
     }
-    
+
     public void SetItemRewarder(Func<ApItem, bool> rewardHandler)
     {
         this.rewardHandler = rewardHandler;
@@ -195,7 +207,7 @@ public class ApConnector
 
         return processedNum;
     }
-    
+
     public async Task<int> RegisterForCollectionAsync(int processedNum, Func<ApItem, bool> rewardHandler)
     {
         this.rewardHandler = rewardHandler;
@@ -213,7 +225,7 @@ public class ApConnector
         {
             return processedNum;
         }
-        
+
         _logger.WriteLine("Collecting items from archipelago");
         while (_session.Items.AllItemsReceived.Count > processedNum)
         {
@@ -232,7 +244,7 @@ public class ApConnector
     public async void ReportLocationCheckAsync(params long[] locationIds)
     {
         await WaitForConnection();
-        
+
         await _session.Locations.CompleteLocationChecksAsync(locationIds);
     }
 
