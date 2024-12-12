@@ -56,7 +56,8 @@ public class ItemManipulator
     private GetItemWindow? _getItemWindow { get; set; }
     private GetItemWindowFlow? _getItemWindowFlow { get; set; }
 
-    public event OnChestOpenedEvent OnChestOpened = _ => { };
+    public event OnChestOpenedEvent OnChestOpened;
+    public event OnChestOpenedEvent OnChestOpenedCompleted;
 
     public delegate void OnChestOpenedEvent(long chestId);
 
@@ -104,7 +105,7 @@ public class ItemManipulator
 
         long flag = GetCurrentTboxFlag();
 
-        OnChestOpened.Invoke(flag);
+        OnChestOpened?.Invoke(flag);
 
         return retVal;
     }
@@ -123,6 +124,9 @@ public class ItemManipulator
     {
         _onCompleteOpenChestHook.OriginalFunction(param1, param2, param3, param4);
 
+        long flag = GetCurrentTboxFlag();
+        OnChestOpenedCompleted.Invoke(flag);
+            
         ClearItemNameOverride();
     }
 

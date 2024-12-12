@@ -24,7 +24,7 @@ public class ChestRewardDirector
         
         itemManipulator.OnChestOpened += chestId =>
         {
-            if (_rewardName.TryGetValue(chestId, out string? value))
+            if (_rewardName.TryGetValue(chestId, out string? value) && !string.IsNullOrEmpty(value))
             {
                 itemManipulator.SetItemNameOverride(value);
             }

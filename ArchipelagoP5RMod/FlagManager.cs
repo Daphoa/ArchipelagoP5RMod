@@ -4,8 +4,9 @@ public class FlagManager
 {
     private readonly uint[] _onBits =
     [
-        0x20000000 + 493,
-        0x20000000 + 482
+        // Chest show on map
+        0x20000000 + 493, 
+        0x20000000 + 482,
     ];
 
     public void Setup(FlagManipulator flagManipulator)

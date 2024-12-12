@@ -27,6 +27,7 @@ public static class AddressScanner
     public static IntPtr GetItemWindowFuncAddress { get; private set; }
     public static IntPtr GetItemWindowFlowFuncAddress { get; private set; }
     public static IntPtr CallTutorialFlowFuncAddress { get; private set; }
+    public static IntPtr NetSetActionFuncAddress { get; private set; }
 
     //Debug
     public static IntPtr GetFlowscriptInt4ArgAddress { get; private set; }
@@ -108,7 +109,12 @@ public static class AddressScanner
                                                                   "E8 ?? ?? ?? ?? 48 8B 0D ?? ?? ?? ?? 48 85 C9 74 ?? " +
                                                                   "83 B9 ?? ?? ?? ?? 00 74 ?? 33 C0");
             
-            CallTutorialFlowFuncAddress = FindAsmMethod(scanner, "48 8B C4 48 81 EC B8 00 00 00 48 89 58 ??");
+            CallTutorialFlowFuncAddress = FindAsmMethod(scanner, "48 83 EC 28 48 8B 05 ?? ?? ?? ?? 48 85 C0 74 " +
+                                                                 "?? 83 B8 ?? ?? ?? ?? 00 74 ?? 48 8D 0D ?? ?? ?? ?? E8 " +
+                                                                 "?? ?? ?? ?? 48 85 C0 75 ?? B8 01 00 00 00 48 83 C4 28 " +
+                                                                 "C3 B9 01 00 00 00 E8 ?? ?? ?? ?? 33 C9 44 8B C8 E8 ?? ?? ?? ?? 8B D0");
+
+            NetSetActionFuncAddress = FindAsmMethod(scanner, "B8 6D 01 00 00 66 3B D0 7D ?? 0F B6 C9");
 
             // DEBUG
             GetFlowscriptInt4ArgAddress = FindAsmMethod(scanner, "4C 8B 05 ?? ?? ?? ?? 41 8B 50 ?? 29 CA");

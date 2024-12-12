@@ -90,15 +90,15 @@ public class Mod : ModBase // <= Do not Remove.
         
         _debugTools = new DebugTools();
         
-        _apConnector.Init(config: _configuration, logger: _logger);
+        _apConnector.Init(
+            serverAddress: _configuration.ServerAddress, 
+            serverPassword: _configuration.ServerPassword, 
+            slotName: _configuration.SlotName,
+            logger: _logger);
 
         OnGameLoaded += (_, _) =>
         {
-            _apConnector.RegisterForCollection(0, itemId =>
-            {
-                _itemManipulator.RewardItem((ushort)itemId, 1, true);
-                return true;
-            });
+            _apConnector.RegisterForCollection(0, RewardApItemHandler);
         };
 
         // OnGameLoaded += TestFlowFuncWrapper;
@@ -123,11 +123,28 @@ public class Mod : ModBase // <= Do not Remove.
             _logger.WriteLine($"StartOpenChest got flag: 0x{id:X}");
         };
         
-        _itemManipulator.OnChestOpened += id =>
+        _itemManipulator.OnChestOpenedCompleted += id =>
         {
-            _apConnector.ReportLocationCheck(id);
+            _apConnector.ReportLocationCheckAsync(id);
         };
         _logger.WriteLine("End Mod Constructor");
+        
+        GameFeatureBlocker.BlockGameFeatures(_hooks);
+    }
+
+    private bool RewardApItemHandler(ApItem item)
+    {
+        switch (item.Type)
+        {
+            case ItemType.Item:
+                _itemManipulator.RewardItem(item.Id, item.Count, true);
+                return true;
+            case ItemType.CmmAbility:
+                // TODO implement this
+                return false;
+            default:
+                return false;
+        }
     }
 
     private void CheckGameLoaded(object? sender, ElapsedEventArgs elapsedEventArgs)

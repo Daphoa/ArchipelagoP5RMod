@@ -31,13 +31,10 @@ public class DateManipulator
     [Function(CallingConventions.Fastcall)]
     private delegate long UnknownTimeAdvanceFunc(long param1, float param2, long param3, long param4);
 
-    // private const short LoopDay = 26;
-    private readonly short[] _loopDates;
+    private readonly short[] _loopDates = [22];
 
     public DateManipulator(IReloadedHooks hooks, ILogger logger)
     {
-        _loopDates = [22];
-
         _logger = logger;
         _nextTimeHook = hooks.CreateHook<NextTime>(NextTimeImpl, AddressScanner.NextTimeFunAddress).Activate();
 

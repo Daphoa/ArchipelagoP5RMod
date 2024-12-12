@@ -1,6 +1,10 @@
-﻿using Archipelago.MultiClient.Net;
+﻿using System.Globalization;
+using Archipelago.MultiClient.Net;
 using Archipelago.MultiClient.Net.Enums;
+using Archipelago.MultiClient.Net.Helpers;
+using Archipelago.MultiClient.Net.MessageLog.Messages;
 using Archipelago.MultiClient.Net.Models;
+using Archipelago.MultiClient.Net.Packets;
 using ArchipelagoP5RMod.Configuration;
 using Reloaded.Mod.Interfaces;
 
@@ -8,34 +12,91 @@ namespace ArchipelagoP5RMod;
 
 public class ApConnector
 {
-    private ArchipelagoSession session = null!;
-    private LoginSuccessful loginSuccessful = null!;
-    private ILogger logger = null!;
-    private int lastRewardIndex = 0;
-    private Func<long, bool> rewardHandler;
-    
-    public void Init(Config config, ILogger logger)
+    private ArchipelagoSession _session = null!;
+    private ILogger _logger = null!;
+    private int _lastRewardIndex = 0;
+    private Func<ApItem, bool> rewardHandler;
+    private bool _isTryingToConnect = false;
+    private bool _closeConnection = false;
+
+    private string serverPassword { get; set; }
+    private string slotName { get; set; }
+
+    public void Init(string serverAddress, string serverPassword, string slotName, ILogger logger)
     {
-        session = ArchipelagoSessionFactory.CreateSession(config.ServerAddress);
-        this.logger = logger;
+        _session = ArchipelagoSessionFactory.CreateSession(serverAddress);
+        this._logger = logger;
+        this.serverPassword = serverPassword;
+        this.slotName = slotName;
 
-        LoginResult result;
+        _session.MessageLog.OnMessageReceived += OnMessageReceived;
 
-        try
+        _session.Items.ItemReceived += receivedItemsHelper =>
         {
-            result = session.TryConnectAndLogin(
-                "Persona 5 Royal", config.SlotName, ItemsHandlingFlags.AllItems, 
-                version: null, tags: null, uuid: null, password: config.ServerPassword, requestSlotData: true);
-        }
-        catch (Exception e)
+            ApItem item = new ApItem(receivedItemsHelper.PeekItem().ItemId);
+            bool success = rewardHandler.Invoke(item);
+
+            logger.WriteLine($"Got item {item.ToString()} from 0x{item.ItemCode}");
+
+            if (success)
+            {
+                receivedItemsHelper.DequeueItem();
+            }
+        };
+
+        MaintainConnection();
+    }
+
+    private async Task ConnectToServerAsync()
+    {
+        byte failureCount = 0;
+        _isTryingToConnect = true;
+
+        while (true)
         {
-            result = new LoginFailure(e.GetBaseException().Message);
-        }
-        
-        if (!result.Successful)
-        {
-            LoginFailure failure = (LoginFailure)result;
-            string errorMessage = $"Failed to Connect to {config.ServerAddress} as {config.ConfigName}:";
+            int waitTime = 250 * (1 << failureCount); // 250 * (2 to the power of failureCount)
+            if (waitTime > 30000) waitTime = 30000;
+
+            await Task.Delay(waitTime);
+
+            _logger.WriteLine($"Connecting as {slotName}...");
+
+            try
+            {
+                Task<RoomInfoPacket> connectTask = _session.ConnectAsync();
+
+                await connectTask;
+            }
+            catch (Exception ex)
+            {
+                _logger.WriteLine("Failed to connect to server");
+                _logger.WriteLine(ex.Message);
+                failureCount++;
+                continue;
+            }
+
+            LoginResult? loginResult;
+            try
+            {
+                var loginTask = _session.LoginAsync("Persona 5 Royal", slotName, ItemsHandlingFlags.AllItems,
+                    version: null, tags: null, uuid: null, password: serverPassword, requestSlotData: true);
+
+                loginResult = await loginTask;
+            }
+            catch (Exception ex)
+            {
+                _logger.WriteLine(ex.Message);
+                failureCount++;
+                continue;
+            }
+            
+            if (loginResult.Successful)
+            {
+                break;
+            }
+
+            var failure = (LoginFailure)loginResult;
+            var errorMessage = $"Failed to Connect as {slotName}:";
             foreach (string error in failure.Errors)
             {
                 errorMessage += $"\n    {error}";
@@ -45,56 +106,143 @@ public class ApConnector
                 errorMessage += $"\n    {error}";
             }
 
-            logger.WriteAsync(errorMessage);
-            
-            return;
+            _logger.WriteLine(errorMessage);
+
+            failureCount++;
         }
-        
-        loginSuccessful = (LoginSuccessful)result;
 
-        session.Items.ItemReceived += receivedItemsHelper =>
+        _isTryingToConnect = false;
+    }
+
+    private async void MaintainConnection()
+    {
+        while (true)
         {
-            long itemId = receivedItemsHelper.PeekItem().ItemId;
-            bool success = rewardHandler.Invoke(itemId);
+            await Task.Delay(1000);
 
-            logger.WriteLine($"Got item {itemId:X}");
-            
-            if (success)
+            if (_closeConnection)
             {
-                receivedItemsHelper.DequeueItem();
+                break;
             }
-        };
-    }
+            
+            if (_session.Socket.Connected)
+            {
+                continue;
+            }
 
-    public void SetItemRewarder(Func<long, bool> rewardHandler)
-    {
-        this.rewardHandler = rewardHandler;
-    }
-
-    public int RegisterForCollection(int processedNum, Func<long, bool> rewardHandler)
-    {
-        logger.WriteLine("Collecting items from archipelago");
-        while (session.Items.AllItemsReceived.Count > processedNum)
-        {
-            logger.WriteLine($"Collecting item {processedNum}: {session.Items.AllItemsReceived[processedNum].ItemName}");
-            rewardHandler(session.Items.AllItemsReceived[processedNum].ItemId);
-            processedNum++;
+            if (_isTryingToConnect)
+            {
+                await WaitForConnection();
+            }
+            else
+            {
+                await ConnectToServerAsync();
+            }
         }
 
+        if (_session.Socket.Connected)
+        {
+            await _session.Socket.DisconnectAsync();
+        }
+    }
+
+    private bool CheckConnection()
+    {
+        if (_session.Socket.Connected) 
+            return true;
+        
+        _logger.WriteLine("No connection to server.");
+
+        if (!_isTryingToConnect)
+        {
+            ConnectToServerAsync();
+        }
+
+        return false;
+    }
+
+    private async Task WaitForConnection()
+    {
+        while (!_session.Socket.Connected)
+        {
+            await Task.Delay(1000);
+        }
+    }
+
+    private void OnMessageReceived(LogMessage message)
+    {
+        _logger.WriteLine(message.ToString());
+    }
+
+    public void CloseConnection()
+    {
+        _closeConnection = true;
+    }
+    
+    public void SetItemRewarder(Func<ApItem, bool> rewardHandler)
+    {
         this.rewardHandler = rewardHandler;
+    }
+
+    public int RegisterForCollection(int processedNum, Func<ApItem, bool> rewardHandler)
+    {
+        this.rewardHandler = rewardHandler;
+
+        if (CheckConnection())
+        {
+            processedNum = ProcessAllItems(processedNum);
+        }
+
+        return processedNum;
+    }
+    
+    public async Task<int> RegisterForCollectionAsync(int processedNum, Func<ApItem, bool> rewardHandler)
+    {
+        this.rewardHandler = rewardHandler;
+
+        await WaitForConnection();
+
+        processedNum = ProcessAllItems(processedNum);
 
         return processedNum;
     }
 
-    public void ReportLocationCheck(params long[] locationIds)
+    private int ProcessAllItems(int processedNum)
     {
-        session.Locations.CompleteLocationChecksAsync(locationIds);
+        if (!CheckConnection())
+        {
+            return processedNum;
+        }
+        
+        _logger.WriteLine("Collecting items from archipelago");
+        while (_session.Items.AllItemsReceived.Count > processedNum)
+        {
+            _logger.WriteLine(
+                $"Collecting item {processedNum}: {_session.Items.AllItemsReceived[processedNum].ItemName}");
+            var item = new ApItem(_session.Items.AllItemsReceived[processedNum].ItemId);
+            rewardHandler(item);
+            processedNum++;
+
+            _logger.WriteLine($"Processed index {processedNum} for item {item.ToString()}");
+        }
+
+        return processedNum;
     }
 
-    public async void ScoutLocations(long[] locationIds, Action<Dictionary<long, ScoutedItemInfo>> scoutLocationsCallback)
+    public async void ReportLocationCheckAsync(params long[] locationIds)
     {
-        var results = session.Locations.ScoutLocationsAsync(locationIds);
-        await results.WaitAsync(new TimeSpan(0, 0, 0, 30));
+        await WaitForConnection();
+        
+        await _session.Locations.CompleteLocationChecksAsync(locationIds);
+    }
+
+    public async void ScoutLocations(long[] locationIds,
+        Action<Dictionary<long, ScoutedItemInfo>> scoutLocationsCallback)
+    {
+        await WaitForConnection();
+
+        var results = _session.Locations.ScoutLocationsAsync(locationIds);
+        await results.WaitAsync(new TimeSpan(0, 0, 0, 6));
 
         scoutLocationsCallback.Invoke(results.Result);
     }
