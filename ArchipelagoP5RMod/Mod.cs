@@ -54,6 +54,7 @@ public class Mod : ModBase // <= Do not Remove.
     private readonly DateManipulator _dateManipulator;
     private readonly FlagManipulator _flagManipulator;
     private readonly ItemManipulator _itemManipulator;
+    private readonly ConfidantManipulator _confidantManipulator;
     private readonly FlagManager _flagManager;
     private readonly ChestRewardDirector _chestRewardDirector;
 
@@ -77,36 +78,31 @@ public class Mod : ModBase // <= Do not Remove.
         // and some other neat features, override the methods in ModBase.
 
         AddressScanner.Scan(_logger);
-        
+
         FlowFunctionWrapper.SetLogger(_logger);
         FlowFunctionWrapper.Setup(_hooks);
 
         _dateManipulator = new DateManipulator(_hooks, _logger);
         _flagManipulator = new FlagManipulator(_hooks, _logger);
         _itemManipulator = new ItemManipulator(_hooks, _logger);
-        _apConnector = new ApConnector();
-        _flagManager = new FlagManager();
-        _chestRewardDirector = new ChestRewardDirector();
-        
-        _debugTools = new DebugTools();
-        
-        _apConnector.Init(
-            serverAddress: _configuration.ServerAddress, 
-            serverPassword: _configuration.ServerPassword, 
+        _confidantManipulator = new ConfidantManipulator(_hooks, _logger);
+        _apConnector = new ApConnector(serverAddress: _configuration.ServerAddress,
+            serverPassword: _configuration.ServerPassword,
             slotName: _configuration.SlotName,
             logger: _logger);
+        _flagManager = new FlagManager();
+        _chestRewardDirector = new ChestRewardDirector();
 
-        OnGameLoaded += (_, _) =>
-        {
-            _apConnector.RegisterForCollection(0, RewardApItemHandler);
-        };
+        _debugTools = new DebugTools();
+
+        OnGameLoaded += (_, _) => { _apConnector.RegisterForCollectionAsync(0, RewardApItemHandler); };
 
         // OnGameLoaded += TestFlowFuncWrapper;
         // OnGameLoaded += TestBitManipulator;
         OnGameLoaded += (_, _) => _flagManager.Setup(_flagManipulator);
 
         _chestRewardDirector.Setup(_apConnector, _itemManipulator);
-        
+
         var logTimer = new System.Timers.Timer(10000);
         logTimer.Elapsed += LogStuff;
         logTimer.AutoReset = true;
@@ -118,29 +114,26 @@ public class Mod : ModBase // <= Do not Remove.
         _checkGameLoaded.AutoReset = false;
         _checkGameLoaded.Enabled = true;
 
-        _itemManipulator.OnChestOpened += id =>
-        {
-            _logger.WriteLine($"StartOpenChest got flag: 0x{id:X}");
-        };
-        
-        _itemManipulator.OnChestOpenedCompleted += id =>
-        {
-            _apConnector.ReportLocationCheckAsync(id);
-        };
+        _itemManipulator.OnChestOpened += id => { _logger.WriteLine($"StartOpenChest got flag: 0x{id:X}"); };
+
+        _itemManipulator.OnChestOpenedCompleted += id => { _apConnector.ReportLocationCheckAsync(id); };
         _logger.WriteLine("End Mod Constructor");
         
         GameFeatureBlocker.BlockGameFeatures(_hooks);
     }
 
-    private bool RewardApItemHandler(ApItem item)
+    private bool RewardApItemHandler(ApItem apItem)
     {
-        switch (item.Type)
+        _logger.WriteLine($"{nameof(RewardApItemHandler)} called with {apItem.ToString()}");
+        switch (apItem.Type)
         {
             case ItemType.Item:
-                _itemManipulator.RewardItem(item.Id, item.Count, true);
+                // TODO don't show window if we got the item ourselves.
+                _itemManipulator.RewardItem(apItem.Id, apItem.Count, true);
                 return true;
             case ItemType.CmmAbility:
                 // TODO implement this
+                _confidantManipulator.EnableCmmFeature(apItem.Id);
                 return false;
             default:
                 return false;
@@ -159,10 +152,10 @@ public class Mod : ModBase // <= Do not Remove.
                 return;
             }
         }
-        
-        _logger.WriteLine("Game seemingly loaded, waiting 3 seconds");
-        
-        var logTimer = new System.Timers.Timer(3000);
+
+        _logger.WriteLine("Game seemingly loaded, waiting 5 seconds");
+
+        var logTimer = new System.Timers.Timer(5000);
         logTimer.AutoReset = false;
         logTimer.Elapsed += (_, _) =>
         {
@@ -183,7 +176,7 @@ public class Mod : ModBase // <= Do not Remove.
         {
             _debugTools.FindChangedFlags(_logger);
         }
-        
+
         _debugTools.BackupCurrentFlags();
     }
 
@@ -198,11 +191,15 @@ public class Mod : ModBase // <= Do not Remove.
             _logger.WriteLine($"Pretest {testVal:X} bit value: {preVal}");
             _flagManipulator.SetBit(testVal, true);
             bool val = _flagManipulator.CheckBit(testVal);
-            _logger.WriteLine(val ? $"TestBitManipulator test{testVal:X} on passed" : $"TestBitManipulator test{testVal:X} on failed!!!!!!!!!!!!!");
+            _logger.WriteLine(val
+                ? $"TestBitManipulator test{testVal:X} on passed"
+                : $"TestBitManipulator test{testVal:X} on failed!!!!!!!!!!!!!");
 
             _flagManipulator.SetBit(testVal, false);
             val = _flagManipulator.CheckBit(testVal);
-            _logger.WriteLine(!val ? $"TestBitManipulator test{testVal:X} off passed" : $"TestBitManipulator test{testVal:X} off failed!!!!!!!!!!!!!");
+            _logger.WriteLine(!val
+                ? $"TestBitManipulator test{testVal:X} off passed"
+                : $"TestBitManipulator test{testVal:X} off failed!!!!!!!!!!!!!");
 
             _flagManipulator.SetBit(testVal, preVal);
         }
@@ -215,7 +212,7 @@ public class Mod : ModBase // <= Do not Remove.
         var success = FlowFunctionWrapper.TestFlowscriptWrapper(5);
         _logger.WriteLine(success ? "FlowFuncWrapper test Success" : "FlowFuncWrapper test Failed!!!!!!!!!!!!!!!!");
     }
-    
+
     #region Standard Overrides
 
     public override void ConfigurationUpdated(Config configuration)

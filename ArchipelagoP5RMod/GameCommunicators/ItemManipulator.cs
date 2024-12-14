@@ -25,6 +25,7 @@ public class ItemManipulator
     private readonly IntPtr _getItemWindowFlowAdr;
 
     private GCHandle _itemNameOverrideAdr;
+    private long? _currChestFlag = null;
 
     [Function(CallingConventions.Fastcall)]
     private unsafe delegate long OpenChestOnUpdate(int* param1, float param2, long param3, float param4);
@@ -106,6 +107,7 @@ public class ItemManipulator
         long flag = GetCurrentTboxFlag();
 
         OnChestOpened?.Invoke(flag);
+        _currChestFlag = flag;
 
         return retVal;
     }
@@ -124,10 +126,13 @@ public class ItemManipulator
     {
         _onCompleteOpenChestHook.OriginalFunction(param1, param2, param3, param4);
 
-        long flag = GetCurrentTboxFlag();
-        OnChestOpenedCompleted.Invoke(flag);
-            
+        if (_currChestFlag is not null)
+        {
+            OnChestOpenedCompleted.Invoke((long)_currChestFlag);
+        }
+
         ClearItemNameOverride();
+        _currChestFlag = null;
     }
 
     private unsafe char* GetItemNameImpl(ushort itemId)

@@ -39,7 +39,7 @@ public class ApConnector
             ApItem item = new ApItem(receivedItemsHelper.PeekItem().ItemId);
             bool success = rewardHandler.Invoke(item);
 
-            logger.WriteLine($"Got item {item.ToString()} from 0x{item.ItemCode}");
+            logger.WriteLine($"Got item {item.ToString()} from 0x{item.ItemCode:X}");
 
             if (success)
             {
