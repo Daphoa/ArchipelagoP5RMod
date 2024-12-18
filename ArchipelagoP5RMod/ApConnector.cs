@@ -31,25 +31,13 @@ public class ApConnector
 
         _session.MessageLog.OnMessageReceived += OnMessageReceived;
 
-        _session.Items.ItemReceived += receivedItemsHelper =>
-        {
-            if (rewardHandler is null)
-                return;
-
-            ApItem item = new ApItem(receivedItemsHelper.PeekItem().ItemId);
-            bool success = rewardHandler.Invoke(item);
-
-            logger.WriteLine($"Got item {item.ToString()} from 0x{item.ItemCode:X}");
-
-            if (success)
-            {
-                receivedItemsHelper.DequeueItem();
-            }
-        };
+        _session.Items.ItemReceived += OnItemReceived;
 
         MaintainConnection();
     }
-
+    
+    #region Connection Management
+    
     private async Task ConnectToServerAsync()
     {
         ushort failureCount = 0;
@@ -120,7 +108,6 @@ public class ApConnector
             }
 
             _logger.WriteLine(errorMessage);
-
         }
 
         _isTryingToConnect = false;
@@ -157,6 +144,11 @@ public class ApConnector
             await _session.Socket.DisconnectAsync();
         }
     }
+    
+    public void CloseConnection()
+    {
+        _closeConnection = true;
+    }
 
     private bool CheckConnection()
     {
@@ -180,65 +172,78 @@ public class ApConnector
             await Task.Delay(1000);
         }
     }
+    
+    #endregion
 
     private void OnMessageReceived(LogMessage message)
     {
         _logger.WriteLine(message.ToString());
     }
-
-    public void CloseConnection()
+    
+    private void OnItemReceived(ReceivedItemsHelper receivedItemsHelper)
     {
-        _closeConnection = true;
+        ApItem item = new ApItem(receivedItemsHelper.PeekItem().ItemId);
+        bool success = rewardHandler.Invoke(item);
+
+        _logger.WriteLine($"Got item {item.ToString()} from 0x{item.ItemCode:X}");
+
+        if (success)
+        {
+            receivedItemsHelper.DequeueItem();
+        }
     }
+
 
     public void SetItemRewarder(Func<ApItem, bool> rewardHandler)
     {
         this.rewardHandler = rewardHandler;
     }
 
-    public int RegisterForCollection(int processedNum, Func<ApItem, bool> rewardHandler)
+    public int RegisterForCollection(Func<ApItem, bool> rewardHandler)
     {
         this.rewardHandler = rewardHandler;
 
         if (CheckConnection())
         {
-            processedNum = ProcessAllItems(processedNum);
+            ProcessAllItems();
         }
 
-        return processedNum;
+        return _lastRewardIndex;
     }
 
-    public async Task<int> RegisterForCollectionAsync(int processedNum, Func<ApItem, bool> rewardHandler)
+    public async Task RegisterForCollectionAsync(Func<ApItem, bool> rewardHandler)
     {
         this.rewardHandler = rewardHandler;
 
         await WaitForConnection();
 
-        processedNum = ProcessAllItems(processedNum);
-
-        return processedNum;
+        ProcessAllItems();
     }
 
-    private int ProcessAllItems(int processedNum)
+    private void ProcessAllItems()
     {
         if (!CheckConnection())
         {
-            return processedNum;
+            return;
         }
 
         _logger.WriteLine("Collecting items from archipelago");
-        while (_session.Items.AllItemsReceived.Count > processedNum)
+        while (_session.Items.AllItemsReceived.Count > _lastRewardIndex)
         {
             _logger.WriteLine(
-                $"Collecting item {processedNum}: {_session.Items.AllItemsReceived[processedNum].ItemName}");
-            var item = new ApItem(_session.Items.AllItemsReceived[processedNum].ItemId);
-            rewardHandler(item);
-            processedNum++;
+                $"Collecting item {_lastRewardIndex}: {_session.Items.AllItemsReceived[_lastRewardIndex].ItemName}");
+            var item = new ApItem(_session.Items.AllItemsReceived[_lastRewardIndex].ItemId);
+            bool success = rewardHandler(item);
+            if (!success)
+            {
+                // We can't keep going or the last reward index will be messed up.
+                return;
+            }
 
-            _logger.WriteLine($"Processed index {processedNum} for item {item.ToString()}");
+            _lastRewardIndex++;
+
+            _logger.WriteLine($"Processed index {_lastRewardIndex} for item {item.ToString()}");
         }
-
-        return processedNum;
     }
 
     public async void ReportLocationCheckAsync(params long[] locationIds)

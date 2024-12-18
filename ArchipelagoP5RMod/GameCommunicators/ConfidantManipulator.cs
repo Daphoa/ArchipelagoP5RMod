@@ -10,7 +10,7 @@ public class ConfidantManipulator
     [Function(CallingConventions.Fastcall)]
     private delegate long CmmCheckEnableFunc(uint funcId);
     [Function(CallingConventions.Fastcall)]
-    private delegate void CmmSetLv(ushort cmmId, short cmmLv);
+    private delegate IntPtr CmmSetLv(ushort cmmId, short cmmLv);
     
     private readonly IHook<CmmCheckEnableFunc> _cmmCheckEnableFuncHook;
     private readonly IHook<CmmSetLv> _cmmSetLvHook;
@@ -63,7 +63,7 @@ public class ConfidantManipulator
         if (!allCmmFuncIds.Contains(feature))
         {
             _logger.WriteLine($"{nameof(EnableCmmFeature)} called with {nameof(feature)}:{feature} but it's not supported.");
-            return;
+            return; 
         }
 
         _logger.WriteLine($"{nameof(EnableCmmFeature)} called. {nameof(feature)}:{feature} enabled.");
@@ -87,11 +87,13 @@ public class ConfidantManipulator
         return _acquiredCmmFuncIds.Contains(funcId) ? 1 : 0;
     }
     
-    private void CmmSetLvImpl(ushort cmmId, short cmmLv) {
-        _cmmSetLvHook.OriginalFunction(cmmId, cmmLv);
+    private IntPtr CmmSetLvImpl(ushort cmmId, short cmmLv) {
+        IntPtr val = _cmmSetLvHook.OriginalFunction(cmmId, cmmLv);
         
         _logger.WriteLine($"CmmSetLv called with id: {cmmId} | lv: {cmmLv}");
         
-        OnCmmSetLv.Invoke(cmmId, cmmLv);
+        OnCmmSetLv?.Invoke(cmmId, cmmLv);
+
+        return val;
     }
 }

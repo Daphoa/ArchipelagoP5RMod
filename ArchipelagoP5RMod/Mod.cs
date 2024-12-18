@@ -95,7 +95,10 @@ public class Mod : ModBase // <= Do not Remove.
 
         _debugTools = new DebugTools();
 
-        OnGameLoaded += (_, _) => { _apConnector.RegisterForCollectionAsync(0, RewardApItemHandler); };
+        OnGameLoaded += (_, _) =>
+        {
+            _apConnector.RegisterForCollectionAsync(RewardApItemHandler);
+        };
 
         // OnGameLoaded += TestFlowFuncWrapper;
         // OnGameLoaded += TestBitManipulator;
@@ -132,9 +135,9 @@ public class Mod : ModBase // <= Do not Remove.
                 _itemManipulator.RewardItem(apItem.Id, apItem.Count, true);
                 return true;
             case ItemType.CmmAbility:
-                // TODO implement this
                 _confidantManipulator.EnableCmmFeature(apItem.Id);
-                return false;
+                // TODO show some player facing dialog... maybe item window?
+                return true;
             default:
                 return false;
         }
