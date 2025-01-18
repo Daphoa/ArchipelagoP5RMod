@@ -14,6 +14,8 @@
              If you set this to true, trimming will be enabled when you publish the mod.
              Test trimming with: `BuildLinked.ps1` in PowerShell. -->
         <ReloadedILLink>false</ReloadedILLink>
+        <Version>0.1.0</Version>
+        <Company />
     </PropertyGroup>
 
     <ItemGroup>
@@ -51,5 +53,14 @@
         <PackageReference Include="Reloaded.Mod.Interfaces" Version="2.4.0" ExcludeAssets="runtime" />
         <PackageReference Include="Reloaded.SharedLib.Hooks" Version="1.9.0" />
     </ItemGroup>
+
+    <ItemGroup>
+      <None Remove="FlowFiles\bin\*.BF" />
+      <EmbeddedResource Include="FlowFiles\bin\*.BF" />
+    </ItemGroup>
+
+    <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
+      <Exec Command="FlowFiles/compile.bat" />
+    </Target>
 
 </Project>

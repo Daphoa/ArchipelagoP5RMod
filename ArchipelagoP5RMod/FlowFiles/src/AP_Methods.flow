@@ -1,0 +1,15 @@
+﻿// 
+// Imports
+// 
+
+import( "AP_Methods.msg" );
+
+// 
+// Procedure declarations
+// 
+
+// Procedure Index: 0
+void test()
+{
+
+}
