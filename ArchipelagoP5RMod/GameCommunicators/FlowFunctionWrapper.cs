@@ -21,10 +21,15 @@ public static class FlowFunctionWrapper
 
     [Function(CallingConventions.Fastcall)]
     private delegate int GetFlowscriptInt4ArgType(byte paramIndex);
+    
+    [Function(CallingConventions.Fastcall)]
+    private delegate IntPtr RunFlowFuncFromFileType(int param1, IntPtr file, uint fileSize, uint funcIndex);
 
     private static GetFlowscriptInt4ArgType? GetFlowscriptInt4Arg { get; set; }
+    private static RunFlowFuncFromFileType? RunFlowFuncFromFile { get; set; }
 
     private static IntPtr _getFlowscriptInt4ArgPtr;
+    private static IntPtr _runFlowFuncFromFilePtr;
 
     public static void SetLogger(ILogger logger)
     {
@@ -38,6 +43,10 @@ public static class FlowFunctionWrapper
         GetFlowscriptInt4Arg =
             hooks.CreateWrapper<GetFlowscriptInt4ArgType>(AddressScanner.GetFlowscriptInt4ArgAddress,
                 out _getFlowscriptInt4ArgPtr);
+
+        RunFlowFuncFromFile =
+            hooks.CreateWrapper<RunFlowFuncFromFileType>(AddressScanner.RunFlowFuncFromFileAddress,
+                out _runFlowFuncFromFilePtr);
     }
 
     public static unsafe void CallFlowFunctionSetup(params long[] args)
@@ -119,5 +128,14 @@ public static class FlowFunctionWrapper
         }
 
         return success;
+    }
+
+    public static unsafe void CallCustomFlowFunction(ApMethodsIndexes func)
+    {
+        if (RunFlowFuncFromFile is null)
+        {
+            throw new NullReferenceException("RunFlowFuncFromFile is null");
+        }
+        RunFlowFuncFromFile(8, (IntPtr)BfLoader.ApMethodsBfFilePointer, BfLoader.ApMethodsBfFileLength, (uint)func);
     }
 }

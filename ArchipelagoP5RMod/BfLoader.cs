@@ -9,6 +9,7 @@ public class BfLoader
     private static GCHandle _apMethodsBfFile;
 
     public static unsafe byte* ApMethodsBfFilePointer => (byte*)_apMethodsBfFile.AddrOfPinnedObject();
+    public static uint ApMethodsBfFileLength { get; private set; }
 
     public BfLoader(ILogger logger)
     {
@@ -28,10 +29,9 @@ public class BfLoader
                 using MemoryStream memStream = new MemoryStream();
                 stream?.CopyTo(memStream);
                 _apMethodsBfFile = GCHandle.Alloc(memStream.ToArray(), GCHandleType.Pinned);
+                ApMethodsBfFileLength = (uint)memStream.Length;
                 break;
             }
         }
-        
-        
     }
 }

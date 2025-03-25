@@ -9,7 +9,11 @@ import( "AP_Methods.msg" );
 // 
 
 // Procedure Index: 0
-void test()
+void RewardItems()
 {
-
+    // FLD_CAMERA_LOCK();
+    MSG_WND_DSP();
+    MSG(0);
+    MSG_WND_CLS();
+    // FLD_CAMERA_UNLOCK();
 }

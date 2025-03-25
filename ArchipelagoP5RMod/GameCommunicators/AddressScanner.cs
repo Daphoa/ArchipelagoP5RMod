@@ -26,10 +26,13 @@ public static class AddressScanner
     public static IntPtr GetItemNumFuncAddress { get; private set; }
     public static IntPtr GetItemWindowFuncAddress { get; private set; }
     public static IntPtr GetItemWindowFlowFuncAddress { get; private set; }
+    public static IntPtr RunFlowFuncFromFileAddress { get; private set; }
     public static IntPtr CallTutorialFlowFuncAddress { get; private set; }
     public static IntPtr NetSetActionFuncAddress { get; private set; }
     public static IntPtr CmmCheckEnableFuncAddress { get; private set; }
     public static IntPtr CmmSetLvFuncAddress { get; private set; }
+    public static IntPtr AppStorageReadFuncAddress { get; private set; }
+    public static IntPtr AppStorageWriteFuncAddress { get; private set; }
 
     //Debug
     public static IntPtr GetFlowscriptInt4ArgAddress { get; private set; }
@@ -116,11 +119,18 @@ public static class AddressScanner
                                                                  "?? ?? ?? ?? 48 85 C0 75 ?? B8 01 00 00 00 48 83 C4 28 " +
                                                                  "C3 B9 01 00 00 00 E8 ?? ?? ?? ?? 33 C9 44 8B C8 E8 ?? ?? ?? ?? 8B D0");
 
+            RunFlowFuncFromFileAddress = FindAsmMethod(scanner, "48 89 5C 24 ?? 48 89 6C 24 ?? 48 89 74 24 ?? " +
+                                                                "48 89 7C 24 ?? 41 56 48 83 EC 60 41 89 CE");
+
             NetSetActionFuncAddress = FindAsmMethod(scanner, "B8 6D 01 00 00 66 3B D0 7D ?? 0F B6 C9");
 
             CmmCheckEnableFuncAddress = FindAsmMethod(scanner, "40 53 55 56 41 54 41 56 48 83 EC 20");
             
             CmmSetLvFuncAddress = FindAsmMethod(scanner, "66 85 C9 0F 84 ?? ?? ?? ?? 57");
+            
+            AppStorageReadFuncAddress = FindAsmMethod(scanner, "48 89 5C 24 ?? 57 48 83 EC 60 89 CB");
+            
+            AppStorageWriteFuncAddress = FindAsmMethod(scanner, "48 89 5C 24 ?? 57 48 83 EC 60 8B D9 0F B7 FA");
 
             // DEBUG
             GetFlowscriptInt4ArgAddress = FindAsmMethod(scanner, "4C 8B 05 ?? ?? ?? ?? 41 8B 50 ?? 29 CA");
@@ -135,6 +145,12 @@ public static class AddressScanner
             OnCompleteOpenChestFuncAddress = _baseAddress + 0x102cdd0;
             GetItemNumFuncAddress = _baseAddress + 0xd68720;
         }
+    }
+    
+    // DEBUG
+    private static void findOffsets()
+    {
+        
     }
 
     private static IntPtr FindAsmMethod(Scanner scanner, string pattern)

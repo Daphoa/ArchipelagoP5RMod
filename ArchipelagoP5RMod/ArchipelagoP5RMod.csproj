@@ -59,6 +59,10 @@
       <EmbeddedResource Include="FlowFiles\bin\*.BF" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="FlowFiles\bin\" />
+    </ItemGroup>
+
     <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
       <Exec Command="FlowFiles/compile.bat" />
     </Target>
