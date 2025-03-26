@@ -10,14 +10,33 @@
   "ModR2RManagedDll64": "x64/ArchipelagoP5RMod.dll",
   "ModNativeDll32": "",
   "ModNativeDll64": "",
+  "Tags": [],
+  "CanUnload": null,
+  "HasExports": null,
   "IsLibrary": false,
   "ReleaseMetadataFileName": "ArchipelagoP5RMod.ReleaseMetadata.json",
-  "PluginData": {},
+  "PluginData": {
+    "GitHubDependencies": {
+      "IdToConfigMap": {
+        "reloaded.sharedlib.hooks": {
+          "Config": {
+            "UserName": "Sewer56",
+            "RepositoryName": "Reloaded.SharedLib.Hooks.ReloadedII",
+            "UseReleaseTag": true,
+            "AssetFileName": "reloaded.sharedlib.hooks.zip"
+          },
+          "ReleaseMetadataName": "Sewer56.Update.ReleaseMetadata.json"
+        }
+      }
+    }
+  },
   "IsUniversalMod": false,
   "ModDependencies": [
     "reloaded.sharedlib.hooks"
   ],
   "OptionalDependencies": [],
-  "SupportedAppId": [],
+  "SupportedAppId": [
+    "p5r.exe"
+  ],
   "ProjectUrl": ""
 }
