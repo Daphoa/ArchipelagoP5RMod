@@ -68,25 +68,25 @@ public class ItemManipulator
         unsafe
         {
             _openChestHook = hooks
-                .CreateHook<OpenChestOnUpdate>(OpenChestOnUpdateImpl, AddressScanner.OpenChestOnUpdateFuncAddress)
+                .CreateHook<OpenChestOnUpdate>(OpenChestOnUpdateImpl, AddressScanner.Addresses[AddressScanner.AddressName.OpenChestOnUpdateFuncAddress])
                 .Activate();
             _startOpenChestHook =
-                hooks.CreateHook<StartOpenChest>(StartOpenChestImpl, AddressScanner.StartOpenChestFuncAddress)
+                hooks.CreateHook<StartOpenChest>(StartOpenChestImpl, AddressScanner.Addresses[AddressScanner.AddressName.StartOpenChestFuncAddress])
                     .Activate();
             _onCompleteOpenChestHook =
                 hooks.CreateHook<OnCompleteOpenChest>(OnCompleteOpenChestImpl,
-                    AddressScanner.OnCompleteOpenChestFuncAddress).Activate();
-            _getItemNameHook = hooks.CreateHook<GetItemName>(GetItemNameImpl, AddressScanner.GetItemNameFuncAddress)
+                    AddressScanner.Addresses[AddressScanner.AddressName.OnCompleteOpenChestFuncAddress]).Activate();
+            _getItemNameHook = hooks.CreateHook<GetItemName>(GetItemNameImpl, AddressScanner.Addresses[AddressScanner.AddressName.GetItemNameFuncAddress])
                 .Activate();
-            _getItemNumHook = hooks.CreateHook<GetItemNum>(GetItemNumImpl, AddressScanner.GetItemNumFuncAddress)
+            _getItemNumHook = hooks.CreateHook<GetItemNum>(GetItemNumImpl, AddressScanner.Addresses[AddressScanner.AddressName.GetItemNumFuncAddress])
                 .Activate();
-            _setItemNumHook = hooks.CreateHook<SetItemNum>(SetItemNumImpl, AddressScanner.SetItemNumFuncAddress)
+            _setItemNumHook = hooks.CreateHook<SetItemNum>(SetItemNumImpl, AddressScanner.Addresses[AddressScanner.AddressName.SetItemNumFuncAddress])
                 .Activate();
-            _getTboxFlag = hooks.CreateWrapper<GetTboxFlagFlow>(AddressScanner.GetTboxFlagFlowFuncAddress,
+            _getTboxFlag = hooks.CreateWrapper<GetTboxFlagFlow>(AddressScanner.Addresses[AddressScanner.AddressName.GetTboxFlagFlowFuncAddress],
                 out _getTboxFlagFlowAdr);
-            _getItemWindow = hooks.CreateWrapper<GetItemWindow>(AddressScanner.GetItemWindowFuncAddress,
+            _getItemWindow = hooks.CreateWrapper<GetItemWindow>(AddressScanner.Addresses[AddressScanner.AddressName.GetItemWindowFuncAddress],
                 out _getItemWindowAdr);
-            _getItemWindowFlow = hooks.CreateWrapper<GetItemWindowFlow>(AddressScanner.GetItemWindowFlowFuncAddress,
+            _getItemWindowFlow = hooks.CreateWrapper<GetItemWindowFlow>(AddressScanner.Addresses[AddressScanner.AddressName.GetItemWindowFlowFuncAddress],
                 out _getItemWindowFlowAdr);
         }
 

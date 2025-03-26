@@ -36,14 +36,14 @@ public class DateManipulator
     public DateManipulator(IReloadedHooks hooks, ILogger logger)
     {
         _logger = logger;
-        _nextTimeHook = hooks.CreateHook<NextTime>(NextTimeImpl, AddressScanner.NextTimeFunAddress).Activate();
+        _nextTimeHook = hooks.CreateHook<NextTime>(NextTimeImpl, AddressScanner.Addresses[AddressScanner.AddressName.NextTimeFunAddress]).Activate();
 
         _advanceToNextDayHook =
-            hooks.CreateHook<AdvanceToNextDay>(AdvanceToNextDayImpl, AddressScanner.AdvanceToNextDayAddress).Activate();
+            hooks.CreateHook<AdvanceToNextDay>(AdvanceToNextDayImpl, AddressScanner.Addresses[AddressScanner.AddressName.AdvanceToNextDayAddress]).Activate();
 
         _unknownTimeAdvanceFunc =
             hooks.CreateHook<UnknownTimeAdvanceFunc>(UnknownTimeAdvanceImpl,
-                AddressScanner.UnknownTimeAdvanceFuncAddress).Activate();
+                AddressScanner.Addresses[AddressScanner.AddressName.UnknownTimeAdvanceFuncAddress]).Activate();
 
         logger.WriteLine("Created DateManipulator Hooks");
     }

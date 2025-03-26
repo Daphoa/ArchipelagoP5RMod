@@ -41,11 +41,11 @@ public static class FlowFunctionWrapper
     public static void Setup(IReloadedHooks hooks)
     {
         GetFlowscriptInt4Arg =
-            hooks.CreateWrapper<GetFlowscriptInt4ArgType>(AddressScanner.GetFlowscriptInt4ArgAddress,
+            hooks.CreateWrapper<GetFlowscriptInt4ArgType>(AddressScanner.Addresses[AddressScanner.AddressName.GetFlowscriptInt4ArgAddress],
                 out _getFlowscriptInt4ArgPtr);
 
         RunFlowFuncFromFile =
-            hooks.CreateWrapper<RunFlowFuncFromFileType>(AddressScanner.RunFlowFuncFromFileAddress,
+            hooks.CreateWrapper<RunFlowFuncFromFileType>(AddressScanner.Addresses[AddressScanner.AddressName.RunFlowFuncFromFileAddress],
                 out _runFlowFuncFromFilePtr);
     }
 

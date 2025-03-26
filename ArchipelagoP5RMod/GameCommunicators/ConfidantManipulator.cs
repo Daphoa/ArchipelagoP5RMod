@@ -48,10 +48,10 @@ public class ConfidantManipulator
         unsafe
         {
             _cmmCheckEnableFuncHook = hooks
-                .CreateHook<CmmCheckEnableFunc>(CmmCheckEnableFuncImpl, AddressScanner.CmmCheckEnableFuncAddress)
+                .CreateHook<CmmCheckEnableFunc>(CmmCheckEnableFuncImpl, AddressScanner.Addresses[AddressScanner.AddressName.CmmCheckEnableFuncAddress])
                 .Activate();
             _cmmSetLvHook = hooks
-                .CreateHook<CmmSetLv>(CmmSetLvImpl, AddressScanner.CmmSetLvFuncAddress)
+                .CreateHook<CmmSetLv>(CmmSetLvImpl, AddressScanner.Addresses[AddressScanner.AddressName.CmmSetLvFuncAddress])
                 .Activate();
         }
 

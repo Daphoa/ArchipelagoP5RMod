@@ -25,9 +25,9 @@ public class FlagManipulator
     public FlagManipulator(IReloadedHooks hooks, ILogger logger)
     {
         _logger = logger;
-        BitChk = hooks.CreateWrapper<BitChkType>(AddressScanner.ChkBitFuncAddress, out _bitChkWrapperAdr);
-        BitOn = hooks.CreateWrapper<BitToggleType>(AddressScanner.BitOnFlowFuncAddress, out _bitOnWrapperAdr);
-        BitOff = hooks.CreateWrapper<BitToggleType>(AddressScanner.BitOffFlowFuncAddress, out _bitOffWrapperAdr);
+        BitChk = hooks.CreateWrapper<BitChkType>(AddressScanner.Addresses[AddressScanner.AddressName.ChkBitFuncAddress], out _bitChkWrapperAdr);
+        BitOn = hooks.CreateWrapper<BitToggleType>(AddressScanner.Addresses[AddressScanner.AddressName.BitOnFlowFuncAddress], out _bitOnWrapperAdr);
+        BitOff = hooks.CreateWrapper<BitToggleType>(AddressScanner.Addresses[AddressScanner.AddressName.BitOffFlowFuncAddress], out _bitOffWrapperAdr);
 
         logger.WriteLine("Created FlagManipulator Hooks");
     }

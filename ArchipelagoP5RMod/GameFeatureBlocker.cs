@@ -16,10 +16,10 @@ public class GameFeatureBlocker
     public static void BlockGameFeatures(IReloadedHooks hooks)
     {
         _callTutorialFlowHook =
-            hooks.CreateHook<CallTutorialFlow>(CallTutorialImpl, AddressScanner.CallTutorialFlowFuncAddress)
+            hooks.CreateHook<CallTutorialFlow>(CallTutorialImpl, AddressScanner.Addresses[AddressScanner.AddressName.CallTutorialFlowFuncAddress])
                 .Activate();
         _netSetActionHook =
-            hooks.CreateHook<NetSetAction>(NetSetActionImpl, AddressScanner.NetSetActionFuncAddress)
+            hooks.CreateHook<NetSetAction>(NetSetActionImpl, AddressScanner.Addresses[AddressScanner.AddressName.NetSetActionFuncAddress])
                 .Activate();
     }
 
