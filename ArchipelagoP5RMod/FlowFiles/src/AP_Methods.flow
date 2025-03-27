@@ -11,8 +11,12 @@ import( "AP_Methods.msg" );
 // Procedure Index: 0
 void RewardItems()
 {
+    int testVar;
+    testVar = GET_COUNT(0x10000000 + 0);
     // FLD_CAMERA_LOCK();
+    SET_MSG_VAR(1, testVar, 0);
     MSG_WND_DSP();
+    GET_ITEM_WINDOW( testVar, 1, 0 );
     MSG(0);
     MSG_WND_CLS();
     // FLD_CAMERA_UNLOCK();

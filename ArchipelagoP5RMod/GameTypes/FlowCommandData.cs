@@ -32,9 +32,8 @@ public unsafe struct FlowCommandData
 
 public enum FlowReturnType : byte
 {
-    Boolean = 0,
-    Int = 1,
-    Float = 2
+    Int = 0,
+    Float = 1,
 }
 
 public enum FlowParamType : byte

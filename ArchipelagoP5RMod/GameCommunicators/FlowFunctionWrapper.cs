@@ -11,6 +11,9 @@ public static class FlowFunctionWrapper
 {
     private static ILogger? _logger;
 
+    [Function(CallingConventions.Fastcall)]
+    public delegate uint FlowFuncDelegate();
+    
     public delegate void BasicFlowFunc();
 
     public delegate void BitToggleType();
@@ -20,12 +23,12 @@ public static class FlowFunctionWrapper
     // private static int addedStack = 0;
 
     [Function(CallingConventions.Fastcall)]
-    private delegate int GetFlowscriptInt4ArgType(byte paramIndex);
+    public delegate int GetFlowscriptInt4ArgType(byte paramIndex);
     
     [Function(CallingConventions.Fastcall)]
     private delegate IntPtr RunFlowFuncFromFileType(int param1, IntPtr file, uint fileSize, uint funcIndex);
 
-    private static GetFlowscriptInt4ArgType? GetFlowscriptInt4Arg { get; set; }
+    public static GetFlowscriptInt4ArgType? GetFlowscriptInt4Arg { get; set; }
     private static RunFlowFuncFromFileType? RunFlowFuncFromFile { get; set; }
 
     private static IntPtr _getFlowscriptInt4ArgPtr;

@@ -92,7 +92,8 @@ public class Mod : ModBase // <= Do not Remove.
             logger: _logger);
         _flagManager = new FlagManager();
         _chestRewardDirector = new ChestRewardDirector();
-
+        var _bfLoader = new BfLoader(_logger);
+       
         _debugTools = new DebugTools();
 
         OnGameLoaded += (_, _) =>
