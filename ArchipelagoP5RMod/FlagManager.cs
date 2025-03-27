@@ -35,7 +35,11 @@ public class FlagManager
         0x20000000 + 4484, 0x20000000 + 4360, 0x20000000 + 4480, 0x20000000 + 4372, 0x20000000 + 4478,
         0x20000000 + 4486, 0x20000000 + 4479,
         
+        // Tutorial
+        0x20000000 + 171, // Grappling Hook Tutorial
+        
         // Other
+        0x30000000 + 277, // Baton Pass guess
     ];
 
     public void Setup(FlagManipulator flagManipulator)

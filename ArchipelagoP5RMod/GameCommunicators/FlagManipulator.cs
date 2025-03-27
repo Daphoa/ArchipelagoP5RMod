@@ -1,7 +1,9 @@
-﻿using ArchipelagoP5RMod.Types;
+﻿using System.Runtime.InteropServices.ComTypes;
+using ArchipelagoP5RMod.Types;
 using Reloaded.Hooks.Definitions;
 using Reloaded.Hooks.Definitions.X86;
 using Reloaded.Mod.Interfaces;
+using MemoryStream = System.IO.MemoryStream;
 
 namespace ArchipelagoP5RMod;
 
@@ -17,8 +19,8 @@ public class FlagManipulator
 
     // private IntPtr _bitChkWrapperAdr;
     private readonly IHook<BitChkType> _bitChkTypeHook;
-    private readonly IntPtr _bitOnWrapperAdr;
-    private readonly IntPtr _bitOffWrapperAdr;
+    private readonly IHook<BitToggleType> _bitOnHook;
+    private readonly IHook<BitToggleType> _bitOffHook;
     private readonly IHook<FlowFunctionWrapper.FlowFuncDelegate> _getCountFlowHook;
     private readonly IHook<FlowFunctionWrapper.FlowFuncDelegate> _setCountFlowHook;
 
@@ -32,10 +34,8 @@ public class FlagManipulator
         ExternalCountSection = 1; // This will have consequences if changed. Should stay hardcoded ideally.
 
     const uint NumExternalCounts = 4;
-    private static uint[] externalCounts = new uint[4]{0x4000 + 72,0x4000 + 72,0x4000 + 72,0x4000 + 72};
-
-    private BitToggleType BitOn { get; set; }
-    private BitToggleType BitOff { get; set; }
+    private static uint[] externalCounts = new uint[4] { 0x4000 + 72, 0x4000 + 72, 0x4000 + 72, 0x4000 + 72 };
+    private const int CountTypeSize = sizeof(uint);
 
     public FlagManipulator(IReloadedHooks hooks, ILogger logger)
     {
@@ -43,12 +43,14 @@ public class FlagManipulator
         _bitChkTypeHook = hooks
             .CreateHook<BitChkType>(BitChkImpl, AddressScanner.Addresses[AddressScanner.AddressName.ChkBitFuncAddress])
             .Activate();
-        BitOn = hooks.CreateWrapper<BitToggleType>(
-            AddressScanner.Addresses[AddressScanner.AddressName.BitOnFlowFuncAddress], out _bitOnWrapperAdr);
-        BitOff = hooks.CreateWrapper<BitToggleType>(
-            AddressScanner.Addresses[AddressScanner.AddressName.BitOffFlowFuncAddress], out _bitOffWrapperAdr);
+        _bitOnHook = hooks.CreateHook<BitToggleType>(BitOnImpl,
+            AddressScanner.Addresses[AddressScanner.AddressName.BitOnFlowFuncAddress]).Activate();
+        _bitOffHook = hooks.CreateHook<BitToggleType>(BitOffImpl,
+            AddressScanner.Addresses[AddressScanner.AddressName.BitOffFlowFuncAddress]).Activate();
         _getCountFlowHook = hooks.CreateHook<FlowFunctionWrapper.FlowFuncDelegate>(GetCountImpl,
             AddressScanner.Addresses[AddressScanner.AddressName.GetCountFlowFuncAddress]).Activate();
+        _setCountFlowHook = hooks.CreateHook<FlowFunctionWrapper.FlowFuncDelegate>(SetCountImpl,
+            AddressScanner.Addresses[AddressScanner.AddressName.SetCountFlowFuncAddress]).Activate();
 
         logger.WriteLine("Created FlagManipulator Hooks");
     }
@@ -65,14 +67,40 @@ public class FlagManipulator
         return CheckBit(bit);
     }
 
+    public byte[] SaveCountData()
+    {
+        MemoryStream stream = new();
+        for (int i = 0; i < NumExternalCounts; i++)
+        {
+            stream.Write(BitConverter.GetBytes(externalCounts[i]), 0, CountTypeSize);
+        }
+
+        return stream.ToArray();
+    }
+
+    public void LoadCountData(MemoryStream data)
+    {
+        for (int i = 0; i < NumExternalCounts; i++)
+        {
+            byte[] buffer = new byte[CountTypeSize];
+            int readBytes = data.Read(buffer, 0, CountTypeSize);
+            if (readBytes < CountTypeSize)
+            {
+                throw new InvalidDataException("Tried to read from count data, but got fewer bytes than expected " +
+                                               $"(expected {CountTypeSize * NumExternalCounts}, received {i * NumExternalCounts + readBytes}).");
+            }
+            externalCounts[i] = BitConverter.ToUInt16(buffer);
+        }
+    }
+
     private uint GetCountImpl()
     {
         int countId = FlowFunctionWrapper.GetFlowscriptInt4Arg(0);
-       
+
         if (countId < SectionMask * ExternalCountSection ||
             countId >= SectionMask * ExternalCountSection + NumExternalCounts)
             return _getCountFlowHook.OriginalFunction();
-        
+
         unsafe
         {
             AddressScanner.FlowCommandDataAddress->ReturnType = FlowReturnType.Int;
@@ -81,6 +109,34 @@ public class FlagManipulator
 
         _logger.WriteLine($"GetCountImpl found result {externalCounts[countId % SectionMask]} from input {countId:X}.");
 
+        return 1;
+    }
+
+    public void SetCount(uint countId, uint value)
+    {
+        if (countId is < SectionMask * ExternalCountSection or >= SectionMask * ExternalCountSection + NumExternalCounts)
+        {
+            FlowFunctionWrapper.CallFlowFunctionSetup(countId, value);
+
+            _setCountFlowHook.OriginalFunction();
+
+            return;
+        }
+        
+        externalCounts[countId % SectionMask] = value;
+    }
+    
+    private uint SetCountImpl()
+    {
+        int countId = FlowFunctionWrapper.GetFlowscriptInt4Arg(0);
+
+        if (countId < SectionMask * ExternalCountSection ||
+            countId >= SectionMask * ExternalCountSection + NumExternalCounts)
+            return _setCountFlowHook.OriginalFunction();
+
+        uint value = (uint)FlowFunctionWrapper.GetFlowscriptInt4Arg(1);
+        externalCounts[countId % SectionMask] = value;
+        
         return 1;
     }
 
@@ -108,14 +164,42 @@ public class FlagManipulator
 
         if (value)
         {
-            BitOn();
+            _bitOnHook.OriginalFunction();
         }
         else
         {
-            BitOff();
+            _bitOffHook.OriginalFunction();
         }
 
         FlowFunctionWrapper.CallFlowFunctionCleanup();
+    }
+
+    private uint BitOnImpl()
+    {
+        var bitIndex = (uint)FlowFunctionWrapper.GetFlowscriptInt4Arg(0);
+
+        if (bitIndex is < ExternalBitSection * SectionMask or >= ExternalBitSection * SectionMask + NumExternalBitFlags)
+            return _bitOffHook.OriginalFunction();
+        
+        var bitOffset = bitIndex - ExternalBitSection * SectionMask;
+
+        externalBitFlags[bitOffset] = true;
+
+        return 1;
+    }
+
+    private uint BitOffImpl()
+    {
+        var bitIndex = (uint)FlowFunctionWrapper.GetFlowscriptInt4Arg(0);
+
+        if (bitIndex is < ExternalBitSection * SectionMask or >= ExternalBitSection * SectionMask + NumExternalBitFlags)
+            return _bitOffHook.OriginalFunction();
+
+        var bitOffset = bitIndex - ExternalBitSection * SectionMask;
+
+        externalBitFlags[bitOffset] = false;
+
+        return 1;
     }
 
     public void SetBit(short section, uint bitIndex, bool value)

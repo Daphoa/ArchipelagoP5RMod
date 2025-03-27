@@ -6,6 +6,7 @@ using Reloaded.Hooks.ReloadedII.Interfaces;
 using Reloaded.Mod.Interfaces;
 using ArchipelagoP5RMod.Template;
 using ArchipelagoP5RMod.Types;
+using Timer = System.Timers.Timer;
 
 namespace ArchipelagoP5RMod;
 
@@ -55,6 +56,8 @@ public class Mod : ModBase // <= Do not Remove.
     private readonly FlagManipulator _flagManipulator;
     private readonly ItemManipulator _itemManipulator;
     private readonly ConfidantManipulator _confidantManipulator;
+    private readonly GameSaveLoadConnector _gameSaveLoadConnector;
+    private readonly ModSaveLoadManager _modSaveLoadManager;
     private readonly FlagManager _flagManager;
     private readonly ChestRewardDirector _chestRewardDirector;
 
@@ -85,6 +88,8 @@ public class Mod : ModBase // <= Do not Remove.
         _dateManipulator = new DateManipulator(_hooks, _logger);
         _flagManipulator = new FlagManipulator(_hooks, _logger);
         _itemManipulator = new ItemManipulator(_hooks, _logger);
+        _gameSaveLoadConnector = new GameSaveLoadConnector(_hooks, _logger);
+        _modSaveLoadManager = new ModSaveLoadManager(_configuration.SaveDirectory, _logger);
         _confidantManipulator = new ConfidantManipulator(_hooks, _logger);
         _apConnector = new ApConnector(serverAddress: _configuration.ServerAddress,
             serverPassword: _configuration.ServerPassword,
@@ -92,13 +97,13 @@ public class Mod : ModBase // <= Do not Remove.
             logger: _logger);
         _flagManager = new FlagManager();
         _chestRewardDirector = new ChestRewardDirector();
-        var _bfLoader = new BfLoader(_logger);
-       
+        var bfLoader = new BfLoader(_logger);
+
         _debugTools = new DebugTools();
 
         OnGameLoaded += (_, _) =>
         {
-            _apConnector.RegisterForCollectionAsync(RewardApItemHandler);
+            _ = _apConnector.RegisterForCollectionAsync(RewardApItemHandler);
         };
 
         // OnGameLoaded += TestFlowFuncWrapper;
@@ -106,14 +111,28 @@ public class Mod : ModBase // <= Do not Remove.
         OnGameLoaded += (_, _) => _flagManager.Setup(_flagManipulator);
 
         _chestRewardDirector.Setup(_apConnector, _itemManipulator);
+        
+        _modSaveLoadManager.RegisterSaveLoad(_flagManipulator.SaveCountData, _flagManipulator.LoadCountData);
 
-        var logTimer = new System.Timers.Timer(10000);
+        var logTimer = new Timer(10000);
         logTimer.Elapsed += LogStuff;
         logTimer.AutoReset = true;
 
         OnGameLoaded += (_, _) => logTimer.Start();
+        
+        // Test code
+        // ModSaveLoadHandler.TestSaveLoad(_logger);
 
-        _checkGameLoaded = new System.Timers.Timer(1000);
+        // Test Code
+        var testTimer = new Timer(15000);
+        testTimer.Elapsed += (_, _) =>
+        {
+            _logger.WriteLine("Calling test Reward Items Function");
+            FlowFunctionWrapper.CallCustomFlowFunction(ApMethodsIndexes.RewardItemsFunc);
+        };
+        OnGameLoaded += (_, _) => testTimer.Start();
+
+        _checkGameLoaded = new Timer(1000);
         _checkGameLoaded.Elapsed += CheckGameLoaded;
         _checkGameLoaded.AutoReset = false;
         _checkGameLoaded.Enabled = true;
@@ -123,7 +142,11 @@ public class Mod : ModBase // <= Do not Remove.
         _itemManipulator.OnChestOpenedCompleted += id => { _apConnector.ReportLocationCheckAsync(id); };
         _logger.WriteLine("End Mod Constructor");
         
-        GameFeatureBlocker.BlockGameFeatures(_hooks);
+        // Register save/load events
+        _gameSaveLoadConnector.OnGameFileSaved += _modSaveLoadManager.Save;
+        _gameSaveLoadConnector.OnGameFileLoaded +=  _modSaveLoadManager.Load;
+
+        // GameFeatureBlocker.BlockGameFeatures(_hooks);
     }
 
     private bool RewardApItemHandler(ApItem apItem)
@@ -207,6 +230,7 @@ public class Mod : ModBase // <= Do not Remove.
 
             _flagManipulator.SetBit(testVal, preVal);
         }
+
         _logger.WriteLine("Ended TestBitManipulator");
     }
 
