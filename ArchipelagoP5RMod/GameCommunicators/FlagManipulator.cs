@@ -108,12 +108,10 @@ public class FlagManipulator
 
         if (value)
         {
-            _logger.WriteLine("Calling BIT_ON");
             BitOn();
         }
         else
         {
-            _logger.WriteLine("Calling BIT_OFF");
             BitOff();
         }
 
