@@ -12,6 +12,8 @@ public class ConfidantManipulator
     [Function(CallingConventions.Fastcall)]
     private delegate IntPtr CmmSetLv(ushort cmmId, short cmmLv);
     
+    private FlagManipulator _flagManipulator;
+    
     private readonly IHook<CmmCheckEnableFunc> _cmmCheckEnableFuncHook;
     private readonly IHook<CmmSetLv> _cmmSetLvHook;
     private static ILogger _logger;
@@ -34,26 +36,25 @@ public class ConfidantManipulator
     ];
     
     // TODO get this from AP settings eventually.
-    private HashSet<uint> _controlledCmmFuncIds = [..allCmmFuncIds];
-    private HashSet<uint> _acquiredCmmFuncIds = [];
+    private readonly HashSet<uint> _controlledCmmFuncIds = [..allCmmFuncIds];
+    // TODO move this to flag manipulator so they are saved.
+    private readonly HashSet<uint> _acquiredCmmFuncIds = [];
     
     public event OnCmmSetLvEvent OnCmmSetLv;
     
     public delegate void OnCmmSetLvEvent(ushort cmmId, short cmmLv);
 
     
-    public ConfidantManipulator(IReloadedHooks hooks, ILogger logger)
+    public ConfidantManipulator(FlagManipulator flagManipulator, IReloadedHooks hooks, ILogger logger)
     {
+        _flagManipulator = flagManipulator;
         _logger = logger;
-        unsafe
-        {
-            _cmmCheckEnableFuncHook = hooks
-                .CreateHook<CmmCheckEnableFunc>(CmmCheckEnableFuncImpl, AddressScanner.Addresses[AddressScanner.AddressName.CmmCheckEnableFuncAddress])
-                .Activate();
-            _cmmSetLvHook = hooks
-                .CreateHook<CmmSetLv>(CmmSetLvImpl, AddressScanner.Addresses[AddressScanner.AddressName.CmmSetLvFuncAddress])
-                .Activate();
-        }
+        _cmmCheckEnableFuncHook = hooks
+            .CreateHook<CmmCheckEnableFunc>(CmmCheckEnableFuncImpl, AddressScanner.Addresses[AddressScanner.AddressName.CmmCheckEnableFuncAddress])
+            .Activate();
+        _cmmSetLvHook = hooks
+            .CreateHook<CmmSetLv>(CmmSetLvImpl, AddressScanner.Addresses[AddressScanner.AddressName.CmmSetLvFuncAddress])
+            .Activate();
 
         logger.WriteLine("Created ItemManipulator Hooks");
     }
@@ -95,5 +96,16 @@ public class ConfidantManipulator
         OnCmmSetLv?.Invoke(cmmId, cmmLv);
 
         return val;
+    }
+
+    public void HandleApItem(object? sender, ApConnector.ApItemReceivedEvent e)
+    {
+        if (e.Handled || e.ApItem.Type != ItemType.CmmAbility)
+            return;
+        
+        _flagManipulator.SetCount(FlagManipulator.AP_CMM_ABILITY_REWARD, e.ApItem.Id);
+        FlowFunctionWrapper.CallCustomFlowFunction(ApMethodsIndexes.NotifyConfidantReward);
+        EnableCmmFeature(e.ApItem.Id);
+        e.Handled = true;
     }
 }

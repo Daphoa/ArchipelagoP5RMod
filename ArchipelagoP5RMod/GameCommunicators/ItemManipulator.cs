@@ -198,6 +198,15 @@ public class ItemManipulator
         }
     }
 
+    public void HandleApItem(object? sender, ApConnector.ApItemReceivedEvent? e)
+    {
+        if (e.Handled || e.ApItem.Type != ItemType.Item)
+            return;
+        
+        RewardItem(e.ApItem.Id, e.ApItem.Count, true);
+        e.Handled = true;
+    }
+
     public unsafe string GetOriginalItemName(ushort itemId)
     {
 

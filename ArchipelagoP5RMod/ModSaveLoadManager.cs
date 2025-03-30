@@ -4,21 +4,17 @@ using Reloaded.Mod.Interfaces;
 
 namespace ArchipelagoP5RMod;
 
-public class ModSaveLoadHandler
+public class ModSaveLoadManager(string saveDirectory, ILogger logger)
 {
-    private readonly ILogger _logger;
+    private const string Filename = "{0}/AP_Mod_Save_Data_{1:d2}";
+
     private readonly Dictionary<byte, Func<byte[]>> _registeredSaveMethods = new();
-    private readonly Dictionary<byte, Action<byte[]>> _registeredLoadMethods = new();
+    private readonly Dictionary<byte, Action<MemoryStream>> _registeredLoadMethods = new();
 
     private static readonly byte[] header = [0xAA, 0xAA, 0x0, 0xBD];
-    private static readonly byte[] sectionHeader = [0x4A, 0x0, 0x34];
+    private static readonly byte[] sectionHeader = [0x4A, 0x5, 0x34];
 
-    public ModSaveLoadHandler(ILogger logger, SaveLoadConnector saveLoadConnector)
-    {
-        _logger = logger;
-    }
-
-    public void RegisterSaveLoad(Func<byte[]> saveMethod, Action<byte[]> loadMethod, int section = -1)
+    public void RegisterSaveLoad(Func<byte[]> saveMethod, Action<MemoryStream> loadMethod, int section = -1)
     {
         byte sectionNum = (byte)section;
         if (section == -1)
@@ -31,6 +27,42 @@ public class ModSaveLoadHandler
         _registeredLoadMethods.Add(sectionNum, loadMethod);
     }
 
+    public void Save(uint fileIndex)
+    {
+        string fileName = String.Format(Filename, saveDirectory, fileIndex);
+        string backupFileName = fileName + "_bak";
+
+        // Delete the backup file if it exists.
+        if (File.Exists(backupFileName))
+        {
+            File.Delete(backupFileName);
+        }
+        
+        // Move the original file to the backup file if it exists
+        if (File.Exists(fileName))
+        {
+            File.Move(fileName, backupFileName);
+        }
+
+        //Create the file.
+        using FileStream fs = File.Create(fileName);
+        Save(fs);
+    }
+
+    public void Load(uint fileIndex)
+    {
+        string fileName = String.Format(Filename, saveDirectory, fileIndex);
+
+        if (!File.Exists(fileName))
+        {
+            // Fail gracefully.
+            logger.WriteLine($"No file found for index {fileIndex}");
+            return;
+        }
+
+        using FileStream fs = File.OpenRead(fileName);
+        Load(fs);
+    }
 
     private void Save(Stream writeStream)
     {
@@ -53,22 +85,24 @@ public class ModSaveLoadHandler
         for (int i = 0; i < buffer.Length; i++)
         {
             if (buffer[i] == header[i]) continue;
-            
-            _logger.Write("Loaded header: ");
+
+            logger.Write("Loaded header: ");
             foreach (byte t in buffer)
             {
-                _logger.Write($"{t:X2} ");
+                logger.Write($"{t:X2} ");
             }
-            _logger.WriteLine("");
-            
-            _logger.Write("Expected header: ");
+
+            logger.WriteLine("");
+
+            logger.Write("Expected header: ");
             foreach (byte t in header)
             {
-                _logger.Write($"{t:X2} ");
+                logger.Write($"{t:X2} ");
             }
-            _logger.WriteLine("");
 
-            
+            logger.WriteLine("");
+
+
             throw new InvalidDataException("Tried to read file, but no header was present.");
         }
 
@@ -84,7 +118,8 @@ public class ModSaveLoadHandler
                 // We're done
                 if (activeSection != Byte.MaxValue)
                 {
-                    _registeredLoadMethods[activeSection](sectionData.ToArray());
+                    sectionData.Position = 0;
+                    _registeredLoadMethods[activeSection](sectionData);
                 }
 
                 break;
@@ -98,7 +133,8 @@ public class ModSaveLoadHandler
 
                 if (activeSection != Byte.MaxValue)
                 {
-                    _registeredLoadMethods[activeSection](sectionData.ToArray());
+                    sectionData.Position = 0;
+                    _registeredLoadMethods[activeSection](sectionData);
                 }
 
                 activeSection = (byte)readStream.ReadByte();
@@ -122,9 +158,8 @@ public class ModSaveLoadHandler
 
     #region TestingCode
 
-    private ModSaveLoadHandler(ILogger logger)
+    private ModSaveLoadManager(ILogger logger) : this(null, logger)
     {
-        _logger = logger;
     }
 
     private class TestSection
@@ -132,7 +167,7 @@ public class ModSaveLoadHandler
         private byte[] data;
         private ILogger logger;
 
-        public TestSection(Random rand, ModSaveLoadHandler modSaveLoadHandler, ILogger logger)
+        public TestSection(Random rand, ModSaveLoadManager modSaveLoadManager, ILogger logger)
         {
             this.logger = logger;
 
@@ -140,23 +175,27 @@ public class ModSaveLoadHandler
             data = new byte[size];
             rand.NextBytes(data);
 
-            modSaveLoadHandler.RegisterSaveLoad(() => data, CompareValues);
+            modSaveLoadManager.RegisterSaveLoad(() => data, CompareValues);
         }
 
-        private void CompareValues(byte[] newData)
+        private void CompareValues(MemoryStream newDataStream)
         {
+            var newData = newDataStream.ToArray();
+            
             for (int i = 0; i < newData.Length; i++)
             {
                 if (newData[i] == data[i]) continue;
-                logger.WriteLine($"Original data wasn't equal to new data at index {i}: {newData[i]:X2} expected: {data[i]:X2}");
-                    
+                logger.WriteLine(
+                    $"Original data wasn't equal to new data at index {i}: {newData[i]:X2} expected: {data[i]:X2}");
+
                 logger.Write("New Data:      ");
                 foreach (byte t in newData)
                 {
                     logger.Write($"{t:X2} ");
                 }
+
                 logger.WriteLine("");
-            
+
                 logger.Write("Expected data: ");
                 foreach (byte t in data)
                 {
@@ -173,7 +212,7 @@ public class ModSaveLoadHandler
     public static void TestSaveLoad(ILogger logger)
     {
         logger.WriteLine("Testing Save/Load");
-        
+
         var rand = new Random();
 
         const int numAttempts = 5;
@@ -182,25 +221,25 @@ public class ModSaveLoadHandler
         {
             logger.WriteLine($"Starting attempt {i}");
 
-            var handler = new ModSaveLoadHandler(logger);
+            var handler = new ModSaveLoadManager(logger);
             logger.WriteLine("Created handler");
 
             int numSection = rand.Next(2, 10);
             logger.WriteLine($"Testing with {numSection} sections");
-            List<TestSection> testSections = new List<TestSection>();
+            List<TestSection> testSections = [];
             for (int j = 0; j < numSection; j++)
             {
                 testSections.Add(new TestSection(rand, handler, logger));
                 logger.WriteLine($"Created section {j}");
             }
-            
+
             MemoryStream testSaveFile = new MemoryStream();
             logger.WriteLine($"Trying to save file");
             handler.Save(testSaveFile);
             logger.WriteLine($"File saved, moving \"file\" position to start for load");
-      
+
             testSaveFile.Seek(0, SeekOrigin.Begin);
-            
+
             logger.WriteLine($"Trying to load file (position: {testSaveFile.Position})");
             handler.Load(testSaveFile);
         }

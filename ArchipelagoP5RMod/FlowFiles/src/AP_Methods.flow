@@ -22,3 +22,17 @@ void RewardItems()
     MSG_WND_CLS();
     // FLD_CAMERA_UNLOCK();
 }
+
+// Procedure Index: 1
+void NotifyConfidantReward() 
+{
+    int cmmAbility = GET_COUNT(0x10000000 + 1)
+    
+    MSG_WND_DSP();
+    if ( cmmAbility == 52 ) {
+        MSG( MSG_CMM_52 ); 
+    } else if ( cmmAbility == 55) {
+        MSG( MSG_CMM_55 );
+    }
+    MSG_WND_CLS();
+}

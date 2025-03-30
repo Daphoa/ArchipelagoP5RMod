@@ -90,12 +90,13 @@ public class Mod : ModBase // <= Do not Remove.
         _itemManipulator = new ItemManipulator(_hooks, _logger);
         _gameSaveLoadConnector = new GameSaveLoadConnector(_hooks, _logger);
         _modSaveLoadManager = new ModSaveLoadManager(_configuration.SaveDirectory, _logger);
-        _confidantManipulator = new ConfidantManipulator(_hooks, _logger);
         _apConnector = new ApConnector(serverAddress: _configuration.ServerAddress,
             serverPassword: _configuration.ServerPassword,
             slotName: _configuration.SlotName,
+            flagManipulator: _flagManipulator,
             logger: _logger);
         _flagManager = new FlagManager();
+        _confidantManipulator = new ConfidantManipulator(_flagManipulator, _hooks, _logger);
         _chestRewardDirector = new ChestRewardDirector();
         var bfLoader = new BfLoader(_logger);
 
@@ -103,7 +104,10 @@ public class Mod : ModBase // <= Do not Remove.
 
         OnGameLoaded += (_, _) =>
         {
-            _ = _apConnector.RegisterForCollectionAsync(RewardApItemHandler);
+            _apConnector.OnItemReceivedEvent += _itemManipulator.HandleApItem;
+            _apConnector.OnItemReceivedEvent += _confidantManipulator.HandleApItem;
+
+            _ = _apConnector.StartCollectionAsync();
         };
 
         // OnGameLoaded += TestFlowFuncWrapper;
@@ -111,7 +115,7 @@ public class Mod : ModBase // <= Do not Remove.
         OnGameLoaded += (_, _) => _flagManager.Setup(_flagManipulator);
 
         _chestRewardDirector.Setup(_apConnector, _itemManipulator);
-        
+
         _modSaveLoadManager.RegisterSaveLoad(_flagManipulator.SaveCountData, _flagManipulator.LoadCountData);
 
         var logTimer = new Timer(10000);
@@ -119,18 +123,18 @@ public class Mod : ModBase // <= Do not Remove.
         logTimer.AutoReset = true;
 
         OnGameLoaded += (_, _) => logTimer.Start();
-        
+
         // Test code
         // ModSaveLoadHandler.TestSaveLoad(_logger);
 
         // Test Code
-        var testTimer = new Timer(15000);
-        testTimer.Elapsed += (_, _) =>
-        {
-            _logger.WriteLine("Calling test Reward Items Function");
-            FlowFunctionWrapper.CallCustomFlowFunction(ApMethodsIndexes.RewardItemsFunc);
-        };
-        OnGameLoaded += (_, _) => testTimer.Start();
+        // var testTimer = new Timer(15000);
+        // testTimer.Elapsed += (_, _) =>
+        // {
+        //     _logger.WriteLine("Calling test Reward Items Function");
+        //     FlowFunctionWrapper.CallCustomFlowFunction(ApMethodsIndexes.RewardItemsFunc);
+        // };
+        // OnGameLoaded += (_, _) => testTimer.Start();
 
         _checkGameLoaded = new Timer(1000);
         _checkGameLoaded.Elapsed += CheckGameLoaded;
@@ -141,30 +145,12 @@ public class Mod : ModBase // <= Do not Remove.
 
         _itemManipulator.OnChestOpenedCompleted += id => { _apConnector.ReportLocationCheckAsync(id); };
         _logger.WriteLine("End Mod Constructor");
-        
+
         // Register save/load events
         _gameSaveLoadConnector.OnGameFileSaved += _modSaveLoadManager.Save;
-        _gameSaveLoadConnector.OnGameFileLoaded +=  _modSaveLoadManager.Load;
+        _gameSaveLoadConnector.OnGameFileLoaded += _modSaveLoadManager.Load;
 
         // GameFeatureBlocker.BlockGameFeatures(_hooks);
-    }
-
-    private bool RewardApItemHandler(ApItem apItem)
-    {
-        _logger.WriteLine($"{nameof(RewardApItemHandler)} called with {apItem.ToString()}");
-        switch (apItem.Type)
-        {
-            case ItemType.Item:
-                // TODO don't show window if we got the item ourselves.
-                _itemManipulator.RewardItem(apItem.Id, apItem.Count, true);
-                return true;
-            case ItemType.CmmAbility:
-                _confidantManipulator.EnableCmmFeature(apItem.Id);
-                // TODO show some player facing dialog... maybe item window?
-                return true;
-            default:
-                return false;
-        }
     }
 
     private void CheckGameLoaded(object? sender, ElapsedEventArgs elapsedEventArgs)

@@ -12,22 +12,37 @@ namespace ArchipelagoP5RMod;
 
 public class ApConnector
 {
-    private ArchipelagoSession _session = null!;
-    private ILogger _logger = null!;
-    private int _lastRewardIndex = 0;
-    private Func<ApItem, bool> rewardHandler;
+    private FlagManipulator flagManipulator;
+
+    public class ApItemReceivedEvent(ApItem apItem) : EventArgs
+    {
+        public bool Handled { get; set; } = false;
+        public ApItem ApItem { get; private set; } = apItem;
+    }
+    
+    private readonly ArchipelagoSession _session;
+    private readonly ILogger _logger;
+    public event EventHandler<ApItemReceivedEvent> OnItemReceivedEvent; 
     private bool _isTryingToConnect = false;
     private bool _closeConnection = false;
 
+    public uint LastRewardIndex {
+        get => flagManipulator.GetCount(FlagManipulator.AP_LAST_REWARD_INDEX);
+        private set => flagManipulator.SetCount(FlagManipulator.AP_LAST_REWARD_INDEX, value);
+    }
+    
     private string ServerPassword { get; set; }
     private string SlotName { get; set; }
 
-    public ApConnector(string serverAddress, string serverPassword, string slotName, ILogger logger)
+    public ApConnector(string serverAddress, string serverPassword, string slotName, 
+        FlagManipulator flagManipulator, ILogger logger)
     {
         _session = ArchipelagoSessionFactory.CreateSession(serverAddress);
         this._logger = logger;
         this.ServerPassword = serverPassword;
         this.SlotName = slotName;
+        
+        this.flagManipulator = flagManipulator;
 
         _session.MessageLog.OnMessageReceived += OnMessageReceived;
 
@@ -182,39 +197,23 @@ public class ApConnector
     
     private void OnItemReceived(ReceivedItemsHelper receivedItemsHelper)
     {
-        ApItem item = new ApItem(receivedItemsHelper.PeekItem().ItemId);
-        bool success = rewardHandler.Invoke(item);
+        var item = new ApItem(receivedItemsHelper.PeekItem().ItemId);
+
+        var e = new ApItemReceivedEvent(item);
+        OnItemReceivedEvent.Invoke(this, e);
+        
+        // bool success = _rewardHandler.Invoke(item);
 
         _logger.WriteLine($"Got item {item.ToString()} from 0x{item.ItemCode:X}");
 
-        if (success)
+        if (e.Handled)
         {
             receivedItemsHelper.DequeueItem();
         }
     }
 
-
-    public void SetItemRewarder(Func<ApItem, bool> rewardHandler)
+    public async Task StartCollectionAsync()
     {
-        this.rewardHandler = rewardHandler;
-    }
-
-    public int RegisterForCollection(Func<ApItem, bool> rewardHandler)
-    {
-        this.rewardHandler = rewardHandler;
-
-        if (CheckConnection())
-        {
-            ProcessAllItems();
-        }
-
-        return _lastRewardIndex;
-    }
-
-    public async Task RegisterForCollectionAsync(Func<ApItem, bool> rewardHandler)
-    {
-        this.rewardHandler = rewardHandler;
-
         await WaitForConnection();
 
         ProcessAllItems();
@@ -228,21 +227,24 @@ public class ApConnector
         }
 
         _logger.WriteLine("Collecting items from archipelago");
-        while (_session.Items.AllItemsReceived.Count > _lastRewardIndex)
+        while (_session.Items.AllItemsReceived.Count > LastRewardIndex)
         {
             _logger.WriteLine(
-                $"Collecting item {_lastRewardIndex}: {_session.Items.AllItemsReceived[_lastRewardIndex].ItemName}");
-            var item = new ApItem(_session.Items.AllItemsReceived[_lastRewardIndex].ItemId);
-            bool success = rewardHandler(item);
-            if (!success)
+                $"Collecting item {LastRewardIndex}: {_session.Items.AllItemsReceived[(int)LastRewardIndex].ItemName}");
+            
+            var item = new ApItem(_session.Items.AllItemsReceived[(int)LastRewardIndex].ItemId);
+
+            var e = new ApItemReceivedEvent(item);
+            OnItemReceivedEvent.Invoke(this, e);
+            if (!e.Handled)
             {
                 // We can't keep going or the last reward index will be messed up.
                 return;
             }
 
-            _lastRewardIndex++;
+            LastRewardIndex++;
 
-            _logger.WriteLine($"Processed index {_lastRewardIndex} for item {item.ToString()}");
+            _logger.WriteLine($"Processed index {LastRewardIndex} for item {item.ToString()}");
         }
     }
 
