@@ -58,7 +58,7 @@ public class Mod : ModBase // <= Do not Remove.
     private readonly ConfidantManipulator _confidantManipulator;
     private readonly GameSaveLoadConnector _gameSaveLoadConnector;
     private readonly ModSaveLoadManager _modSaveLoadManager;
-    private readonly FlagManager _flagManager;
+    private readonly FlagSetup _flagSetup;
     private readonly ChestRewardDirector _chestRewardDirector;
 
     private readonly System.Timers.Timer _checkGameLoaded;
@@ -73,13 +73,6 @@ public class Mod : ModBase // <= Do not Remove.
         _configuration = context.Configuration;
         _modConfig = context.ModConfig;
 
-
-        // For more information about this template, please see
-        // https://reloaded-project.github.io/Reloaded-II/ModTemplate/
-
-        // If you want to implement e.g. unload support in your mod,
-        // and some other neat features, override the methods in ModBase.
-
         AddressScanner.Scan(_logger);
 
         FlowFunctionWrapper.SetLogger(_logger);
@@ -87,7 +80,7 @@ public class Mod : ModBase // <= Do not Remove.
 
         _dateManipulator = new DateManipulator(_hooks, _logger);
         _flagManipulator = new FlagManipulator(_hooks, _logger);
-        _itemManipulator = new ItemManipulator(_hooks, _logger);
+        _itemManipulator = new ItemManipulator(_flagManipulator, _hooks, _logger);
         _gameSaveLoadConnector = new GameSaveLoadConnector(_hooks, _logger);
         _modSaveLoadManager = new ModSaveLoadManager(_configuration.SaveDirectory, _logger);
         _apConnector = new ApConnector(serverAddress: _configuration.ServerAddress,
@@ -95,7 +88,7 @@ public class Mod : ModBase // <= Do not Remove.
             slotName: _configuration.SlotName,
             flagManipulator: _flagManipulator,
             logger: _logger);
-        _flagManager = new FlagManager();
+        _flagSetup = new FlagSetup();
         _confidantManipulator = new ConfidantManipulator(_flagManipulator, _hooks, _logger);
         _chestRewardDirector = new ChestRewardDirector();
         var bfLoader = new BfLoader(_logger);
@@ -112,7 +105,9 @@ public class Mod : ModBase // <= Do not Remove.
 
         // OnGameLoaded += TestFlowFuncWrapper;
         // OnGameLoaded += TestBitManipulator;
-        OnGameLoaded += (_, _) => _flagManager.Setup(_flagManipulator);
+        OnGameLoaded += (_, _) => _flagSetup.Setup(_flagManipulator);
+
+        OnGameLoaded += (_, _) => _apConnector.ReadyToCollect();
 
         _chestRewardDirector.Setup(_apConnector, _itemManipulator);
 

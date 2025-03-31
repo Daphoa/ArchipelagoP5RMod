@@ -12,7 +12,11 @@ public class FlagManipulator
     private readonly ILogger _logger;
 
     public const uint AP_LAST_REWARD_INDEX = SectionMask * ExternalCountSection + 0;
-    public const uint AP_CMM_ABILITY_REWARD = SectionMask * ExternalCountSection + 1;
+    public const uint AP_CURR_REWARD_CMM_ABILITY = SectionMask * ExternalCountSection + 1;
+    public const uint AP_CURR_REWARD_ITEM_ID = SectionMask * ExternalCountSection + 2;
+    public const uint AP_CURR_REWARD_ITEM_NUM = SectionMask * ExternalCountSection + 3;
+
+    public const uint SHOWING_MESSAGE = SectionMask * ExternalBitSection + 1;
 
     [Function(CallingConventions.Fastcall)]
     private delegate long BitChkType(uint bitIndex);
@@ -37,7 +41,7 @@ public class FlagManipulator
     private const uint ExternalCountSection = 1;
 
     const uint NumExternalCounts = 4;
-    private static uint[] externalCounts = new uint[4] { 0x4000 + 72, 0x4000 + 72, 0x4000 + 72, 0x4000 + 72 };
+    private static uint[] externalCounts = new uint[4] { 0, 0, 0, 0 };
     private const int CountTypeSize = sizeof(uint);
 
     public FlagManipulator(IReloadedHooks hooks, ILogger logger)
@@ -56,11 +60,19 @@ public class FlagManipulator
             AddressScanner.Addresses[AddressScanner.AddressName.SetCountFlowFuncAddress]).Activate();
 
         logger.WriteLine("Created FlagManipulator Hooks");
+        
+        SetBit(SHOWING_MESSAGE, false);
     }
 
     // ReSharper disable once MemberCanBePrivate.Global
     public bool CheckBit(uint bitIndex)
     {
+        if (bitIndex is >= SectionMask * ExternalBitSection
+            and < SectionMask * ExternalBitSection + NumExternalCounts)
+        {
+            return externalBitFlags[bitIndex % SectionMask];
+        }
+        
         return _bitChkTypeHook.OriginalFunction(bitIndex) != 0;
     }
 
@@ -198,6 +210,8 @@ public class FlagManipulator
     {
         var bitIndex = (uint)FlowFunctionWrapper.GetFlowscriptInt4Arg(0);
 
+        _logger.WriteLine($"Turning {bitIndex:X} bit on.");
+
         if (bitIndex is < ExternalBitSection * SectionMask or >= ExternalBitSection * SectionMask + NumExternalBitFlags)
             return _bitOnHook.OriginalFunction();
 
@@ -211,6 +225,8 @@ public class FlagManipulator
     private uint BitOffImpl()
     {
         var bitIndex = (uint)FlowFunctionWrapper.GetFlowscriptInt4Arg(0);
+        
+        _logger.WriteLine($"Turning {bitIndex:X} bit off.");
 
         if (bitIndex is < ExternalBitSection * SectionMask or >= ExternalBitSection * SectionMask + NumExternalBitFlags)
             return _bitOffHook.OriginalFunction();

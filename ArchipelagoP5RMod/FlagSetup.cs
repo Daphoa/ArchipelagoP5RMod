@@ -1,6 +1,6 @@
 ﻿namespace ArchipelagoP5RMod;
 
-public class FlagManager
+public class FlagSetup
 {
     private readonly uint[] _onBits =
     [

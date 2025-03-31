@@ -19,29 +19,32 @@ public class ApConnector
         public bool Handled { get; set; } = false;
         public ApItem ApItem { get; private set; } = apItem;
     }
-    
+
     private readonly ArchipelagoSession _session;
     private readonly ILogger _logger;
-    public event EventHandler<ApItemReceivedEvent> OnItemReceivedEvent; 
+    public event EventHandler<ApItemReceivedEvent> OnItemReceivedEvent;
     private bool _isTryingToConnect = false;
     private bool _closeConnection = false;
+    private bool _isProcessingItems = false;
+    private bool _readyToCollect = false;
 
-    public uint LastRewardIndex {
+    public uint LastRewardIndex
+    {
         get => flagManipulator.GetCount(FlagManipulator.AP_LAST_REWARD_INDEX);
         private set => flagManipulator.SetCount(FlagManipulator.AP_LAST_REWARD_INDEX, value);
     }
-    
+
     private string ServerPassword { get; set; }
     private string SlotName { get; set; }
 
-    public ApConnector(string serverAddress, string serverPassword, string slotName, 
+    public ApConnector(string serverAddress, string serverPassword, string slotName,
         FlagManipulator flagManipulator, ILogger logger)
     {
         _session = ArchipelagoSessionFactory.CreateSession(serverAddress);
         this._logger = logger;
         this.ServerPassword = serverPassword;
         this.SlotName = slotName;
-        
+
         this.flagManipulator = flagManipulator;
 
         _session.MessageLog.OnMessageReceived += OnMessageReceived;
@@ -50,9 +53,9 @@ public class ApConnector
 
         MaintainConnection();
     }
-    
+
     #region Connection Management
-    
+
     private async Task ConnectToServerAsync()
     {
         ushort failureCount = 0;
@@ -159,7 +162,7 @@ public class ApConnector
             await _session.Socket.DisconnectAsync();
         }
     }
-    
+
     public void CloseConnection()
     {
         _closeConnection = true;
@@ -187,29 +190,25 @@ public class ApConnector
             await Task.Delay(1000);
         }
     }
-    
+
     #endregion
+
+    public void ReadyToCollect()
+    {
+        this._readyToCollect = true;
+    }
 
     private void OnMessageReceived(LogMessage message)
     {
         _logger.WriteLine(message.ToString());
     }
-    
+
     private void OnItemReceived(ReceivedItemsHelper receivedItemsHelper)
     {
-        var item = new ApItem(receivedItemsHelper.PeekItem().ItemId);
+        receivedItemsHelper.DequeueItem();
 
-        var e = new ApItemReceivedEvent(item);
-        OnItemReceivedEvent.Invoke(this, e);
-        
-        // bool success = _rewardHandler.Invoke(item);
-
-        _logger.WriteLine($"Got item {item.ToString()} from 0x{item.ItemCode:X}");
-
-        if (e.Handled)
-        {
-            receivedItemsHelper.DequeueItem();
-        }
+        // Just let the master loop handle it.
+        ProcessAllItems();
     }
 
     public async Task StartCollectionAsync()
@@ -219,33 +218,42 @@ public class ApConnector
         ProcessAllItems();
     }
 
-    private void ProcessAllItems()
+    private async void ProcessAllItems()
     {
-        if (!CheckConnection())
-        {
+        if (!CheckConnection() || _isProcessingItems)
             return;
+        _isProcessingItems = true;
+
+        while (!_readyToCollect)
+        {
+            await Task.Delay(1000);
         }
 
         _logger.WriteLine("Collecting items from archipelago");
-        while (_session.Items.AllItemsReceived.Count > LastRewardIndex)
+        _logger.WriteLine($"LastRewardIndex: {LastRewardIndex}");
+        _logger.WriteLine($"session: {LastRewardIndex}");
+        while (LastRewardIndex < _session.Items.AllItemsReceived.Count)
         {
             _logger.WriteLine(
                 $"Collecting item {LastRewardIndex}: {_session.Items.AllItemsReceived[(int)LastRewardIndex].ItemName}");
-            
+
             var item = new ApItem(_session.Items.AllItemsReceived[(int)LastRewardIndex].ItemId);
 
             var e = new ApItemReceivedEvent(item);
             OnItemReceivedEvent.Invoke(this, e);
             if (!e.Handled)
             {
-                // We can't keep going or the last reward index will be messed up.
-                return;
+                // Wait for a second then try again.
+                await Task.Delay(1000);
+                continue;
             }
 
             LastRewardIndex++;
 
             _logger.WriteLine($"Processed index {LastRewardIndex} for item {item.ToString()}");
         }
+
+        _isProcessingItems = false;
     }
 
     public async void ReportLocationCheckAsync(params long[] locationIds)

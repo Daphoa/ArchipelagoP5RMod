@@ -11,22 +11,22 @@ import( "AP_Methods.msg" );
 // Procedure Index: 0
 void RewardItems()
 {
-    int testVar;
-    testVar = GET_COUNT(0x10000000 + 0);
-    SET_COUNT(0x10000000 + 0, testVar + 1);
-    // FLD_CAMERA_LOCK();
-    SET_MSG_VAR(1, testVar, 0);
+    BIT_ON( ( 0x60000000 + 1 ) )
+    int itemId;
+    int itemNum;
+    itemId = GET_COUNT(0x10000000 + 2);
+    itemNum = GET_COUNT(0x10000000 + 3);
     MSG_WND_DSP();
-    // GET_ITEM_WINDOW( testVar, 1, 0 );
-    MSG(0);
+    GET_ITEM_WINDOW( itemId, itemNum, 0 );
     MSG_WND_CLS();
-    // FLD_CAMERA_UNLOCK();
+    BIT_OFF( ( 0x60000000 + 1 ) );
 }
 
 // Procedure Index: 1
 void NotifyConfidantReward() 
 {
-    int cmmAbility = GET_COUNT(0x10000000 + 1)
+    BIT_ON( ( 0x60000000 + 1 ) )
+    int cmmAbility = GET_COUNT( ( 0x10000000 + 1 ) ) 
     
     MSG_WND_DSP();
     if ( cmmAbility == 52 ) {
@@ -35,4 +35,5 @@ void NotifyConfidantReward()
         MSG( MSG_CMM_55 );
     }
     MSG_WND_CLS();
+    BIT_OFF( ( 0x60000000 + 1 ) );
 }

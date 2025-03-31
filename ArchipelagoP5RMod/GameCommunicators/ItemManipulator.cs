@@ -1,6 +1,5 @@
 ﻿using System.Runtime.InteropServices;
 using System.Text;
-using Archipelago.MultiClient.Net.Packets;
 using Reloaded.Hooks.Definitions;
 using Reloaded.Hooks.Definitions.X86;
 using Reloaded.Mod.Interfaces;
@@ -10,6 +9,7 @@ namespace ArchipelagoP5RMod;
 public class ItemManipulator
 {
     private readonly ILogger _logger;
+    private readonly FlagManipulator _flagManipulator;
 
     private const long DUMMY_ITEM = 0;
 
@@ -62,8 +62,9 @@ public class ItemManipulator
 
     public delegate void OnChestOpenedEvent(long chestId);
 
-    public ItemManipulator(IReloadedHooks hooks, ILogger logger)
+    public ItemManipulator(FlagManipulator flagManipulator, IReloadedHooks hooks, ILogger logger)
     {
+        _flagManipulator = flagManipulator;
         _logger = logger;
         unsafe
         {
@@ -185,25 +186,29 @@ public class ItemManipulator
         return s - str;
     } 
 
-    public void RewardItem(ushort itemId, byte count, bool showWindow)
+    public void RewardItem(ushort itemId, byte count)
     {
         _logger.WriteLine($"Rewarding item {itemId:X} x{count}");
         byte newCount = GetItemNumImpl(itemId);
         newCount += count;
         SetItemNumImpl(itemId, newCount, 1);
-        if (showWindow)
-        {
-            _logger.WriteLine($"Opening item window for item {itemId:X}");
-            OpenItemWindow(itemId, count);
-        }
     }
 
     public void HandleApItem(object? sender, ApConnector.ApItemReceivedEvent? e)
     {
-        if (e.Handled || e.ApItem.Type != ItemType.Item)
+        if (e.Handled || e.ApItem.Type != ItemType.Item || _flagManipulator.CheckBit(FlagManipulator.SHOWING_MESSAGE))
             return;
+
+        // _flagManipulator.SetBit(FlagManipulator.SHOWING_MESSAGE, true);
+        RewardItem(e.ApItem.Id, e.ApItem.Count);
         
-        RewardItem(e.ApItem.Id, e.ApItem.Count, true);
+        _flagManipulator.SetBit(FlagManipulator.SHOWING_MESSAGE, true);
+        _flagManipulator.SetCount(FlagManipulator.AP_CURR_REWARD_ITEM_ID, e.ApItem.Id);
+        _flagManipulator.SetCount(FlagManipulator.AP_CURR_REWARD_ITEM_NUM, e.ApItem.Count);
+            
+        FlowFunctionWrapper.CallCustomFlowFunction(ApMethodsIndexes.RewardItemsFunc);
+        _logger.WriteLine($"Opening item window for item {e.ApItem.Id:X}");
+        
         e.Handled = true;
     }
 
