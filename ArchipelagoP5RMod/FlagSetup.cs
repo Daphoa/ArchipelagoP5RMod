@@ -36,14 +36,19 @@ public class FlagSetup
         0x20000000 + 4486, 0x20000000 + 4479,
         
         // Tutorial
-        0x20000000 + 171, // Grappling Hook Tutorial
-        
+        // 0x20000000 + 171, // Grappling Hook Tutorial
+        0x20000000 + 4081, // Chest Tutorial
+        0x20000000 + 46, // Alert Tutorial
+        0x20000000 + 4665 // Stone Tutorial
+
         // Other
         0x30000000 + 277, // Baton Pass guess
     ];
 
     public void Setup(FlagManipulator flagManipulator)
     {
+        flagManipulator.SetBit(10811, false); // GRAPPLING HOOK
+        
         foreach (uint adr in _onBits)
         {
             flagManipulator.SetBit(adr, true);

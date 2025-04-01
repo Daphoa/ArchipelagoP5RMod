@@ -29,6 +29,11 @@ public class ModSaveLoadManager(string saveDirectory, ILogger logger)
 
     public void Save(uint fileIndex)
     {
+        if (fileIndex == 0)
+        {
+            return;
+        }
+        
         string fileName = String.Format(Filename, saveDirectory, fileIndex);
         string backupFileName = fileName + "_bak";
 
@@ -46,11 +51,16 @@ public class ModSaveLoadManager(string saveDirectory, ILogger logger)
 
         //Create the file.
         using FileStream fs = File.Create(fileName);
-        Save(fs);
+        SaveToStream(fs);
     }
 
     public void Load(uint fileIndex)
     {
+        if (fileIndex == 0)
+        {
+            return;
+        }
+
         string fileName = String.Format(Filename, saveDirectory, fileIndex);
 
         if (!File.Exists(fileName))
@@ -61,10 +71,10 @@ public class ModSaveLoadManager(string saveDirectory, ILogger logger)
         }
 
         using FileStream fs = File.OpenRead(fileName);
-        Load(fs);
+        LoadFromStream(fs);
     }
 
-    private void Save(Stream writeStream)
+    private void SaveToStream(Stream writeStream)
     {
         writeStream.Write(header, 0, header.Length);
 
@@ -77,7 +87,7 @@ public class ModSaveLoadManager(string saveDirectory, ILogger logger)
         }
     }
 
-    private void Load(Stream readStream)
+    private void LoadFromStream(Stream readStream)
     {
         byte[] buffer = new byte[header.Length];
         readStream.Read(buffer, 0, header.Length);
@@ -201,6 +211,7 @@ public class ModSaveLoadManager(string saveDirectory, ILogger logger)
                 {
                     logger.Write($"{t:X2} ");
                 }
+
                 logger.WriteLine("");
                 return;
             }
@@ -235,13 +246,13 @@ public class ModSaveLoadManager(string saveDirectory, ILogger logger)
 
             MemoryStream testSaveFile = new MemoryStream();
             logger.WriteLine($"Trying to save file");
-            handler.Save(testSaveFile);
+            handler.SaveToStream(testSaveFile);
             logger.WriteLine($"File saved, moving \"file\" position to start for load");
 
             testSaveFile.Seek(0, SeekOrigin.Begin);
 
             logger.WriteLine($"Trying to load file (position: {testSaveFile.Position})");
-            handler.Load(testSaveFile);
+            handler.LoadFromStream(testSaveFile);
         }
     }
 

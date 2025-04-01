@@ -60,6 +60,7 @@ public class Mod : ModBase // <= Do not Remove.
     private readonly ModSaveLoadManager _modSaveLoadManager;
     private readonly FlagSetup _flagSetup;
     private readonly ChestRewardDirector _chestRewardDirector;
+    private readonly ApFlagItemRewarder _apFlagItemRewarder;
 
     private readonly System.Timers.Timer _checkGameLoaded;
     private readonly DebugTools _debugTools;
@@ -91,6 +92,7 @@ public class Mod : ModBase // <= Do not Remove.
         _flagSetup = new FlagSetup();
         _confidantManipulator = new ConfidantManipulator(_flagManipulator, _hooks, _logger);
         _chestRewardDirector = new ChestRewardDirector();
+        _apFlagItemRewarder = new ApFlagItemRewarder(_itemManipulator, _flagManipulator, _logger);
         var bfLoader = new BfLoader(_logger);
 
         _debugTools = new DebugTools();
@@ -99,6 +101,7 @@ public class Mod : ModBase // <= Do not Remove.
         {
             _apConnector.OnItemReceivedEvent += _itemManipulator.HandleApItem;
             _apConnector.OnItemReceivedEvent += _confidantManipulator.HandleApItem;
+            _apConnector.OnItemReceivedEvent += _apFlagItemRewarder.HandleApItem;
 
             _ = _apConnector.StartCollectionAsync();
         };
