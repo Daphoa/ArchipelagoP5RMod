@@ -1,1 +1,7 @@
-﻿Secre-C's flowscriptframework mod for giving context for all of the Flowscript data
+﻿the p5r modding community for so many helpful resources to teach myself coding
+
+Secre-C's flowscriptframework mod for giving context for some Flowscript data 
+animatedswine's p5r lib for hints on sequences inside p5r
+
+triplepain, ainseleliah, undergroundsr for help cataloging palace chests
+ninjablade1408 for collecting a list of tutorial flags
