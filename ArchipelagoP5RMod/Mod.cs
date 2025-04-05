@@ -5,7 +5,6 @@ using ArchipelagoP5RMod.Configuration;
 using Reloaded.Hooks.ReloadedII.Interfaces;
 using Reloaded.Mod.Interfaces;
 using ArchipelagoP5RMod.Template;
-using ArchipelagoP5RMod.Types;
 using Timer = System.Timers.Timer;
 
 namespace ArchipelagoP5RMod;
@@ -58,7 +57,7 @@ public class Mod : ModBase // <= Do not Remove.
     private readonly ConfidantManipulator _confidantManipulator;
     private readonly GameSaveLoadConnector _gameSaveLoadConnector;
     private readonly ModSaveLoadManager _modSaveLoadManager;
-    private readonly FlagSetup _flagSetup;
+    private readonly FirstTimeSetup _firstTimeSetup;
     private readonly ChestRewardDirector _chestRewardDirector;
     private readonly ApFlagItemRewarder _apFlagItemRewarder;
 
@@ -89,7 +88,7 @@ public class Mod : ModBase // <= Do not Remove.
             slotName: _configuration.SlotName,
             flagManipulator: _flagManipulator,
             logger: _logger);
-        _flagSetup = new FlagSetup();
+        _firstTimeSetup = new FirstTimeSetup();
         _confidantManipulator = new ConfidantManipulator(_flagManipulator, _hooks, _logger);
         _chestRewardDirector = new ChestRewardDirector();
         _apFlagItemRewarder = new ApFlagItemRewarder(_itemManipulator, _flagManipulator, _logger);
@@ -108,7 +107,7 @@ public class Mod : ModBase // <= Do not Remove.
 
         // OnGameLoaded += TestFlowFuncWrapper;
         // OnGameLoaded += TestBitManipulator;
-        OnGameLoaded += (_, _) => _flagSetup.Setup(_flagManipulator);
+        OnGameLoaded += (_, _) => _firstTimeSetup.Setup(_flagManipulator);
 
         OnGameLoaded += (_, _) => _apConnector.ReadyToCollect();
 

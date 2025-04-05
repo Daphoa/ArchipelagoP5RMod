@@ -1,6 +1,9 @@
 ﻿namespace ArchipelagoP5RMod;
 
-public class FlagSetup
+/**
+ * Intended to be call the first time a save is loaded with AP integrated.
+ */
+public class FirstTimeSetup
 {
     private readonly HashSet<uint> _onBits =
     [
@@ -35,7 +38,7 @@ public class FlagSetup
         0x20000000 + 4486, 0x20000000 + 4479,
 
         // Tutorial
-        // 0x20000000 + 171, // Grappling Hook Tutorial
+        0x20000000 + 171, // Grappling Hook Tutorial
         0x20000000 + 4081, // Chest Tutorial
         0x20000000 + 46, // Alert Tutorial
         0x20000000 + 4665, // Stone Tutorial
