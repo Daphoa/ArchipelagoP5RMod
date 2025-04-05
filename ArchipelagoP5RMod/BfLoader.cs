@@ -6,6 +6,7 @@ namespace ArchipelagoP5RMod;
 
 public class BfLoader
 {
+    private ILogger _logger;
     private static GCHandle _apMethodsBfFile;
 
     public static unsafe byte* ApMethodsBfFilePointer => (byte*)_apMethodsBfFile.AddrOfPinnedObject();
@@ -13,6 +14,7 @@ public class BfLoader
 
     public BfLoader(ILogger logger)
     {
+        _logger = logger;
         if (!_apMethodsBfFile.IsAllocated)
         {
             LoadFileIntoMemory();
@@ -23,7 +25,7 @@ public class BfLoader
     {
         foreach (string name in Assembly.GetExecutingAssembly().GetManifestResourceNames())
         {
-            if (name.EndsWith("AP_Methods.BF", StringComparison.InvariantCultureIgnoreCase))
+            if (name.EndsWith("AP_Methods.bf", StringComparison.InvariantCultureIgnoreCase))
             {
                 using Stream? stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(name);
                 using MemoryStream memStream = new MemoryStream();

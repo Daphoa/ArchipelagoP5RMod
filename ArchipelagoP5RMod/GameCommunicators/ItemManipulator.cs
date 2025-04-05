@@ -118,7 +118,7 @@ public class ItemManipulator
         return _getItemNumHook.OriginalFunction(itemId);
     }
 
-    private void SetItemNumImpl(ushort itemId, byte newItemCount, byte shouldUpdateRecentItem)
+    public void SetItemNumImpl(ushort itemId, byte newItemCount, byte shouldUpdateRecentItem)
     {
         _setItemNumHook.OriginalFunction(itemId, newItemCount, shouldUpdateRecentItem);
     }

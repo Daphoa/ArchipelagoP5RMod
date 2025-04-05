@@ -11,8 +11,8 @@
   "ModNativeDll32": "",
   "ModNativeDll64": "",
   "Tags": [],
-  "CanUnload": null,
-  "HasExports": null,
+  "CanUnload": false,
+  "HasExports": false,
   "IsLibrary": false,
   "ReleaseMetadataFileName": "ArchipelagoP5RMod.ReleaseMetadata.json",
   "PluginData": {
@@ -32,6 +32,8 @@
   },
   "IsUniversalMod": false,
   "ModDependencies": [
+    "reloaded.universal.fileemulationframework.bf",
+    "p5rpc.modloader",
     "reloaded.sharedlib.hooks"
   ],
   "OptionalDependencies": [],

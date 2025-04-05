@@ -33,6 +33,15 @@
         <None Remove="BuildLinked.ps1" />
         <None Remove="Reloaded.Trimming.targets" />
         <None Remove="Reloaded.Checks.targets" />
+        <None Update="FEmulator\BF\data\*.flow">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="P5REssentials\CPK\en.cpk\script\field\*.bf">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="FEmulator\BF\en.cpk\script\field\*.flow">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
     </ItemGroup>
 
     <ItemGroup>
