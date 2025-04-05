@@ -13,7 +13,7 @@ for %%f in (.//src//*.flow) do (
     if exist !destFile! (
         for /f "delims=" %%x in (!destFile!) do set localDest=%%x
         set "localDest=!localDest:*/=/!"
-        set dest="../P5REssentials!test!"
+        set dest="../P5REssentials!localDest!"
         call echo !dest!
         set dest=!dest!
         mv ./bin/%%~nf.bf !dest!
