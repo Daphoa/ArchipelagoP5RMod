@@ -1,0 +1,395 @@
+
+// 
+// FlowScript decompiled using Atlus Script Tools by TGE (2017-2021)
+// In the unfortunate case of any bugs, please report them back to me.
+// 
+
+
+// 
+// Imports
+// 
+
+import( "FDOOR151_005.BF.msg" );
+
+// 
+// Script-level variable definitions
+// 
+
+int sVar2;
+
+// 
+// Procedure declarations
+// 
+
+// Procedure Index: 0
+void SET_FADEOUT()
+{
+    FLD_OPEN_DOOR_FADE();
+}
+
+
+// Procedure Index: 1
+void NORMAL_OPEN()
+{
+    FLD_OPEN_DOOR();
+}
+
+
+// Procedure Index: 2
+void NOT_OPEN()
+{
+    FLD_NOT_OPEN_DOOR();
+    FLD_CAMERA_RESET_PARAM( 20 );
+}
+
+
+// Procedure Index: 3
+void Door_Dummy()
+{
+    MSG_WND_DSP();
+    MSG( DOOR_Dummy_MES );
+    MSG_WND_CLS();
+}
+
+
+// Procedure Index: 4
+void door_0011()
+{
+    sVar2 = 0;
+    SET_FADEOUT();
+    CALL_FIELD( 151, 51, 14, 0 );
+}
+
+
+// Procedure Index: 5
+void door_0001()
+{
+    sVar2 = 0;
+    SET_FADEOUT();
+    CALL_FIELD( 151, 4, 1, 0 );
+}
+
+
+// Procedure Index: 6
+void door_0642()
+{
+    sVar2 = 0;
+    SET_FADEOUT();
+    CALL_FIELD( 151, 6, 0, 0 );
+}
+
+
+// Procedure Index: 7
+void door_0645()
+{
+    sVar2 = ( 0x20000000 + 231 );
+    // bit id (536870912) + (231) = 6375
+    BIT_ON( ( 0x20000000 + 231 ) );
+    FLD_OPEN_DOOR();
+}
+
+
+// Procedure Index: 8
+void door_0646()
+{
+    sVar2 = 0;
+    FLD_OPEN_DOOR();
+}
+
+
+// Procedure Index: 9
+void door_0640()
+{
+    sVar2 = 0;
+    NOT_OPEN();
+}
+
+
+// Procedure Index: 10
+void door_0641()
+{
+    sVar2 = 0;
+    Door_EX_0641();
+}
+
+
+// Procedure Index: 11
+void door_0644()
+{
+    sVar2 = 0;
+    FLD_OPEN_DOOR();
+}
+
+
+// Procedure Index: 12
+void door_0643()
+{
+    sVar2 = 0;
+    FLD_OPEN_DOOR();
+}
+
+
+// Procedure Index: 13
+void door_0009()
+{
+    sVar2 = 0;
+    FLD_OPEN_DOOR();
+}
+
+
+// Procedure Index: 14
+void door_12CE()
+{
+    sVar2 = 0;
+    NEW_EX_12CE();
+}
+
+
+// Procedure Index: 15
+void dummy()
+{
+}
+
+
+// Procedure Index: 16
+void EX_0646()
+{
+    int var3;
+    var3 = FLD_GET_DOOR_DIR();
+    // bit id (536870912) + (581) = 6725
+    // bit id (536870912) + (581) = 6725
+    
+    if ( BIT_CHK( ( 0x20000000 + 581 ) ) == 0 )
+    {
+        
+        if ( var3 == 0 )
+        {
+            NOT_OPEN();
+            MSG_WND_DSP();
+            MSG( NOT_OPEN_DOOR02 );
+            MSG_WND_CLS();
+        }
+        else 
+        {
+            MSG_WND_DSP();
+            MSG( LOCK_CLEAR01 );
+            MSG_WND_CLS();
+            MSG_WND_DSP();
+            MSG( LOCK_CLEAR02 );
+            MSG_WND_CLS();
+            BIT_ON( ( 0x20000000 + 581 ) );
+            NORMAL_OPEN();
+        }
+
+    }
+    else 
+    {
+        NORMAL_OPEN();
+    }
+
+}
+
+
+// Procedure Index: 17
+void EX_0009()
+{
+    int var4;
+    var4 = FLD_GET_DOOR_DIR();
+    // bit id (536870912) + (335) = 6479
+    
+    if ( BIT_CHK( ( 0x20000000 + 335 ) ) == 0 )
+    {
+        NOT_OPEN();
+        WAIT( 15 );
+        MSG_WND_DSP();
+        MSG( EX_0009_mes01 );
+        MSG_WND_CLS();
+        MSG_WND_DSP();
+        MSG( EX_0009_mes02 );
+        MSG_WND_CLS();
+    }
+    else 
+    {
+        NORMAL_OPEN();
+    }
+
+}
+
+
+// Procedure Index: 18
+void Door_EX_0641()
+{
+    int var5;
+    NOT_OPEN();
+    // bit id (536870912) + (577) = 6721
+    BIT_ON( ( 0x20000000 + 577 ) );
+    var5 = 19;
+    FLD_SET_LOCAL_COUNT( ( 49152 + 15 ), var5 );
+    FLD_START_SUPPORT_MSG();
+}
+
+
+// Procedure Index: 19
+void NEW_EX_12CE()
+{
+    int var6;
+    var6 = FLD_OBJ_CNV_RESHND( 4814 );
+    
+    if ( GET_COUNT( 145 ) <= 43850 )
+    {
+        SET_COUNT( 145, 43850 );
+    }
+
+    FLD_ROT_OBJ_CAMERA( var6, -15 );
+    FLD_SET_DOOR_HIT_TYPE( 4814, 9, 0x10 );
+    // bit id (536870912) + (5047) = 11191
+    BIT_ON( ( 0x20000000 + 5047 ) );
+    NORMAL_OPEN();
+    // bit id (536870912) + (5050) = 11194
+    BIT_ON( ( 0x20000000 + 5050 ) );
+    // Fld_FadeOut_CallEvent();
+    // bit id (536870912) + (5116) = 11260
+    // bit id (536870912) + (5117) = 11261
+    // bit id (536870912) + (415) = 6559
+    // bit id (536870912) + (68) = 6212
+    
+    if ( ( BIT_CHK( ( 0x20000000 + 5116 ) ) == 0 ) && ( BIT_CHK( ( 0x20000000 + 5117 ) ) == 0 ) )
+    {
+//        CALL_EVENT( 480, 170 );
+        
+        if ( GET_COUNT( 145 ) <= 43900 )
+        {
+            SET_COUNT( 145, 43900 );
+        }
+
+        BIT_ON( ( 0x20000000 + 415 ) );
+        BIT_OFF( ( 0x20000000 + 68 ) );
+    }
+
+    // bit id (536870912) + (5115) = 11259
+//    BIT_ON( ( 0x20000000 + 5115 ) );
+    // bit id (536870912) + (4651) = 10795
+    BIT_ON( ( 0x20000000 + 4651 ) );
+    // bit id (536870912) + (5101) = 11245
+    // bit id (536870912) + (5101) = 11245
+    
+    if ( BIT_CHK( ( 0x20000000 + 5101 ) ) == 1 )
+    {
+        BIT_OFF( ( 0x20000000 + 5101 ) );
+    }
+
+//    CALL_FIELD( 151, 5, 4000, 0 );
+}
+
+
+// Procedure Index: 20
+void Fld_FadeOut_CallField()
+{
+    FADEOUT( 27, 10 );
+    FADE_SYNC();
+}
+
+
+// Procedure Index: 21
+void Fld_FadeOut_Crowd()
+{
+    FLD_REQ_SCN_CHANGE( 0 );
+}
+
+
+// Procedure Index: 22
+void Fld_FadeOut_CallEvent()
+{
+    FADEOUT( 15, 10 );
+    FADE_SYNC();
+}
+
+
+// Procedure Index: 23
+void Fld_FadeOut_CallCalendar()
+{
+    FADEOUT( 15, 10 );
+    FADE_SYNC();
+}
+
+
+// Procedure Index: 24
+void Fld_FadeOut_Default()
+{
+    FADEOUT( 0, 10 );
+    FADE_SYNC();
+}
+
+
+// Procedure Index: 25
+void Fld_FadeOut_Wait10()
+{
+    FADEOUT( 0, 10 );
+    FADE_SYNC();
+    WAIT( 10 );
+}
+
+
+// Procedure Index: 26
+void Fld_FadeIn_Default()
+{
+    FADEIN( 0, 20 );
+    FADE_SYNC();
+}
+
+
+// Procedure Index: 27
+void Fld_FadeOut_Subway()
+{
+    FADEOUT( 8, 10 );
+    FADE_SYNC();
+}
+
+
+// Procedure Index: 28
+void Fld_FadeOut_Symbol()
+{
+    FADEOUT( 15, 10 );
+    FADE_SYNC();
+}
+
+
+// Procedure Index: 29
+void Fld_FadeOut_Rain()
+{
+    FADEOUT( 11, 10 );
+    FADE_SYNC();
+}
+
+
+// Procedure Index: 30
+void Fld_FadeOut_Cross()
+{
+    FADEOUT( 13, 10 );
+    FADE_SYNC();
+}
+
+
+// Procedure Index: 31
+void Fld_FadeOut_Parallel()
+{
+    FADEOUT( 14, 10 );
+    FADE_SYNC();
+}
+
+
+// Procedure Index: 32
+void Fld_FadeOut_CutChange()
+{
+    FADEOUT( 5, 10 );
+    FADE_SYNC();
+}
+
+
+// Procedure Index: 33
+void Fld_FadeOut_Velvet()
+{
+    FADEOUT( 19, 10 );
+    FADE_SYNC();
+}
+
