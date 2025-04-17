@@ -23,7 +23,7 @@ public readonly struct ApBitFlagItem(string itemName, uint bitFlag, short? itemI
 public class ApFlagItemRewarder
 {
     private HashSet<ApBitFlagItem> flagItems = [
-        new( "Grappling Hook", 0x2A3B, 0x4000 + 154)
+        new( "Grappling Hook", bitFlag: 0x2A3B, itemId: 0x4000 + 154 )
     ];
 
     private readonly ILogger _logger;

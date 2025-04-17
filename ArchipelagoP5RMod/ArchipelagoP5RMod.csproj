@@ -94,7 +94,6 @@
 
     <ItemGroup>
       <Folder Include="FlowFiles\bin\" />
-      <Folder Include="P5REssentials\CPK\en.cpk\" />
     </ItemGroup>
 
     <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
