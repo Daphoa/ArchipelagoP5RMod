@@ -27,6 +27,8 @@ public class ItemManipulator
     private GCHandle _itemNameOverrideAdr;
     private long? _currChestFlag = null;
 
+    private readonly uint[] BLANK_ITEMS = [0x0000, 0x1000, 0x2000, 0x3000, 0x4000, 0x5000, 0x6000, 0x7000, 0x8000];
+
     [Function(CallingConventions.Fastcall)]
     private unsafe delegate long OpenChestOnUpdate(int* param1, float param2, long param3, float param4);
 
@@ -69,25 +71,33 @@ public class ItemManipulator
         unsafe
         {
             _openChestHook = hooks
-                .CreateHook<OpenChestOnUpdate>(OpenChestOnUpdateImpl, AddressScanner.Addresses[AddressScanner.AddressName.OpenChestOnUpdateFuncAddress])
+                .CreateHook<OpenChestOnUpdate>(OpenChestOnUpdateImpl,
+                    AddressScanner.Addresses[AddressScanner.AddressName.OpenChestOnUpdateFuncAddress])
                 .Activate();
             _startOpenChestHook =
-                hooks.CreateHook<StartOpenChest>(StartOpenChestImpl, AddressScanner.Addresses[AddressScanner.AddressName.StartOpenChestFuncAddress])
+                hooks.CreateHook<StartOpenChest>(StartOpenChestImpl,
+                        AddressScanner.Addresses[AddressScanner.AddressName.StartOpenChestFuncAddress])
                     .Activate();
             _onCompleteOpenChestHook =
                 hooks.CreateHook<OnCompleteOpenChest>(OnCompleteOpenChestImpl,
                     AddressScanner.Addresses[AddressScanner.AddressName.OnCompleteOpenChestFuncAddress]).Activate();
-            _getItemNameHook = hooks.CreateHook<GetItemName>(GetItemNameImpl, AddressScanner.Addresses[AddressScanner.AddressName.GetItemNameFuncAddress])
+            _getItemNameHook = hooks.CreateHook<GetItemName>(GetItemNameImpl,
+                    AddressScanner.Addresses[AddressScanner.AddressName.GetItemNameFuncAddress])
                 .Activate();
-            _getItemNumHook = hooks.CreateHook<GetItemNum>(GetItemNumImpl, AddressScanner.Addresses[AddressScanner.AddressName.GetItemNumFuncAddress])
+            _getItemNumHook = hooks.CreateHook<GetItemNum>(GetItemNumImpl,
+                    AddressScanner.Addresses[AddressScanner.AddressName.GetItemNumFuncAddress])
                 .Activate();
-            _setItemNumHook = hooks.CreateHook<SetItemNum>(SetItemNumImpl, AddressScanner.Addresses[AddressScanner.AddressName.SetItemNumFuncAddress])
+            _setItemNumHook = hooks.CreateHook<SetItemNum>(SetItemNumImpl,
+                    AddressScanner.Addresses[AddressScanner.AddressName.SetItemNumFuncAddress])
                 .Activate();
-            _getTboxFlag = hooks.CreateWrapper<GetTboxFlagFlow>(AddressScanner.Addresses[AddressScanner.AddressName.GetTboxFlagFlowFuncAddress],
+            _getTboxFlag = hooks.CreateWrapper<GetTboxFlagFlow>(
+                AddressScanner.Addresses[AddressScanner.AddressName.GetTboxFlagFlowFuncAddress],
                 out _getTboxFlagFlowAdr);
-            _getItemWindow = hooks.CreateWrapper<GetItemWindow>(AddressScanner.Addresses[AddressScanner.AddressName.GetItemWindowFuncAddress],
+            _getItemWindow = hooks.CreateWrapper<GetItemWindow>(
+                AddressScanner.Addresses[AddressScanner.AddressName.GetItemWindowFuncAddress],
                 out _getItemWindowAdr);
-            _getItemWindowFlow = hooks.CreateWrapper<GetItemWindowFlow>(AddressScanner.Addresses[AddressScanner.AddressName.GetItemWindowFlowFuncAddress],
+            _getItemWindowFlow = hooks.CreateWrapper<GetItemWindowFlow>(
+                AddressScanner.Addresses[AddressScanner.AddressName.GetItemWindowFlowFuncAddress],
                 out _getItemWindowFlowAdr);
         }
 
@@ -120,6 +130,12 @@ public class ItemManipulator
 
     public void SetItemNumImpl(ushort itemId, byte newItemCount, byte shouldUpdateRecentItem)
     {
+        if (BLANK_ITEMS.Contains(itemId))
+        {
+            // Never actually add blank items to the player's inventory.
+            return;
+        }
+
         _setItemNumHook.OriginalFunction(itemId, newItemCount, shouldUpdateRecentItem);
     }
 
@@ -181,10 +197,13 @@ public class ItemManipulator
 
     private unsafe long CStrLen(char* str)
     {
-        char *s;
-        for (s = str; *s == (char)0; ++s) { }
+        char* s;
+        for (s = str; *s == (char)0; ++s)
+        {
+        }
+
         return s - str;
-    } 
+    }
 
     public void RewardItem(ushort itemId, byte count)
     {
@@ -199,22 +218,28 @@ public class ItemManipulator
         if (e.Handled || e.ApItem.Type != ItemType.Item || _flagManipulator.CheckBit(FlagManipulator.SHOWING_MESSAGE))
             return;
 
-        // _flagManipulator.SetBit(FlagManipulator.SHOWING_MESSAGE, true);
-        RewardItem(e.ApItem.Id, e.ApItem.Count);
-        
-        _flagManipulator.SetBit(FlagManipulator.SHOWING_MESSAGE, true);
-        _flagManipulator.SetCount(FlagManipulator.AP_CURR_REWARD_ITEM_ID, e.ApItem.Id);
-        _flagManipulator.SetCount(FlagManipulator.AP_CURR_REWARD_ITEM_NUM, e.ApItem.Count);
-            
-        FlowFunctionWrapper.CallCustomFlowFunction(ApMethodsIndexes.RewardItemsFunc);
-        _logger.WriteLine($"Opening item window for item {e.ApItem.Id:X}");
-        
+        var apItem = e.ApItem;
+
+        RewardItem(apItem.Id, apItem.Count);
+
+        if (!e.IsSenderSelf)
+        {
+            // Only display a notification if we got this from someone else - otherwise we are assuming we've seen the
+            // item from the location.
+            _flagManipulator.SetBit(FlagManipulator.SHOWING_MESSAGE, true);
+            _flagManipulator.SetCount(FlagManipulator.AP_CURR_REWARD_ITEM_ID, e.ApItem.Id);
+            _flagManipulator.SetCount(FlagManipulator.AP_CURR_REWARD_ITEM_NUM, e.ApItem.Count);
+
+            FlowFunctionWrapper.CallCustomFlowFunction(ApMethodsIndexes.RewardItemsFunc);
+
+            _logger.WriteLine($"Opening item window for item {e.ApItem.Id:X}");
+        }
+
         e.Handled = true;
     }
 
     public unsafe string GetOriginalItemName(ushort itemId)
     {
-
         char* str = _getItemNameHook.OriginalFunction(itemId);
         int len = (int)CStrLen(str);
 

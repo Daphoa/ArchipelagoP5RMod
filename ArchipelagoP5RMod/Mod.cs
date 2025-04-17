@@ -2,6 +2,7 @@
 
 using System.Timers;
 using ArchipelagoP5RMod.Configuration;
+using ArchipelagoP5RMod.GameCommunicators;
 using Reloaded.Hooks.ReloadedII.Interfaces;
 using Reloaded.Mod.Interfaces;
 using ArchipelagoP5RMod.Template;
@@ -60,6 +61,7 @@ public class Mod : ModBase // <= Do not Remove.
     private readonly FirstTimeSetup _firstTimeSetup;
     private readonly ChestRewardDirector _chestRewardDirector;
     private readonly ApFlagItemRewarder _apFlagItemRewarder;
+    private readonly SequenceMonitor _sequenceMonitor;
 
     private readonly System.Timers.Timer _checkGameLoaded;
     private readonly DebugTools _debugTools;
@@ -92,6 +94,7 @@ public class Mod : ModBase // <= Do not Remove.
         _confidantManipulator = new ConfidantManipulator(_flagManipulator, _hooks, _logger);
         _chestRewardDirector = new ChestRewardDirector();
         _apFlagItemRewarder = new ApFlagItemRewarder(_itemManipulator, _flagManipulator, _logger);
+        _sequenceMonitor = new SequenceMonitor();
         var bfLoader = new BfLoader(_logger);
 
         _debugTools = new DebugTools();
@@ -111,27 +114,47 @@ public class Mod : ModBase // <= Do not Remove.
 
         OnGameLoaded += (_, _) => _apConnector.ReadyToCollect();
 
-        _chestRewardDirector.Setup(_apConnector, _itemManipulator);
+        _chestRewardDirector.Setup(_apConnector, _itemManipulator, _logger);
 
         _modSaveLoadManager.RegisterSaveLoad(_flagManipulator.SaveCountData, _flagManipulator.LoadCountData);
 
-        var logTimer = new Timer(10000);
+        var logTimer = new Timer(1000);
         logTimer.Elapsed += LogStuff;
         logTimer.AutoReset = true;
 
         OnGameLoaded += (_, _) => logTimer.Start();
 
-        // Test code
-        // ModSaveLoadHandler.TestSaveLoad(_logger);
 
-        // Test Code
-        // var testTimer = new Timer(15000);
-        // testTimer.Elapsed += (_, _) =>
-        // {
-        //     _logger.WriteLine("Calling test Reward Items Function");
-        //     FlowFunctionWrapper.CallCustomFlowFunction(ApMethodsIndexes.RewardItemsFunc);
-        // };
-        // OnGameLoaded += (_, _) => testTimer.Start();
+        var sequenceTimer = new Timer(1000);
+        sequenceTimer.Elapsed += (object? _, ElapsedEventArgs _) =>
+        {
+            _logger.WriteLine($"Sequence: {_sequenceMonitor.CurrentSequenceType}");
+
+            // Super hacky debug stuff - this should be moved if it works out well.
+            var thisProcess = System.Diagnostics.Process.GetCurrentProcess();
+            IntPtr someArrayAddress = thisProcess.MainModule?.BaseAddress + 0x293d008 ?? 0x0;
+
+            unsafe
+            {
+                if (someArrayAddress != IntPtr.Zero &&
+                    AddressScanner.FlowCommandDataAddress != (Types.FlowCommandData*)0x0)
+                {
+                    int index = AddressScanner.FlowCommandDataAddress->someIndex;
+                    uint* flagPointer = (uint*)someArrayAddress + 0x40 * index + 0x10;
+
+                    uint relevantFlagValue = *flagPointer & 0x300;
+
+                    _logger.WriteLine($"Relevant flag value: {relevantFlagValue:X}");
+                }
+                else
+                {
+                    string nullValue = someArrayAddress == IntPtr.Zero ? "SomeArrayAddress" : "FlowCommandData";
+                    _logger.WriteLine($"Not reporting values because {nullValue} is NULL");
+                }
+            }
+        };
+        sequenceTimer.AutoReset = true;
+        sequenceTimer.Start();
 
         _checkGameLoaded = new Timer(1000);
         _checkGameLoaded.Elapsed += CheckGameLoaded;
@@ -141,13 +164,17 @@ public class Mod : ModBase // <= Do not Remove.
         _itemManipulator.OnChestOpened += id => { _logger.WriteLine($"StartOpenChest got flag: 0x{id:X}"); };
 
         _itemManipulator.OnChestOpenedCompleted += id => { _apConnector.ReportLocationCheckAsync(id); };
+        _confidantManipulator.OnCmmSetLv += (cmmId, rank) =>
+        {
+            // TODO figure out somewhere better for this to go.
+            long locId = 0x60000000L + cmmId * 0x10L + rank;
+            _apConnector.ReportLocationCheckAsync(locId);
+        };
         _logger.WriteLine("End Mod Constructor");
 
         // Register save/load events
         _gameSaveLoadConnector.OnGameFileSaved += _modSaveLoadManager.Save;
         _gameSaveLoadConnector.OnGameFileLoaded += _modSaveLoadManager.Load;
-
-        // GameFeatureBlocker.BlockGameFeatures(_hooks);
     }
 
     private void CheckGameLoaded(object? sender, ElapsedEventArgs elapsedEventArgs)

@@ -12,11 +12,13 @@ namespace ArchipelagoP5RMod;
 
 public class ApConnector
 {
-    private FlagManipulator flagManipulator;
+    private readonly FlagManipulator _flagManipulator;
 
-    public class ApItemReceivedEvent(ApItem apItem) : EventArgs
+    public class ApItemReceivedEvent(ApItem apItem, string Sender, bool IsSelf) : EventArgs
     {
         public bool Handled { get; set; } = false;
+        public bool IsSenderSelf { get; private set; } = IsSelf;
+        public string Sender { get; set; } = Sender;
         public ApItem ApItem { get; private set; } = apItem;
     }
 
@@ -30,8 +32,8 @@ public class ApConnector
 
     public uint LastRewardIndex
     {
-        get => flagManipulator.GetCount(FlagManipulator.AP_LAST_REWARD_INDEX);
-        private set => flagManipulator.SetCount(FlagManipulator.AP_LAST_REWARD_INDEX, value);
+        get => _flagManipulator.GetCount(FlagManipulator.AP_LAST_REWARD_INDEX);
+        private set => _flagManipulator.SetCount(FlagManipulator.AP_LAST_REWARD_INDEX, value);
     }
 
     private string ServerPassword { get; set; }
@@ -45,7 +47,7 @@ public class ApConnector
         this.ServerPassword = serverPassword;
         this.SlotName = slotName;
 
-        this.flagManipulator = flagManipulator;
+        this._flagManipulator = flagManipulator;
 
         _session.MessageLog.OnMessageReceived += OnMessageReceived;
 
@@ -237,9 +239,11 @@ public class ApConnector
             _logger.WriteLine(
                 $"Collecting item {LastRewardIndex}: {_session.Items.AllItemsReceived[(int)LastRewardIndex].ItemName}");
 
-            var item = new ApItem(_session.Items.AllItemsReceived[(int)LastRewardIndex].ItemId);
+            var itemInfo = _session.Items.AllItemsReceived[(int)LastRewardIndex];
+            
+            var item = new ApItem(itemInfo.ItemId);
 
-            var e = new ApItemReceivedEvent(item);
+            var e = new ApItemReceivedEvent(item, itemInfo.Player.Alias, itemInfo.Player.IsRelatedTo(_session.Players.ActivePlayer));
             OnItemReceivedEvent.Invoke(this, e);
             if (!e.Handled)
             {

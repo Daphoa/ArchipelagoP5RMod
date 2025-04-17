@@ -33,6 +33,7 @@ public static class AddressScanner
         GetItemWindowFuncAddress,
         GetItemWindowFlowFuncAddress,
         RunFlowFuncFromFileAddress,
+        ExecuteFlowFuncOnUpdate,
         CallTutorialFlowFuncAddress,
         NetSetActionFuncAddress,
         CmmCheckEnableFuncAddress,
@@ -40,6 +41,7 @@ public static class AddressScanner
         AppStorageReadFuncAddress,
         AppStorageWriteFuncAddress,
         BitFlagSectionMap,
+        SequenceObjAddress,
 
         //Debug
         GetFlowscriptInt4ArgAddress,
@@ -84,6 +86,7 @@ public static class AddressScanner
             "48 83 EC 28 48 8B 05 ?? ?? ?? ?? 48 85 C0 74 ?? 83 B8 ?? ?? ?? ?? 00 74 ?? 48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 85 C0 75 ?? B8 01 00 00 00 48 83 C4 28 C3 B9 01 00 00 00 E8 ?? ?? ?? ?? 33 C9 44 8B C8 E8 ?? ?? ?? ?? 8B D0"),
         new(AddressName.RunFlowFuncFromFileAddress,
             "48 89 5C 24 ?? 48 89 6C 24 ?? 48 89 74 24 ?? 48 89 7C 24 ?? 41 56 48 83 EC 60 41 89 CE"),
+        new(AddressName.ExecuteFlowFuncOnUpdate, "48 83 EC 28 48 8B 49 ?? E8 ?? ?? ?? ?? 83 E0 FD"),
         new(AddressName.NetSetActionFuncAddress, "B8 6D 01 00 00 66 3B D0 7D ?? 0F B6 C9"),
         new(AddressName.CmmCheckEnableFuncAddress, "40 53 55 56 41 54 41 56 48 83 EC 20"),
         new(AddressName.CmmSetLvFuncAddress, "66 85 C9 0F 84 ?? ?? ?? ?? 57"),
@@ -152,6 +155,7 @@ public static class AddressScanner
             foundAddresses.Add(AddressName.GetItemNameFuncAddress, _baseAddress + 0xd68530);
             foundAddresses.Add(AddressName.OnCompleteOpenChestFuncAddress, _baseAddress + 0x102cdd0);
             foundAddresses.Add(AddressName.GetItemNumFuncAddress, _baseAddress + 0xd68720);
+            foundAddresses.Add(AddressName.SequenceObjAddress, _baseAddress + 0x2902558);
 
             Addresses = foundAddresses.ToFrozenDictionary();
         }

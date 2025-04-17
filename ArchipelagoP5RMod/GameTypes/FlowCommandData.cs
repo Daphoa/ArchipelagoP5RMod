@@ -21,6 +21,8 @@ public unsafe struct FlowCommandData
     [FieldOffset(0x200)] public IntPtr InstructionData;
     [FieldOffset(0x208)] public IntPtr MessageScriptData;
     [FieldOffset(0x210)] public IntPtr StringData;
+
+    [FieldOffset(0x21c)] public int someIndex;
     
     [FieldOffset(0x218)] public IntPtr CurrFuncIndex;
 

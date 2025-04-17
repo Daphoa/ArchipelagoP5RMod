@@ -45,6 +45,27 @@
         <None Update="P5REssentials\CPK\en.cpk\field\door\*.bf">
           <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
+        <None Update="P5REssentials\CPK\base.cpk\field\ftd\DATTBOX.FTD">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="P5REssentials\CPK\en.cpk\init\cmm.bin\cmmFunctionName.ctd">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="P5REssentials\CPK\en.cpk\init\cmm.bin\cmmFunctionTable.ctd">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="FEmulator\PAK\en.cpk\init\cmm.bin\cmmFunctionName.ctd">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="FEmulator\PAK\en.cpk\init\cmm.bin\cmmFunctionTable.ctd">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="FEmulator\PAK\EN.CPK\CMM.BIN\cmmFunctionTable.ctd">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="FEmulator\PAK\EN.CPK\CMM.BIN\cmmFunctionName.ctd">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
     </ItemGroup>
 
     <ItemGroup>

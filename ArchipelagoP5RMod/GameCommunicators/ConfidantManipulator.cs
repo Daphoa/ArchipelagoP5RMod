@@ -12,7 +12,7 @@ public class ConfidantManipulator
     [Function(CallingConventions.Fastcall)]
     private delegate IntPtr CmmSetLv(ushort cmmId, short cmmLv);
 
-    private FlagManipulator _flagManipulator;
+    private readonly FlagManipulator _flagManipulator;
 
     private readonly IHook<CmmCheckEnableFunc> _cmmCheckEnableFuncHook;
     private readonly IHook<CmmSetLv> _cmmSetLvHook;

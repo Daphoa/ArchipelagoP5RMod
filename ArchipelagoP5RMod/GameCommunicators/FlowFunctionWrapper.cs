@@ -13,7 +13,10 @@ public static class FlowFunctionWrapper
 
     [Function(CallingConventions.Fastcall)]
     public delegate uint FlowFuncDelegate();
-    
+
+    [Function(CallingConventions.Fastcall)]
+    public unsafe delegate long OnUpdateDelegate(GameObject* eventInfo);
+
     public delegate void BasicFlowFunc();
 
     public delegate void BitToggleType();
@@ -24,7 +27,7 @@ public static class FlowFunctionWrapper
 
     [Function(CallingConventions.Fastcall)]
     public delegate int GetFlowscriptInt4ArgType(byte paramIndex);
-    
+
     [Function(CallingConventions.Fastcall)]
     private delegate IntPtr RunFlowFuncFromFileType(int param1, IntPtr file, uint fileSize, uint funcIndex);
 
@@ -33,6 +36,8 @@ public static class FlowFunctionWrapper
 
     private static IntPtr _getFlowscriptInt4ArgPtr;
     private static IntPtr _runFlowFuncFromFilePtr;
+
+    private static IHook<OnUpdateDelegate> _onFlowUpdateDelegate;
 
     public static void SetLogger(ILogger logger)
     {
@@ -44,12 +49,39 @@ public static class FlowFunctionWrapper
     public static void Setup(IReloadedHooks hooks)
     {
         GetFlowscriptInt4Arg =
-            hooks.CreateWrapper<GetFlowscriptInt4ArgType>(AddressScanner.Addresses[AddressScanner.AddressName.GetFlowscriptInt4ArgAddress],
+            hooks.CreateWrapper<GetFlowscriptInt4ArgType>(
+                AddressScanner.Addresses[AddressScanner.AddressName.GetFlowscriptInt4ArgAddress],
                 out _getFlowscriptInt4ArgPtr);
 
         RunFlowFuncFromFile =
-            hooks.CreateWrapper<RunFlowFuncFromFileType>(AddressScanner.Addresses[AddressScanner.AddressName.RunFlowFuncFromFileAddress],
+            hooks.CreateWrapper<RunFlowFuncFromFileType>(
+                AddressScanner.Addresses[AddressScanner.AddressName.RunFlowFuncFromFileAddress],
                 out _runFlowFuncFromFilePtr);
+
+        unsafe
+        {
+            _onFlowUpdateDelegate = hooks.CreateHook<OnUpdateDelegate>(FlowOnUpdateImpl,
+                AddressScanner.Addresses[AddressScanner.AddressName.ExecuteFlowFuncOnUpdate]).Activate();
+        }
+    }
+
+    private static unsafe long FlowOnUpdateImpl(GameObject* eventInfo)
+    {
+        // _logger.WriteLine("Called Flow onUpdate");
+        var flowCommandData = (FlowCommandData*)eventInfo->args;
+        // _logger.WriteLine($"Got the args from the event {(IntPtr)flowCommandData}");
+        // _logger.WriteLine($"Func name => {(IntPtr)flowCommandData->CurrFuncName}");
+        // _logger?.Write($"FlowFunctionWrapper flow function called with method \"");
+        // for (int i = 0; i < 40; i++)
+        // {
+        //     _logger.Write(flowCommandData->CurrFuncName[i].ToString());
+        // }
+        // _logger?.WriteLine("\"");
+        
+        // var funcName = new string(flowCommandData->CurrFuncName);
+        // _logger?.WriteLine($"FlowFunctionWrapper flow function called with method {funcName}");
+        
+        return _onFlowUpdateDelegate.OriginalFunction(eventInfo);
     }
 
     public static unsafe void CallFlowFunctionSetup(params long[] args)
@@ -70,7 +102,7 @@ public static class FlowFunctionWrapper
         }
 
         AddressScanner.FlowCommandDataAddress->StackSize = newStackSize;
-        for (var i = 0; i < args.Length; i++)
+        for (int i = 0; i < args.Length; i++)
         {
             AddressScanner.FlowCommandDataAddress->ArgData[newStackSize - i - 1] = args[i];
             AddressScanner.FlowCommandDataAddress->ArgTypes[newStackSize - i - 1] = (byte)FlowParamType.Int;
@@ -139,6 +171,7 @@ public static class FlowFunctionWrapper
         {
             throw new NullReferenceException("RunFlowFuncFromFile is null");
         }
+
         RunFlowFuncFromFile(8, (IntPtr)BfLoader.ApMethodsBfFilePointer, BfLoader.ApMethodsBfFileLength, (uint)func);
     }
 }
