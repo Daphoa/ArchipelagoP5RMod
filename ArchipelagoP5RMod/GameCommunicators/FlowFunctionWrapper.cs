@@ -38,6 +38,16 @@ public static class FlowFunctionWrapper
     private static IntPtr _runFlowFuncFromFilePtr;
 
     private static IHook<OnUpdateDelegate> _onFlowUpdateDelegate;
+    
+    public static unsafe FlowCommandData* FlowCommandDataAddress
+    {
+        get => *_flowCommanderDataRefAddress;
+        set => *_flowCommanderDataRefAddress = value;
+    }
+
+    public static unsafe bool IsAdrNullPointer => (IntPtr)_flowCommanderDataRefAddress == IntPtr.Zero;
+
+    private static unsafe FlowCommandData** _flowCommanderDataRefAddress;
 
     public static void SetLogger(ILogger logger)
     {
@@ -48,20 +58,24 @@ public static class FlowFunctionWrapper
 
     public static void Setup(IReloadedHooks hooks)
     {
-        GetFlowscriptInt4Arg =
-            hooks.CreateWrapper<GetFlowscriptInt4ArgType>(
-                AddressScanner.Addresses[AddressScanner.AddressName.GetFlowscriptInt4ArgAddress],
-                out _getFlowscriptInt4ArgPtr);
-
-        RunFlowFuncFromFile =
-            hooks.CreateWrapper<RunFlowFuncFromFileType>(
-                AddressScanner.Addresses[AddressScanner.AddressName.RunFlowFuncFromFileAddress],
-                out _runFlowFuncFromFilePtr);
+        AddressScanner.DelayedScanPattern(
+            "4C 8B 05 ?? ?? ?? ?? 41 8B 50 ?? 29 CA",
+            address => GetFlowscriptInt4Arg =
+                hooks.CreateWrapper<GetFlowscriptInt4ArgType>(address, out _getFlowscriptInt4ArgPtr));
+        AddressScanner.DelayedScanPattern(
+            "48 89 5C 24 ?? 48 89 6C 24 ?? 48 89 74 24 ?? 48 89 7C 24 ?? 41 56 48 83 EC 60 41 89 CE",
+            address => RunFlowFuncFromFile =
+                hooks.CreateWrapper<RunFlowFuncFromFileType>(address, out _runFlowFuncFromFilePtr));
 
         unsafe
         {
-            _onFlowUpdateDelegate = hooks.CreateHook<OnUpdateDelegate>(FlowOnUpdateImpl,
-                AddressScanner.Addresses[AddressScanner.AddressName.ExecuteFlowFuncOnUpdate]).Activate();
+            AddressScanner.DelayedScanPattern(
+                "48 83 EC 28 48 8B 49 ?? E8 ?? ?? ?? ?? 83 E0 FD",
+                address => _onFlowUpdateDelegate =
+                    hooks.CreateHook<OnUpdateDelegate>(FlowOnUpdateImpl, address).Activate());
+
+            AddressScanner.DelayedAddressHack(0x293d008,
+                address => _flowCommanderDataRefAddress = (FlowCommandData**)address);
         }
     }
 
@@ -77,23 +91,23 @@ public static class FlowFunctionWrapper
         //     _logger.Write(flowCommandData->CurrFuncName[i].ToString());
         // }
         // _logger?.WriteLine("\"");
-        
+
         // var funcName = new string(flowCommandData->CurrFuncName);
         // _logger?.WriteLine($"FlowFunctionWrapper flow function called with method {funcName}");
-        
+
         return _onFlowUpdateDelegate.OriginalFunction(eventInfo);
     }
 
     public static unsafe void CallFlowFunctionSetup(params long[] args)
     {
-        backupCommandData = AddressScanner.FlowCommandDataAddress;
+        backupCommandData = FlowCommandDataAddress;
 
         temporaryCommandDataHandle = GCHandle.Alloc(new FlowCommandData(), GCHandleType.Pinned);
-        AddressScanner.FlowCommandDataAddress = (FlowCommandData*)temporaryCommandDataHandle.AddrOfPinnedObject();
+        FlowCommandDataAddress = (FlowCommandData*)temporaryCommandDataHandle.AddrOfPinnedObject();
 
-        AddressScanner.FlowCommandDataAddress->StackSize = 1;
+        FlowCommandDataAddress->StackSize = 1;
 
-        int newStackSize = AddressScanner.FlowCommandDataAddress->StackSize + args.Length;
+        int newStackSize = FlowCommandDataAddress->StackSize + args.Length;
         if (newStackSize > 47)
         {
             _logger?.WriteLine(
@@ -101,19 +115,19 @@ public static class FlowFunctionWrapper
             return;
         }
 
-        AddressScanner.FlowCommandDataAddress->StackSize = newStackSize;
+        FlowCommandDataAddress->StackSize = newStackSize;
         for (int i = 0; i < args.Length; i++)
         {
-            AddressScanner.FlowCommandDataAddress->ArgData[newStackSize - i - 1] = args[i];
-            AddressScanner.FlowCommandDataAddress->ArgTypes[newStackSize - i - 1] = (byte)FlowParamType.Int;
+            FlowCommandDataAddress->ArgData[newStackSize - i - 1] = args[i];
+            FlowCommandDataAddress->ArgTypes[newStackSize - i - 1] = (byte)FlowParamType.Int;
         }
     }
 
     public static unsafe long CallFlowFunctionCleanup()
     {
-        long retVal = AddressScanner.FlowCommandDataAddress->ReturnValue;
+        long retVal = FlowCommandDataAddress->ReturnValue;
 
-        AddressScanner.FlowCommandDataAddress = backupCommandData;
+        FlowCommandDataAddress = backupCommandData;
         temporaryCommandDataHandle.Free();
 
         return retVal;

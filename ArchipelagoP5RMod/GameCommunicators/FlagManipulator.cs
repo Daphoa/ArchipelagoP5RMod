@@ -25,11 +25,11 @@ public class FlagManipulator
     private delegate uint BitToggleType();
 
     // private IntPtr _bitChkWrapperAdr;
-    private readonly IHook<BitChkType> _bitChkTypeHook;
-    private readonly IHook<BitToggleType> _bitOnHook;
-    private readonly IHook<BitToggleType> _bitOffHook;
-    private readonly IHook<FlowFunctionWrapper.FlowFuncDelegate> _getCountFlowHook;
-    private readonly IHook<FlowFunctionWrapper.FlowFuncDelegate> _setCountFlowHook;
+    private IHook<BitChkType> _bitChkTypeHook;
+    private IHook<BitToggleType> _bitOnHook;
+    private IHook<BitToggleType> _bitOffHook;
+    private IHook<FlowFunctionWrapper.FlowFuncDelegate> _getCountFlowHook;
+    private IHook<FlowFunctionWrapper.FlowFuncDelegate> _setCountFlowHook;
 
     private const uint SectionMask = 0x10000000;
 
@@ -47,20 +47,28 @@ public class FlagManipulator
     public FlagManipulator(IReloadedHooks hooks, ILogger logger)
     {
         _logger = logger;
-        _bitChkTypeHook = hooks
-            .CreateHook<BitChkType>(BitChkImpl, AddressScanner.Addresses[AddressScanner.AddressName.ChkBitFuncAddress])
-            .Activate();
-        _bitOnHook = hooks.CreateHook<BitToggleType>(BitOnImpl,
-            AddressScanner.Addresses[AddressScanner.AddressName.BitOnFlowFuncAddress]).Activate();
-        _bitOffHook = hooks.CreateHook<BitToggleType>(BitOffImpl,
-            AddressScanner.Addresses[AddressScanner.AddressName.BitOffFlowFuncAddress]).Activate();
-        _getCountFlowHook = hooks.CreateHook<FlowFunctionWrapper.FlowFuncDelegate>(GetCountImpl,
-            AddressScanner.Addresses[AddressScanner.AddressName.GetCountFlowFuncAddress]).Activate();
-        _setCountFlowHook = hooks.CreateHook<FlowFunctionWrapper.FlowFuncDelegate>(SetCountImpl,
-            AddressScanner.Addresses[AddressScanner.AddressName.SetCountFlowFuncAddress]).Activate();
+
+        AddressScanner.DelayedScanPattern(
+            "4C 8D 05 ?? ?? ?? ?? 33 C0 49 8B D0 0F 1F 40 00 39 0A 74 ?? FF C0 48 83 C2 08 83 F8 10 72 ?? 8B D1",
+            address => _bitChkTypeHook = hooks.CreateHook<BitChkType>(BitChkImpl, address).Activate());
+        AddressScanner.DelayedScanPattern(
+            "40 53 48 83 EC 20 31 C9 E8 ?? ?? ?? ?? B9 01 00 00 00",
+            address => _bitOnHook = hooks.CreateHook<BitToggleType>(BitOnImpl, address).Activate());
+        AddressScanner.DelayedScanPattern(
+            "40 53 48 83 EC 20 31 C9 E8 ?? ?? ?? ?? 31 C9 89 C3",
+            address => _bitOffHook = hooks.CreateHook<BitToggleType>(BitOffImpl, address).Activate());
+        AddressScanner.DelayedScanPattern(
+            "48 83 EC 28 31 C9 E8 ?? ?? ?? ?? 4C 8D 05 ?? ?? ?? ??",
+            address => _getCountFlowHook =
+                hooks.CreateHook<FlowFunctionWrapper.FlowFuncDelegate>(GetCountImpl, address).Activate());
+        AddressScanner.DelayedScanPattern(
+            "48 83 EC 28 31 C9 E8 ?? ?? ?? ?? B9 01 00 00 00 4C 63 C8",
+            address => _setCountFlowHook =
+                hooks.CreateHook<FlowFunctionWrapper.FlowFuncDelegate>(SetCountImpl, address).Activate());
 
         logger.WriteLine("Created FlagManipulator Hooks");
-        
+
+        // Note: this is playing a little bit with fire. If it needed to call the in game function, it'd get a null ref.
         SetBit(SHOWING_MESSAGE, false);
     }
 
@@ -72,7 +80,7 @@ public class FlagManipulator
         {
             return externalBitFlags[bitIndex % SectionMask];
         }
-        
+
         return _bitChkTypeHook.OriginalFunction(bitIndex) != 0;
     }
 
@@ -119,8 +127,8 @@ public class FlagManipulator
 
         unsafe
         {
-            AddressScanner.FlowCommandDataAddress->ReturnType = FlowReturnType.Int;
-            AddressScanner.FlowCommandDataAddress->ReturnValue = externalCounts[countId % SectionMask];
+            FlowFunctionWrapper.FlowCommandDataAddress->ReturnType = FlowReturnType.Int;
+            FlowFunctionWrapper.FlowCommandDataAddress->ReturnValue = externalCounts[countId % SectionMask];
         }
 
         _logger.WriteLine($"GetCountImpl found result {externalCounts[countId % SectionMask]} from input {countId:X}.");
@@ -146,7 +154,8 @@ public class FlagManipulator
 
     public uint GetCount(uint countId)
     {
-        if (countId is >= SectionMask * ExternalCountSection and < SectionMask * ExternalCountSection + NumExternalCounts)
+        if (countId is >= SectionMask * ExternalCountSection
+            and < SectionMask * ExternalCountSection + NumExternalCounts)
         {
             return externalCounts[countId % SectionMask];
         }
@@ -225,7 +234,7 @@ public class FlagManipulator
     private uint BitOffImpl()
     {
         var bitIndex = (uint)FlowFunctionWrapper.GetFlowscriptInt4Arg(0);
-        
+
         _logger.WriteLine($"Turning {bitIndex:X} bit off.");
 
         if (bitIndex is < ExternalBitSection * SectionMask or >= ExternalBitSection * SectionMask + NumExternalBitFlags)

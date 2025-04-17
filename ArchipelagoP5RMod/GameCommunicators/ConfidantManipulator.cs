@@ -14,8 +14,8 @@ public class ConfidantManipulator
 
     private readonly FlagManipulator _flagManipulator;
 
-    private readonly IHook<CmmCheckEnableFunc> _cmmCheckEnableFuncHook;
-    private readonly IHook<CmmSetLv> _cmmSetLvHook;
+    private IHook<CmmCheckEnableFunc> _cmmCheckEnableFuncHook;
+    private IHook<CmmSetLv> _cmmSetLvHook;
     private static ILogger _logger;
 
     private static readonly HashSet<uint> allCmmFuncIds =
@@ -51,14 +51,13 @@ public class ConfidantManipulator
     {
         _flagManipulator = flagManipulator;
         _logger = logger;
-        _cmmCheckEnableFuncHook = hooks
-            .CreateHook<CmmCheckEnableFunc>(CmmCheckEnableFuncImpl,
-                AddressScanner.Addresses[AddressScanner.AddressName.CmmCheckEnableFuncAddress])
-            .Activate();
-        _cmmSetLvHook = hooks
-            .CreateHook<CmmSetLv>(CmmSetLvImpl,
-                AddressScanner.Addresses[AddressScanner.AddressName.CmmSetLvFuncAddress])
-            .Activate();
+        AddressScanner.DelayedScanPattern(
+            "40 53 55 56 41 54 41 56 48 83 EC 20",
+            address => _cmmCheckEnableFuncHook =
+                hooks.CreateHook<CmmCheckEnableFunc>(CmmCheckEnableFuncImpl, address).Activate());
+        AddressScanner.DelayedScanPattern(
+            "66 85 C9 0F 84 ?? ?? ?? ?? 57",
+            address => _cmmSetLvHook = hooks.CreateHook<CmmSetLv>(CmmSetLvImpl, address).Activate());
 
         logger.WriteLine("Created ItemManipulator Hooks");
     }

@@ -37,6 +37,6 @@ public class SequenceMonitor
 
     public unsafe SequenceMonitor()
     {
-        _sequence = (SequenceObj**)AddressScanner.Addresses[AddressScanner.AddressName.SequenceObjAddress];
+        AddressScanner.DelayedAddressHack(0x2902558, address => _sequence = (SequenceObj**)address);
     }
 }

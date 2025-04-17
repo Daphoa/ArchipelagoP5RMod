@@ -14,8 +14,8 @@ public class GameSaveLoadConnector
     [Function(CallingConventions.Fastcall)]
     private delegate IntPtr AppStorageReadWrite(int param1, uint fileIndex);
 
-    private readonly IHook<AppStorageReadWrite> _appStorageReadHook;
-    private readonly IHook<AppStorageReadWrite> _appStorageWriteHook;
+    private IHook<AppStorageReadWrite> _appStorageReadHook;
+    private IHook<AppStorageReadWrite> _appStorageWriteHook;
 
     private readonly ILogger _logger;
 
@@ -23,14 +23,15 @@ public class GameSaveLoadConnector
     {
         _logger = logger;
 
-        _appStorageReadHook = hooks
-            .CreateHook<AppStorageReadWrite>(AppStorageReadImpl,
-                AddressScanner.Addresses[AddressScanner.AddressName.AppStorageReadFuncAddress])
-            .Activate();
-        _appStorageWriteHook = hooks
-            .CreateHook<AppStorageReadWrite>(AppStorageWriteImpl,
-                AddressScanner.Addresses[AddressScanner.AddressName.AppStorageWriteFuncAddress])
-            .Activate();
+        AddressScanner.DelayedScanPattern(
+            "48 89 5C 24 ?? 57 48 83 EC 60 89 CB",
+            address => _appStorageReadHook =
+                hooks.CreateHook<AppStorageReadWrite>(AppStorageReadImpl, address).Activate());
+
+        AddressScanner.DelayedScanPattern(
+            "48 89 5C 24 ?? 57 48 83 EC 60 8B D9 0F B7 FA",
+            address => _appStorageWriteHook = 
+                hooks.CreateHook<AppStorageReadWrite>(AppStorageWriteImpl, address).Activate());
     }
 
     private IntPtr AppStorageReadImpl(int param1, uint fileIndex)

@@ -10,11 +10,14 @@ public class DateManipulator
     /* Fields */
     private readonly ILogger _logger;
 
-    private readonly IHook<NextTime> _nextTimeHook;
+    public static unsafe DateInfo* DateInfoAddress => *_dateInfoRefAddress;
+    private static unsafe DateInfo** _dateInfoRefAddress;
+
+    private IHook<NextTime> _nextTimeHook;
 
     // private readonly IHook<Update> _updateCurrentTotalDaysHook;
-    private readonly IHook<AdvanceToNextDay> _advanceToNextDayHook;
-    private readonly IHook<UnknownTimeAdvanceFunc> _unknownTimeAdvanceFunc;
+    private IHook<AdvanceToNextDay> _advanceToNextDayHook;
+    private IHook<UnknownTimeAdvanceFunc> _unknownTimeAdvanceFunc;
 
     /**
      * Delegates *
@@ -36,14 +39,25 @@ public class DateManipulator
     public DateManipulator(IReloadedHooks hooks, ILogger logger)
     {
         _logger = logger;
-        _nextTimeHook = hooks.CreateHook<NextTime>(NextTimeImpl, AddressScanner.Addresses[AddressScanner.AddressName.NextTimeFunAddress]).Activate();
+        AddressScanner.DelayedScanPattern(
+            "48 89 5C 24 ?? 48 89 74 24 ?? 57 48 83 EC 20 48 8B 05 ?? ?? ?? ?? 33 F6 8B DE",
+            address => _nextTimeHook = hooks.CreateHook<NextTime>(NextTimeImpl, address).Activate());
 
-        _advanceToNextDayHook =
-            hooks.CreateHook<AdvanceToNextDay>(AdvanceToNextDayImpl, AddressScanner.Addresses[AddressScanner.AddressName.AdvanceToNextDayAddress]).Activate();
+        AddressScanner.DelayedScanPattern(
+            "40 53 48 83 EC 20 80 3D ?? ?? ?? ?? 00 48 8B D9 48 8B 15 ?? ?? ?? ??",
+            address => _advanceToNextDayHook =
+                hooks.CreateHook<AdvanceToNextDay>(AdvanceToNextDayImpl, address).Activate());
 
-        _unknownTimeAdvanceFunc =
-            hooks.CreateHook<UnknownTimeAdvanceFunc>(UnknownTimeAdvanceImpl,
-                AddressScanner.Addresses[AddressScanner.AddressName.UnknownTimeAdvanceFuncAddress]).Activate();
+        AddressScanner.DelayedScanPattern(
+            "40 53 48 83 EC 60 48 8B 59 ?? 48 63 03",
+            address =>
+                _unknownTimeAdvanceFunc =
+                    hooks.CreateHook<UnknownTimeAdvanceFunc>(UnknownTimeAdvanceImpl, address).Activate());
+
+        unsafe
+        {
+            AddressScanner.DelayedAddressHack(0x286c188, address => _dateInfoRefAddress = (DateInfo**)address);
+        }
 
         logger.WriteLine("Created DateManipulator Hooks");
     }
@@ -64,8 +78,8 @@ public class DateManipulator
 
     private unsafe void ManipulateInGameDate()
     {
-        var dateInfo = AddressScanner.DateInfoAddress;
-        
+        var dateInfo = DateInfoAddress;
+
         if (dateInfo->currTime < 6) return; // Only mess with dates at the end of the day.
 
         dateInfo->nextTime = 0;

@@ -75,8 +75,6 @@ public class Mod : ModBase // <= Do not Remove.
         _configuration = context.Configuration;
         _modConfig = context.ModConfig;
 
-        AddressScanner.Scan(_logger);
-
         FlowFunctionWrapper.SetLogger(_logger);
         FlowFunctionWrapper.Setup(_hooks);
 
@@ -85,17 +83,19 @@ public class Mod : ModBase // <= Do not Remove.
         _itemManipulator = new ItemManipulator(_flagManipulator, _hooks, _logger);
         _gameSaveLoadConnector = new GameSaveLoadConnector(_hooks, _logger);
         _modSaveLoadManager = new ModSaveLoadManager(_configuration.SaveDirectory, _logger);
+        _confidantManipulator = new ConfidantManipulator(_flagManipulator, _hooks, _logger);
         _apConnector = new ApConnector(serverAddress: _configuration.ServerAddress,
             serverPassword: _configuration.ServerPassword,
             slotName: _configuration.SlotName,
             flagManipulator: _flagManipulator,
             logger: _logger);
         _firstTimeSetup = new FirstTimeSetup();
-        _confidantManipulator = new ConfidantManipulator(_flagManipulator, _hooks, _logger);
         _chestRewardDirector = new ChestRewardDirector();
         _apFlagItemRewarder = new ApFlagItemRewarder(_itemManipulator, _flagManipulator, _logger);
         _sequenceMonitor = new SequenceMonitor();
         var bfLoader = new BfLoader(_logger);
+
+        AddressScanner.Scan(_logger);
 
         _debugTools = new DebugTools();
 
@@ -137,9 +137,9 @@ public class Mod : ModBase // <= Do not Remove.
             unsafe
             {
                 if (someArrayAddress != IntPtr.Zero &&
-                    AddressScanner.FlowCommandDataAddress != (Types.FlowCommandData*)0x0)
+                    FlowFunctionWrapper.FlowCommandDataAddress != (Types.FlowCommandData*)0x0)
                 {
-                    int index = AddressScanner.FlowCommandDataAddress->someIndex;
+                    int index = FlowFunctionWrapper.FlowCommandDataAddress->someIndex;
                     uint* flagPointer = (uint*)someArrayAddress + 0x40 * index + 0x10;
 
                     uint relevantFlagValue = *flagPointer & 0x300;
@@ -183,7 +183,7 @@ public class Mod : ModBase // <= Do not Remove.
 
         unsafe
         {
-            if (AddressScanner.DateInfoAddress is null || AddressScanner.DateInfoAddress->currTotalDays == 0)
+            if (DateManipulator.DateInfoAddress is null || DateManipulator.DateInfoAddress->currTotalDays == 0)
             {
                 _checkGameLoaded.Start();
                 return;

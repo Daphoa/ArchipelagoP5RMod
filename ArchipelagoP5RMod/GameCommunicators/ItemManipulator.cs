@@ -13,16 +13,16 @@ public class ItemManipulator
 
     private const long DUMMY_ITEM = 0;
 
-    private readonly IHook<OpenChestOnUpdate> _openChestHook;
-    private readonly IHook<StartOpenChest> _startOpenChestHook;
-    private readonly IHook<OnCompleteOpenChest> _onCompleteOpenChestHook;
-    private readonly IHook<GetItemName> _getItemNameHook;
-    private readonly IHook<GetItemNum> _getItemNumHook;
-    private readonly IHook<SetItemNum> _setItemNumHook;
+    private IHook<OpenChestOnUpdate> _openChestHook;
+    private IHook<StartOpenChest> _startOpenChestHook;
+    private IHook<OnCompleteOpenChest> _onCompleteOpenChestHook;
+    private IHook<GetItemName> _getItemNameHook;
+    private IHook<GetItemNum> _getItemNumHook;
+    private IHook<SetItemNum> _setItemNumHook;
 
-    private readonly IntPtr _getTboxFlagFlowAdr;
-    private readonly IntPtr _getItemWindowAdr;
-    private readonly IntPtr _getItemWindowFlowAdr;
+    private IntPtr _getTboxFlagFlowAdr;
+    private IntPtr _getItemWindowAdr;
+    private IntPtr _getItemWindowFlowAdr;
 
     private GCHandle _itemNameOverrideAdr;
     private long? _currChestFlag = null;
@@ -64,42 +64,41 @@ public class ItemManipulator
 
     public delegate void OnChestOpenedEvent(long chestId);
 
-    public ItemManipulator(FlagManipulator flagManipulator, IReloadedHooks hooks, ILogger logger)
+    public unsafe ItemManipulator(FlagManipulator flagManipulator, IReloadedHooks hooks, ILogger logger)
     {
         _flagManipulator = flagManipulator;
         _logger = logger;
-        unsafe
-        {
-            _openChestHook = hooks
-                .CreateHook<OpenChestOnUpdate>(OpenChestOnUpdateImpl,
-                    AddressScanner.Addresses[AddressScanner.AddressName.OpenChestOnUpdateFuncAddress])
-                .Activate();
-            _startOpenChestHook =
-                hooks.CreateHook<StartOpenChest>(StartOpenChestImpl,
-                        AddressScanner.Addresses[AddressScanner.AddressName.StartOpenChestFuncAddress])
-                    .Activate();
-            _onCompleteOpenChestHook =
-                hooks.CreateHook<OnCompleteOpenChest>(OnCompleteOpenChestImpl,
-                    AddressScanner.Addresses[AddressScanner.AddressName.OnCompleteOpenChestFuncAddress]).Activate();
-            _getItemNameHook = hooks.CreateHook<GetItemName>(GetItemNameImpl,
-                    AddressScanner.Addresses[AddressScanner.AddressName.GetItemNameFuncAddress])
-                .Activate();
-            _getItemNumHook = hooks.CreateHook<GetItemNum>(GetItemNumImpl,
-                    AddressScanner.Addresses[AddressScanner.AddressName.GetItemNumFuncAddress])
-                .Activate();
-            _setItemNumHook = hooks.CreateHook<SetItemNum>(SetItemNumImpl,
-                    AddressScanner.Addresses[AddressScanner.AddressName.SetItemNumFuncAddress])
-                .Activate();
-            _getTboxFlag = hooks.CreateWrapper<GetTboxFlagFlow>(
-                AddressScanner.Addresses[AddressScanner.AddressName.GetTboxFlagFlowFuncAddress],
-                out _getTboxFlagFlowAdr);
-            _getItemWindow = hooks.CreateWrapper<GetItemWindow>(
-                AddressScanner.Addresses[AddressScanner.AddressName.GetItemWindowFuncAddress],
-                out _getItemWindowAdr);
-            _getItemWindowFlow = hooks.CreateWrapper<GetItemWindowFlow>(
-                AddressScanner.Addresses[AddressScanner.AddressName.GetItemWindowFlowFuncAddress],
-                out _getItemWindowFlowAdr);
-        }
+        AddressScanner.DelayedScanPattern(
+            "48 8B C4 48 89 58 ?? 48 89 48 ?? 55 56 57 41 54 41 55 41 56 41 57 48 8D A8 ?? ?? ?? ?? 48 81 EC 70 08 00 00",
+            address => _openChestHook =
+                hooks.CreateHook<OpenChestOnUpdate>(OpenChestOnUpdateImpl, address).Activate());
+        AddressScanner.DelayedScanPattern(
+            "48 89 5C 24 ?? 48 89 6C 24 ?? 48 89 74 24 ?? 57 41 56 41 57 48 83 EC 60 48 8B FA 4C 8B F9",
+            address => _startOpenChestHook =
+                hooks.CreateHook<StartOpenChest>(StartOpenChestImpl, address).Activate());
+        AddressScanner.DelayedAddressHack(
+            0x102cdd0,
+            address => _onCompleteOpenChestHook =
+                hooks.CreateHook<OnCompleteOpenChest>(OnCompleteOpenChestImpl, address).Activate());
+        AddressScanner.DelayedAddressHack(
+            0xd68530,
+            address => _getItemNameHook = hooks.CreateHook<GetItemName>(GetItemNameImpl, address).Activate());
+        AddressScanner.DelayedAddressHack(
+            0xd68720,
+            address => _getItemNumHook = hooks.CreateHook<GetItemNum>(GetItemNumImpl, address).Activate());
+        AddressScanner.DelayedScanPattern(
+            "4C 8B DC 49 89 5B ?? 57 48 83 EC 70 48 8D 05 ?? ?? ?? ??",
+            address => _setItemNumHook = hooks.CreateHook<SetItemNum>(SetItemNumImpl, address).Activate());
+        AddressScanner.DelayedScanPattern(
+            "48 83 EC 28 E8 ?? ?? ?? ?? 48 85 C0 74 ?? 4C 8B 48 ?? 4D 85 C9 74 ?? 49 8B 91 ?? ?? ?? ??",
+            address => _getTboxFlag = hooks.CreateWrapper<GetTboxFlagFlow>(address, out _getTboxFlagFlowAdr));
+        AddressScanner.DelayedScanPattern(
+            "48 8B C4 48 81 EC B8 00 00 00 48 89 58 ??",
+            address => _getItemWindow = hooks.CreateWrapper<GetItemWindow>(address, out _getItemWindowAdr));
+        AddressScanner.DelayedScanPattern(
+            "48 83 EC 28 33 C9 E8 ?? ?? ?? ?? B9 01 00 00 00 44 8B C8 E8 ?? ?? ?? ?? B9 02 00 00 00 44 8B D0 E8 ?? " +
+            "?? ?? ?? 48 8B 0D ?? ?? ?? ?? 48 85 C9 74 ?? 83 B9 ?? ?? ?? ?? 00 74 ?? 33 C0",
+            address => _getItemWindowFlow = hooks.CreateWrapper<GetItemWindowFlow>(address, out _getItemWindowFlowAdr));
 
         logger.WriteLine("Created ItemManipulator Hooks");
     }
