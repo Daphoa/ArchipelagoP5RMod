@@ -91,6 +91,8 @@ public class FlagManipulator
         return CheckBit(bit);
     }
 
+    #region Save/Load
+
     public byte[] SaveCountData()
     {
         MemoryStream stream = new();
@@ -117,6 +119,8 @@ public class FlagManipulator
             externalCounts[i] = BitConverter.ToUInt16(buffer);
         }
     }
+
+    #endregion
 
     private uint GetCountImpl()
     {

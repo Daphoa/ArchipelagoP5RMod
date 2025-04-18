@@ -118,6 +118,7 @@ public class Mod : ModBase // <= Do not Remove.
         _chestRewardDirector.Setup(_apConnector, _itemManipulator, _logger);
 
         _modSaveLoadManager.RegisterSaveLoad(_flagManipulator.SaveCountData, _flagManipulator.LoadCountData);
+        _modSaveLoadManager.RegisterSaveLoad(_confidantManipulator.SaveEnabledCmmData, _confidantManipulator.LoadEnabledCmmData);
 
         var logTimer = new Timer(1000);
         logTimer.Elapsed += LogStuff;

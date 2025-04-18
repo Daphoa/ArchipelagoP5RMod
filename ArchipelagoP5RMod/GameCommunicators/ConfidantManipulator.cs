@@ -1,8 +1,11 @@
-﻿using Reloaded.Hooks.Definitions;
+﻿using ArchipelagoP5RMod.GameCommunicators;
+using Reloaded.Hooks.Definitions;
 using Reloaded.Hooks.Definitions.X86;
 using Reloaded.Mod.Interfaces;
 
 namespace ArchipelagoP5RMod;
+
+using idType = uint;
 
 public class ConfidantManipulator
 {
@@ -18,29 +21,35 @@ public class ConfidantManipulator
     private IHook<CmmSetLv> _cmmSetLvHook;
     private static ILogger _logger;
 
-    private static readonly HashSet<uint> allCmmFuncIds =
+
+    private static readonly HashSet<idType> allCmmFuncIds =
     [
-        11, // Infiltration Tools ?
-        14, // Advanced  Infiltration Tools ?
-        21, // Shadow Calculus (Enemy Scan Extra Details)
-        52, // Make Coffee (Coffee 1)
-        54, // Coffee Mastery (Coffee 2)
-        55, // LeBlanc Curry (Curry 1)
-        57, // Curry Tips (Curry 2)
-        59, // Curry Master (Curry 3)
-        66, // "Come now, hot stuff. Can't you be a little more gentle with me?"
-        91, // Futaba: Moral Support
-        96, // Futaba: Active Support
-        147, // Kawakami: Super Housekeeping
-        150, // Kawakami: Massage
-        200, // Charismatic Speech 
+        0x34, // Hierophant: Coffee Basics (Coffee 1)
+        0x36, // Hierophant: Coffee Mastery (Coffee 2)
+        0x37, // Hierophant: LeBlanc Curry (Curry 1)
+        0x39, // Hierophant: Curry Tips (Curry 2)
+        0x3B, // Hierophant: Curry Master (Curry 3)
+        0x4B, // Chariot: Punk Talk
+        0x49, // Chariot: Follow Up
+        0x11B, // Chariot: Stealth Dash
+        0x4A, // Chariot: Harisen Recovery
+        0x50, // Chariot: Insta-kill
+        0x4D, // Chariot: Endure
+        0x4F, // Chariot: Protect
+        0xED, // Chariot: Second Awakening
+        0xF9, // Chariot: Second Awakening | Bit: 0x100000E7
+        0x83, // Death: Rejuvenation
+        0x85, // Death: Sterilization
+        0x89, // Death: Immunization
+        0x87, // Death: Discount
+        0x8B, // Death: Resuscitation
     ];
 
     // TODO get this from AP settings eventually.
-    private readonly HashSet<uint> _controlledCmmFuncIds = [..allCmmFuncIds];
+    private readonly HashSet<idType> _controlledCmmFuncIds = [..allCmmFuncIds];
 
     // TODO move this to flag manipulator so they are saved.
-    private readonly HashSet<uint> _acquiredCmmFuncIds = [];
+    private readonly HashSet<idType> _acquiredCmmFuncIds = [];
 
     public event OnCmmSetLvEvent OnCmmSetLv;
 
@@ -80,7 +89,7 @@ public class ConfidantManipulator
         _acquiredCmmFuncIds.Clear();
     }
 
-    private long CmmCheckEnableFuncImpl(uint funcId)
+    private long CmmCheckEnableFuncImpl(idType funcId)
     {
         // _logger.WriteLine($"{nameof(CmmCheckEnableFuncImpl)} called with {nameof(funcId)}: {funcId}");
         if (!_controlledCmmFuncIds.Contains(funcId))
@@ -106,7 +115,9 @@ public class ConfidantManipulator
     public void HandleApItem(object? sender, ApConnector.ApItemReceivedEvent e)
     {
         if (e.Handled || e.ApItem.Type != ItemType.CmmAbility ||
-            _flagManipulator.CheckBit(FlagManipulator.SHOWING_MESSAGE))
+            _flagManipulator.CheckBit(FlagManipulator.SHOWING_MESSAGE)
+            || _flagManipulator.CheckBit(FlagManipulator.SHOWING_GAME_MSG) || !SequenceMonitor.SequenceCanShowMessage)
+
             return;
 
         bool cmmFeatureEnabled = EnableCmmFeature(e.ApItem.Id);
@@ -120,4 +131,46 @@ public class ConfidantManipulator
 
         e.Handled = true;
     }
+
+    #region Save/Load
+
+    public byte[] SaveEnabledCmmData()
+    {
+        MemoryStream stream = new();
+
+        foreach (var id in _acquiredCmmFuncIds)
+        {
+            stream.Write(BitConverter.GetBytes(id));
+        }
+
+        // EOL
+        stream.WriteByte(0x0);
+
+        return stream.ToArray();
+    }
+
+    public void LoadEnabledCmmData(MemoryStream data)
+    {
+        _acquiredCmmFuncIds.Clear();
+
+        while (true)
+        {
+            byte[] buffer = new byte[sizeof(idType)];
+            int readBytes = data.Read(buffer, 0, sizeof(idType));
+
+            if (readBytes < sizeof(idType))
+            {
+                if (readBytes < 1 || buffer[0] != 0x0)
+                {
+                    _logger.WriteLine("WARNING: Read unusual data while loading CMM data.");
+                }
+                return;
+            }
+
+            idType cmmAbility = BitConverter.ToUInt32(buffer);
+            _acquiredCmmFuncIds.Add(cmmAbility);
+        }
+    }
+
+    #endregion
 }
