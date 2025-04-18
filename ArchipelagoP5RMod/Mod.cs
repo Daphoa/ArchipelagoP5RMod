@@ -63,7 +63,6 @@ public class Mod : ModBase // <= Do not Remove.
     private readonly ApFlagItemRewarder _apFlagItemRewarder;
     private readonly MessageManipulator _messageManipulator;
 
-    private readonly System.Timers.Timer _checkGameLoaded;
     private readonly DebugTools _debugTools;
 
     public Mod(ModContext context)
@@ -93,7 +92,7 @@ public class Mod : ModBase // <= Do not Remove.
         _chestRewardDirector = new ChestRewardDirector();
         _apFlagItemRewarder = new ApFlagItemRewarder(_itemManipulator, _flagManipulator, _logger);
         _messageManipulator = new MessageManipulator(_hooks, _flagManipulator, _logger);
-        var bfLoader = new BfLoader(_logger);
+        BfLoader.Setup(_logger);
         SequenceMonitor.Setup();
 
         AddressScanner.Scan(_logger);
@@ -158,17 +157,13 @@ public class Mod : ModBase // <= Do not Remove.
         sequenceTimer.AutoReset = true;
         sequenceTimer.Start();
 
-        _checkGameLoaded = new Timer(1000);
-        _checkGameLoaded.Elapsed += CheckGameLoaded;
-        _checkGameLoaded.AutoReset = false;
-        _checkGameLoaded.Enabled = true;
-
         _itemManipulator.OnChestOpened += id => { _logger.WriteLine($"StartOpenChest got flag: 0x{id:X}"); };
 
         _itemManipulator.OnChestOpenedCompleted += id => { _apConnector.ReportLocationCheckAsync(id); };
         _confidantManipulator.OnCmmSetLv += (cmmId, rank) =>
         {
             // TODO figure out somewhere better for this to go.
+            // TODO convert friend zone cmmId to default ids.
             long locId = 0x60000000L + cmmId * 0x10L + rank;
             _apConnector.ReportLocationCheckAsync(locId);
         };
@@ -177,34 +172,23 @@ public class Mod : ModBase // <= Do not Remove.
         // Register save/load events
         _gameSaveLoadConnector.OnGameFileSaved += _modSaveLoadManager.Save;
         _gameSaveLoadConnector.OnGameFileLoaded += _modSaveLoadManager.Load;
+        
+        AsyncStartCheckingForGameLoaded();
     }
 
-    private void CheckGameLoaded(object? sender, ElapsedEventArgs elapsedEventArgs)
+    private async void AsyncStartCheckingForGameLoaded()
     {
         _logger.WriteLine("Checking if game loaded");
 
-        unsafe
-        {
-            if (DateManipulator.DateInfoAddress is null || DateManipulator.DateInfoAddress->currTotalDays == 0)
-            {
-                _checkGameLoaded.Start();
-                return;
-            }
+        while (!SequenceMonitor.SequenceCanShowMessage) {
+            await Task.Delay(1000);
         }
+        
+        // _logger.WriteLine("Game seemingly loaded, waiting 5 seconds");
+        // await Task.Delay(5000);
 
-        _logger.WriteLine("Game seemingly loaded, waiting 5 seconds");
-
-        var logTimer = new System.Timers.Timer(5000);
-        logTimer.AutoReset = false;
-        logTimer.Elapsed += (_, _) =>
-        {
-            _logger.WriteLine("Game loaded, calling onGameLoaded");
-            OnGameLoaded?.Invoke(this, EventArgs.Empty);
-        };
-        logTimer.Start();
-
-        _checkGameLoaded.Stop();
-        _checkGameLoaded.Close();
+        _logger.WriteLine("Game loaded, calling onGameLoaded");
+        OnGameLoaded.Invoke(this, EventArgs.Empty);
     }
 
     private unsafe void LogStuff(object? sender, ElapsedEventArgs elapsedEventArgs)

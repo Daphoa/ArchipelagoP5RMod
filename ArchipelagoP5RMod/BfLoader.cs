@@ -4,15 +4,15 @@ using Reloaded.Mod.Interfaces;
 
 namespace ArchipelagoP5RMod;
 
-public class BfLoader
+public static class BfLoader
 {
-    private ILogger _logger;
+    private static ILogger _logger;
     private static GCHandle _apMethodsBfFile;
 
     public static unsafe byte* ApMethodsBfFilePointer => (byte*)_apMethodsBfFile.AddrOfPinnedObject();
     public static uint ApMethodsBfFileLength { get; private set; }
 
-    public BfLoader(ILogger logger)
+    public static void Setup(ILogger logger)
     {
         _logger = logger;
         if (!_apMethodsBfFile.IsAllocated)
