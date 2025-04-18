@@ -1,4 +1,4 @@
-﻿the p5r modding community for so many helpful resources to teach myself coding
+the p5r modding community for so many helpful resources to teach myself coding
 
 Secre-C's flowscriptframework mod for giving context for some Flowscript data 
 animatedswine's p5r lib for hints on sequences inside p5r

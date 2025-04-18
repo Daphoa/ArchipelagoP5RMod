@@ -12,8 +12,8 @@ import( "AP_Methods.msg" );
 void RewardItems()
 {
     BIT_ON( ( 0x60000000 + 1 ) )
-    FLD_SMP_EVENT_BEGIN( 0 );
-    EVT_SET_ENABLE_CTRL_KEY( 0 );
+    // FLD_SMP_EVENT_BEGIN( 0 );
+    // EVT_SET_ENABLE_CTRL_KEY( 0 );
     int itemId;
     int itemNum;
     itemId = GET_COUNT(0x10000000 + 2);
@@ -21,8 +21,8 @@ void RewardItems()
     MSG_WND_DSP();
     GET_ITEM_WINDOW( itemId, itemNum, 0 );
     MSG_WND_CLS();
-    EVT_SET_ENABLE_CTRL_KEY( 1 );
-    FLD_SMP_EVENT_END( 0 );
+    // EVT_SET_ENABLE_CTRL_KEY( 1 );
+    // FLD_SMP_EVENT_END( 0 );
     BIT_OFF( ( 0x60000000 + 1 ) );
 }
 

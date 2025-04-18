@@ -12,10 +12,13 @@ public static class FlowFunctionWrapper
     private static ILogger? _logger;
 
     [Function(CallingConventions.Fastcall)]
-    public delegate uint FlowFuncDelegate();
-
+    public delegate uint FlowFuncDelegate4();
+    [Function(CallingConventions.Fastcall)]
+    public delegate ulong FlowFuncDelegate8();
+    
     [Function(CallingConventions.Fastcall)]
     public unsafe delegate long OnUpdateDelegate(GameObject* eventInfo);
+
 
     public delegate void BasicFlowFunc();
 

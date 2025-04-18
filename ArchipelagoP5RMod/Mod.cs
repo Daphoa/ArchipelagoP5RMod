@@ -61,7 +61,7 @@ public class Mod : ModBase // <= Do not Remove.
     private readonly FirstTimeSetup _firstTimeSetup;
     private readonly ChestRewardDirector _chestRewardDirector;
     private readonly ApFlagItemRewarder _apFlagItemRewarder;
-    private readonly SequenceMonitor _sequenceMonitor;
+    private readonly MessageManipulator _messageManipulator;
 
     private readonly System.Timers.Timer _checkGameLoaded;
     private readonly DebugTools _debugTools;
@@ -92,8 +92,9 @@ public class Mod : ModBase // <= Do not Remove.
         _firstTimeSetup = new FirstTimeSetup();
         _chestRewardDirector = new ChestRewardDirector();
         _apFlagItemRewarder = new ApFlagItemRewarder(_itemManipulator, _flagManipulator, _logger);
-        _sequenceMonitor = new SequenceMonitor();
+        _messageManipulator = new MessageManipulator(_hooks, _flagManipulator, _logger);
         var bfLoader = new BfLoader(_logger);
+        SequenceMonitor.Setup();
 
         AddressScanner.Scan(_logger);
 
@@ -128,7 +129,7 @@ public class Mod : ModBase // <= Do not Remove.
         var sequenceTimer = new Timer(1000);
         sequenceTimer.Elapsed += (object? _, ElapsedEventArgs _) =>
         {
-            _logger.WriteLine($"Sequence: {_sequenceMonitor.CurrentSequenceType}");
+            // _logger.WriteLine($"Sequence: {SequenceMonitor.CurrentSequenceType}");
 
             // Super hacky debug stuff - this should be moved if it works out well.
             var thisProcess = System.Diagnostics.Process.GetCurrentProcess();
@@ -148,8 +149,8 @@ public class Mod : ModBase // <= Do not Remove.
                 }
                 else
                 {
-                    string nullValue = someArrayAddress == IntPtr.Zero ? "SomeArrayAddress" : "FlowCommandData";
-                    _logger.WriteLine($"Not reporting values because {nullValue} is NULL");
+                    // string nullValue = someArrayAddress == IntPtr.Zero ? "SomeArrayAddress" : "FlowCommandData";
+                    // _logger.WriteLine($"Not reporting values because {nullValue} is NULL");
                 }
             }
         };

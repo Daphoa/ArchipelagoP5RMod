@@ -1,5 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 using System.Text;
+using ArchipelagoP5RMod.GameCommunicators;
 using Reloaded.Hooks.Definitions;
 using Reloaded.Hooks.Definitions.X86;
 using Reloaded.Mod.Interfaces;
@@ -214,7 +215,8 @@ public class ItemManipulator
 
     public void HandleApItem(object? sender, ApConnector.ApItemReceivedEvent? e)
     {
-        if (e.Handled || e.ApItem.Type != ItemType.Item || _flagManipulator.CheckBit(FlagManipulator.SHOWING_MESSAGE))
+        if (e.Handled || e.ApItem.Type != ItemType.Item || _flagManipulator.CheckBit(FlagManipulator.SHOWING_MESSAGE) 
+            || _flagManipulator.CheckBit(FlagManipulator.SHOWING_GAME_MSG) || !SequenceMonitor.SequenceCanShowMessage)
             return;
 
         var apItem = e.ApItem;

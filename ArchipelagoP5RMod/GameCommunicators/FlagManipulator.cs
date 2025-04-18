@@ -17,6 +17,7 @@ public class FlagManipulator
     public const uint AP_CURR_REWARD_ITEM_NUM = SectionMask * ExternalCountSection + 3;
 
     public const uint SHOWING_MESSAGE = SectionMask * ExternalBitSection + 1;
+    public const uint SHOWING_GAME_MSG = SectionMask * ExternalBitSection + 1;
 
     [Function(CallingConventions.Fastcall)]
     private delegate long BitChkType(uint bitIndex);
@@ -28,8 +29,8 @@ public class FlagManipulator
     private IHook<BitChkType> _bitChkTypeHook;
     private IHook<BitToggleType> _bitOnHook;
     private IHook<BitToggleType> _bitOffHook;
-    private IHook<FlowFunctionWrapper.FlowFuncDelegate> _getCountFlowHook;
-    private IHook<FlowFunctionWrapper.FlowFuncDelegate> _setCountFlowHook;
+    private IHook<FlowFunctionWrapper.FlowFuncDelegate4> _getCountFlowHook;
+    private IHook<FlowFunctionWrapper.FlowFuncDelegate4> _setCountFlowHook;
 
     private const uint SectionMask = 0x10000000;
 
@@ -60,11 +61,11 @@ public class FlagManipulator
         AddressScanner.DelayedScanPattern(
             "48 83 EC 28 31 C9 E8 ?? ?? ?? ?? 4C 8D 05 ?? ?? ?? ??",
             address => _getCountFlowHook =
-                hooks.CreateHook<FlowFunctionWrapper.FlowFuncDelegate>(GetCountImpl, address).Activate());
+                hooks.CreateHook<FlowFunctionWrapper.FlowFuncDelegate4>(GetCountImpl, address).Activate());
         AddressScanner.DelayedScanPattern(
             "48 83 EC 28 31 C9 E8 ?? ?? ?? ?? B9 01 00 00 00 4C 63 C8",
             address => _setCountFlowHook =
-                hooks.CreateHook<FlowFunctionWrapper.FlowFuncDelegate>(SetCountImpl, address).Activate());
+                hooks.CreateHook<FlowFunctionWrapper.FlowFuncDelegate4>(SetCountImpl, address).Activate());
 
         logger.WriteLine("Created FlagManipulator Hooks");
 

@@ -2,12 +2,12 @@
 
 namespace ArchipelagoP5RMod.GameCommunicators;
 
-public class SequenceMonitor
+public static class SequenceMonitor
 {
     // ReSharper disable once FieldCanBeMadeReadOnly.Local
-    private unsafe SequenceObj** _sequence;
+    private static unsafe SequenceObj** _sequence;
 
-    public unsafe SequenceType CurrentSequenceType
+    public static unsafe SequenceType CurrentSequenceType
     {
         get
         {
@@ -21,7 +21,7 @@ public class SequenceMonitor
         }
     }
 
-    public unsafe SequenceType LastSequenceType
+    public static unsafe SequenceType LastSequenceType
     {
         get
         {
@@ -35,7 +35,9 @@ public class SequenceMonitor
         }
     }
 
-    public unsafe SequenceMonitor()
+    public static bool SequenceCanShowMessage => CurrentSequenceType is SequenceType.Battle or SequenceType.Field;
+
+    public static unsafe void Setup()
     {
         AddressScanner.DelayedAddressHack(0x2902558, address => _sequence = (SequenceObj**)address);
     }
