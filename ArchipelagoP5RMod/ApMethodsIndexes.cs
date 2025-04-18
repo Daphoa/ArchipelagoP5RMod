@@ -3,5 +3,6 @@
 public enum ApMethodsIndexes
 {
     RewardItemsFunc = 0,
-    NotifyConfidantReward = 1,
+    NotifyConfidantAbilityReward = 1,
+    NotifyConfidantLocation = 2,
 }

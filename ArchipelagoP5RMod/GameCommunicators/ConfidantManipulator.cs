@@ -76,11 +76,11 @@ public class ConfidantManipulator
         if (!allCmmFuncIds.Contains(feature))
         {
             _logger.WriteLine(
-                $"{nameof(EnableCmmFeature)} called with {nameof(feature)}:{feature} but it's not supported.");
+                $"{nameof(EnableCmmFeature)} called with {nameof(feature)}:{feature:X} but it's not supported.");
             return false;
         }
 
-        _logger.WriteLine($"{nameof(EnableCmmFeature)} called. {nameof(feature)}:{feature} enabled.");
+        _logger.WriteLine($"{nameof(EnableCmmFeature)} called. {nameof(feature)}:{feature:X} enabled.");
         return _acquiredCmmFuncIds.Add(feature);
     }
 
@@ -126,7 +126,7 @@ public class ConfidantManipulator
             // Only show notification for cmm that were actually newly enabled.
             _flagManipulator.SetBit(FlagManipulator.SHOWING_MESSAGE, true);
             _flagManipulator.SetCount(FlagManipulator.AP_CURR_REWARD_CMM_ABILITY, e.ApItem.Id);
-            FlowFunctionWrapper.CallCustomFlowFunction(ApMethodsIndexes.NotifyConfidantReward);
+            FlowFunctionWrapper.CallCustomFlowFunction(ApMethodsIndexes.NotifyConfidantAbilityReward);
         }
 
         e.Handled = true;
@@ -138,7 +138,7 @@ public class ConfidantManipulator
     {
         MemoryStream stream = new();
 
-        foreach (var id in _acquiredCmmFuncIds)
+        foreach (idType id in _acquiredCmmFuncIds)
         {
             stream.Write(BitConverter.GetBytes(id));
         }

@@ -17,7 +17,8 @@ public class FlagManipulator
     public const uint AP_CURR_REWARD_ITEM_NUM = SectionMask * ExternalCountSection + 3;
 
     public const uint SHOWING_MESSAGE = SectionMask * ExternalBitSection + 1;
-    public const uint SHOWING_GAME_MSG = SectionMask * ExternalBitSection + 1;
+    public const uint SHOWING_GAME_MSG = SectionMask * ExternalBitSection + 2;
+    public const uint OVERWRITE_ITEM_TEXT = SectionMask * ExternalBitSection + 3;
 
     [Function(CallingConventions.Fastcall)]
     private delegate long BitChkType(uint bitIndex);
@@ -34,7 +35,7 @@ public class FlagManipulator
 
     private const uint SectionMask = 0x10000000;
 
-    private const uint ExternalBitSection = 6; // This will have consequences if changed. Should stay hardcoded ideally.
+    private const uint ExternalBitSection = 6; // This will have consequences if changed.
     private const uint NumExternalBitFlags = 4;
     private static bool[] externalBitFlags = new bool[NumExternalBitFlags];
 

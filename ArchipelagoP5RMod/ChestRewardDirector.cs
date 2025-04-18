@@ -7,6 +7,7 @@ public class ChestRewardDirector
 {
     private ApConnector _apConnector;
     private ItemManipulator _itemManipulator;
+    private FlagManipulator _flagManipulator;
     private ILogger _logger;
 
     private readonly Dictionary<long, string> _rewardName = new Dictionary<long, string>();
@@ -18,10 +19,12 @@ public class ChestRewardDirector
         0x200001D2, 0x200001CE, 0x200001C8, 0x200001D1, 0x200001CF, 0x200013FD, 0x200013FC, 0x200013FB
     ];
 
-    public void Setup(ApConnector apConnector, ItemManipulator itemManipulator, ILogger logger)
+
+    public void Setup(ApConnector apConnector, ItemManipulator itemManipulator, FlagManipulator flagManipulator, ILogger logger)
     {
         _apConnector = apConnector;
         _itemManipulator = itemManipulator;
+        _flagManipulator = flagManipulator;
         _logger = logger;
 
         apConnector.ScoutLocations(chestFlags, ProcessScoutedInfo);
@@ -30,6 +33,7 @@ public class ChestRewardDirector
         {
             if (_rewardName.TryGetValue(chestId, out string? value) && !string.IsNullOrEmpty(value))
             {
+                _flagManipulator.SetBit(FlagManipulator.OVERWRITE_ITEM_TEXT, true);
                 itemManipulator.SetItemNameOverride(value);
             }
         };

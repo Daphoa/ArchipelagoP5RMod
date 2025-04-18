@@ -27,7 +27,7 @@ void RewardItems()
 }
 
 // Procedure Index: 1
-void NotifyConfidantReward() 
+void NotifyConfidantAbilityReward() 
 {
     BIT_ON( ( 0x60000000 + 1 ) )
     int cmmAbility = GET_COUNT( ( 0x10000000 + 1 ) ) 
@@ -40,4 +40,17 @@ void NotifyConfidantReward()
     }
     MSG_WND_CLS();
     BIT_OFF( ( 0x60000000 + 1 ) );
+}
+
+// Procedure Index: 2
+void NotifyConfidantLocation() 
+{
+    BIT_ON( ( 0x60000000 + 1 ) )
+    
+    MSG_WND_DSP();
+    MSG_SYSTEM( MSG_NOTIFY_AP_LOCATION );
+    // GET_ITEM_WINDOW( ( 0x4000 ), 1, 0 );
+    MSG_WND_CLS();
+    BIT_OFF( ( 0x60000000 + 1 ) );
+    BIT_OFF( ( 0x60000000 + 3 ) );
 }

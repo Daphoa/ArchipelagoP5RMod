@@ -114,10 +114,11 @@ public class Mod : ModBase // <= Do not Remove.
 
         OnGameLoaded += (_, _) => _apConnector.ReadyToCollect();
 
-        _chestRewardDirector.Setup(_apConnector, _itemManipulator, _logger);
+        _chestRewardDirector.Setup(_apConnector, _itemManipulator, _flagManipulator, _logger);
 
         _modSaveLoadManager.RegisterSaveLoad(_flagManipulator.SaveCountData, _flagManipulator.LoadCountData);
-        _modSaveLoadManager.RegisterSaveLoad(_confidantManipulator.SaveEnabledCmmData, _confidantManipulator.LoadEnabledCmmData);
+        _modSaveLoadManager.RegisterSaveLoad(_confidantManipulator.SaveEnabledCmmData,
+            _confidantManipulator.LoadEnabledCmmData);
 
         var logTimer = new Timer(1000);
         logTimer.Elapsed += LogStuff;
@@ -160,30 +161,50 @@ public class Mod : ModBase // <= Do not Remove.
         _itemManipulator.OnChestOpened += id => { _logger.WriteLine($"StartOpenChest got flag: 0x{id:X}"); };
 
         _itemManipulator.OnChestOpenedCompleted += id => { _apConnector.ReportLocationCheckAsync(id); };
-        _confidantManipulator.OnCmmSetLv += (cmmId, rank) =>
-        {
-            // TODO figure out somewhere better for this to go.
-            // TODO convert friend zone cmmId to default ids.
-            long locId = 0x60000000L + cmmId * 0x10L + rank;
-            _apConnector.ReportLocationCheckAsync(locId);
-        };
+        _confidantManipulator.OnCmmSetLv += ReportCmmLvl;
         _logger.WriteLine("End Mod Constructor");
 
         // Register save/load events
         _gameSaveLoadConnector.OnGameFileSaved += _modSaveLoadManager.Save;
         _gameSaveLoadConnector.OnGameFileLoaded += _modSaveLoadManager.Load;
-        
+
         AsyncStartCheckingForGameLoaded();
+    }
+
+    private async void ReportCmmLvl(ushort cmmId, short rank)
+    {
+        // TODO figure out somewhere better for this to go.
+        // TODO convert friend zone cmmId to default ids.
+        long locId = 0x60000000L + cmmId * 0x10L + rank;
+
+        while (_flagManipulator.CheckBit(FlagManipulator.SHOWING_MESSAGE) ||
+               _flagManipulator.CheckBit(FlagManipulator.SHOWING_GAME_MSG) || !SequenceMonitor.SequenceCanShowMessage)
+        {
+            await Task.Delay(500);
+        }
+
+        await _apConnector.ReportLocationCheckAsync(locId);
+
+        while (_flagManipulator.CheckBit(FlagManipulator.SHOWING_MESSAGE) ||
+               _flagManipulator.CheckBit(FlagManipulator.SHOWING_GAME_MSG) || !SequenceMonitor.SequenceCanShowMessage)
+        {
+            await Task.Delay(500);
+        }
+
+        _itemManipulator.SetItemNameOverride("PLACEHOLDER");
+        _flagManipulator.SetBit(FlagManipulator.OVERWRITE_ITEM_TEXT, true);
+        FlowFunctionWrapper.CallCustomFlowFunction(ApMethodsIndexes.NotifyConfidantLocation);
     }
 
     private async void AsyncStartCheckingForGameLoaded()
     {
         _logger.WriteLine("Checking if game loaded");
 
-        while (!SequenceMonitor.SequenceCanShowMessage) {
+        while (!SequenceMonitor.SequenceCanShowMessage)
+        {
             await Task.Delay(1000);
         }
-        
+
         // _logger.WriteLine("Game seemingly loaded, waiting 5 seconds");
         // await Task.Delay(5000);
 
