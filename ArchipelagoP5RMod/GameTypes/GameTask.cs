@@ -3,7 +3,7 @@
 namespace ArchipelagoP5RMod.Types;
 
 [StructLayout(LayoutKind.Explicit)]
-public struct GameObject
+public struct GameTask
 {
     [FieldOffset(0x0)] public uint eventType;
     [FieldOffset(0x30)] public IntPtr runtimeFunc;

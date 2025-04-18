@@ -51,6 +51,7 @@ public class Mod : ModBase // <= Do not Remove.
     /// </summary>
     private event EventHandler OnGameLoaded;
 
+    private readonly GameTaskListener _gameTaskListener;
     private readonly ApConnector _apConnector;
     private readonly DateManipulator _dateManipulator;
     private readonly FlagManipulator _flagManipulator;
@@ -77,8 +78,9 @@ public class Mod : ModBase // <= Do not Remove.
         FlowFunctionWrapper.SetLogger(_logger);
         FlowFunctionWrapper.Setup(_hooks);
 
-        _dateManipulator = new DateManipulator(_hooks, _logger);
+        _gameTaskListener = new GameTaskListener(_hooks, _logger);
         _flagManipulator = new FlagManipulator(_hooks, _logger);
+        _dateManipulator = new DateManipulator(_gameTaskListener, _flagManipulator, _hooks, _logger);
         _itemManipulator = new ItemManipulator(_flagManipulator, _hooks, _logger);
         _gameSaveLoadConnector = new GameSaveLoadConnector(_hooks, _logger);
         _modSaveLoadManager = new ModSaveLoadManager(_configuration.SaveDirectory, _logger);
@@ -96,6 +98,7 @@ public class Mod : ModBase // <= Do not Remove.
         SequenceMonitor.Setup();
 
         AddressScanner.Scan(_logger);
+        _gameTaskListener.FreezeListeners();
 
         _debugTools = new DebugTools();
 
@@ -212,8 +215,9 @@ public class Mod : ModBase // <= Do not Remove.
         OnGameLoaded.Invoke(this, EventArgs.Empty);
     }
 
-    private unsafe void LogStuff(object? sender, ElapsedEventArgs elapsedEventArgs)
+    private void LogStuff(object? sender, ElapsedEventArgs elapsedEventArgs)
     {
+        return;
         // _logger.WriteLine($"DateInfo Adr - {(int)AddressScanner.DateInfoAddress:X8}");
         // _logger.WriteLine($"DateInfo - {AddressScanner.DateInfoAddress->ToString()}");
         if (_debugTools.HasFlagBackup)

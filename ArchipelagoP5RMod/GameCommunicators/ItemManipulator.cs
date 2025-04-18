@@ -195,16 +195,6 @@ public class ItemManipulator
         return FlowFunctionWrapper.CallFlowFunctionCleanup();
     }
 
-    private unsafe long CStrLen(char* str)
-    {
-        char* s;
-        for (s = str; *s == (char)0; ++s)
-        {
-        }
-
-        return s - str;
-    }
-
     public void RewardItem(ushort itemId, byte count)
     {
         _logger.WriteLine($"Rewarding item {itemId:X} x{count}");
@@ -242,15 +232,10 @@ public class ItemManipulator
     public unsafe string GetOriginalItemName(ushort itemId)
     {
         char* str = _getItemNameHook.OriginalFunction(itemId);
-        int len = (int)CStrLen(str);
-
-        var managedArray = new byte[len];
-
-        Marshal.Copy((IntPtr)str, managedArray, 0, len);
-        return Encoding.UTF8.GetString(managedArray);
+        return StrTools.CStrToString(str);
     }
 
-    public unsafe char* GetOriginalItemNamePtr(ushort itemId)
+    public unsafe char* GetOriginalItemNameCStr(ushort itemId)
     {
         return _getItemNameHook.OriginalFunction(itemId);
     }

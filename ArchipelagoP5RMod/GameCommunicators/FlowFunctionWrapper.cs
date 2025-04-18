@@ -17,7 +17,7 @@ public static class FlowFunctionWrapper
     public delegate ulong FlowFuncDelegate8();
     
     [Function(CallingConventions.Fastcall)]
-    public unsafe delegate long OnUpdateDelegate(GameObject* eventInfo);
+    public unsafe delegate long OnUpdateDelegate(GameTask* eventInfo);
 
 
     public delegate void BasicFlowFunc();
@@ -82,7 +82,7 @@ public static class FlowFunctionWrapper
         }
     }
 
-    private static unsafe long FlowOnUpdateImpl(GameObject* eventInfo)
+    private static unsafe long FlowOnUpdateImpl(GameTask* eventInfo)
     {
         // _logger.WriteLine("Called Flow onUpdate");
         var flowCommandData = (FlowCommandData*)eventInfo->args;

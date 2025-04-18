@@ -21,13 +21,13 @@ public class FlagManipulator
     public const uint OVERWRITE_ITEM_TEXT = SectionMask * ExternalBitSection + 3;
 
     [Function(CallingConventions.Fastcall)]
-    private delegate long BitChkType(uint bitIndex);
+    private delegate byte BitChkType(uint bitIndex);
 
     [Function(CallingConventions.Fastcall)]
     private delegate uint BitToggleType();
 
     // private IntPtr _bitChkWrapperAdr;
-    private IHook<BitChkType> _bitChkTypeHook;
+    private IHook<BitChkType> _bitChkHook;
     private IHook<BitToggleType> _bitOnHook;
     private IHook<BitToggleType> _bitOffHook;
     private IHook<FlowFunctionWrapper.FlowFuncDelegate4> _getCountFlowHook;
@@ -52,7 +52,7 @@ public class FlagManipulator
 
         AddressScanner.DelayedScanPattern(
             "4C 8D 05 ?? ?? ?? ?? 33 C0 49 8B D0 0F 1F 40 00 39 0A 74 ?? FF C0 48 83 C2 08 83 F8 10 72 ?? 8B D1",
-            address => _bitChkTypeHook = hooks.CreateHook<BitChkType>(BitChkImpl, address).Activate());
+            address => _bitChkHook = hooks.CreateHook<BitChkType>(BitChkImpl, address).Activate());
         AddressScanner.DelayedScanPattern(
             "40 53 48 83 EC 20 31 C9 E8 ?? ?? ?? ?? B9 01 00 00 00",
             address => _bitOnHook = hooks.CreateHook<BitToggleType>(BitOnImpl, address).Activate());
@@ -83,7 +83,7 @@ public class FlagManipulator
             return externalBitFlags[bitIndex % SectionMask];
         }
 
-        return _bitChkTypeHook.OriginalFunction(bitIndex) != 0;
+        return _bitChkHook.OriginalFunction(bitIndex) != 0;
     }
 
     public bool CheckBit(short section, uint bitIndex)
@@ -137,8 +137,6 @@ public class FlagManipulator
             FlowFunctionWrapper.FlowCommandDataAddress->ReturnValue = externalCounts[countId % SectionMask];
         }
 
-        _logger.WriteLine($"GetCountImpl found result {externalCounts[countId % SectionMask]} from input {countId:X}.");
-
         return 1;
     }
 
@@ -187,13 +185,13 @@ public class FlagManipulator
         return 1;
     }
 
-    private long BitChkImpl(uint bitIndex)
+    private byte BitChkImpl(uint bitIndex)
     {
         if (bitIndex is < ExternalBitSection * SectionMask or >= ExternalBitSection * SectionMask + NumExternalBitFlags)
-            return _bitChkTypeHook.OriginalFunction(bitIndex);
+            return _bitChkHook.OriginalFunction(bitIndex);
 
         uint bit = bitIndex - ExternalBitSection * SectionMask;
-        return externalBitFlags[bit] ? 1 : 0;
+        return externalBitFlags[bit] ? (byte)1 : (byte)0;
     }
 
     // ReSharper disable once MemberCanBePrivate.Global
@@ -220,12 +218,24 @@ public class FlagManipulator
 
         FlowFunctionWrapper.CallFlowFunctionCleanup();
     }
+    
+    public void ToggleBit(uint bitIndex)
+    {
+        if (bitIndex is >= ExternalBitSection * SectionMask
+            and < ExternalBitSection * SectionMask + NumExternalBitFlags)
+        {
+            uint bit = bitIndex - ExternalBitSection * SectionMask;
+            externalBitFlags[bit] = !externalBitFlags[bit];
+            return;
+        }
+        
+        bool originalValue = _bitChkHook.OriginalFunction(bitIndex) != 0;
+        SetBit(bitIndex, !originalValue);
+    }
 
     private uint BitOnImpl()
     {
         var bitIndex = (uint)FlowFunctionWrapper.GetFlowscriptInt4Arg(0);
-
-        _logger.WriteLine($"Turning {bitIndex:X} bit on.");
 
         if (bitIndex is < ExternalBitSection * SectionMask or >= ExternalBitSection * SectionMask + NumExternalBitFlags)
             return _bitOnHook.OriginalFunction();
@@ -240,8 +250,6 @@ public class FlagManipulator
     private uint BitOffImpl()
     {
         var bitIndex = (uint)FlowFunctionWrapper.GetFlowscriptInt4Arg(0);
-
-        _logger.WriteLine($"Turning {bitIndex:X} bit off.");
 
         if (bitIndex is < ExternalBitSection * SectionMask or >= ExternalBitSection * SectionMask + NumExternalBitFlags)
             return _bitOffHook.OriginalFunction();
