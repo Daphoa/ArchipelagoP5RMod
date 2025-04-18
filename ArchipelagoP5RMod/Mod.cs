@@ -63,6 +63,7 @@ public class Mod : ModBase // <= Do not Remove.
     private readonly ChestRewardDirector _chestRewardDirector;
     private readonly ApFlagItemRewarder _apFlagItemRewarder;
     private readonly MessageManipulator _messageManipulator;
+    private readonly ScheduleManipulator _scheduleManipulator;
 
     private readonly DebugTools _debugTools;
 
@@ -94,6 +95,7 @@ public class Mod : ModBase // <= Do not Remove.
         _chestRewardDirector = new ChestRewardDirector();
         _apFlagItemRewarder = new ApFlagItemRewarder(_itemManipulator, _flagManipulator, _logger);
         _messageManipulator = new MessageManipulator(_hooks, _flagManipulator, _logger);
+        _scheduleManipulator = new ScheduleManipulator(_hooks, _logger);
         BfLoader.Setup(_logger);
         SequenceMonitor.Setup();
 
