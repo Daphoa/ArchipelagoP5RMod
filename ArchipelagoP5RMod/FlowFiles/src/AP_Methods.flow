@@ -37,6 +37,28 @@ void NotifyConfidantAbilityReward()
         MSG( MSG_CMM_52 ); 
     } else if ( cmmAbility == 55) {
         MSG( MSG_CMM_55 );
+    } else if ( cmmAbility == 0x4B ) {
+        MSG( MSG_CMM_4B );
+    } else if ( cmmAbility == 0x49 ) {
+        MSG( MSG_CMM_49 );
+    } else if ( cmmAbility == 0x11B ) {
+        MSG( MSG_CMM_11B );
+    } else if ( cmmAbility == 0x4A ) {
+        MSG( MSG_CMM_4A );
+    } else if ( cmmAbility == 0x50 ) {
+        MSG( MSG_CMM_50 );
+    } else if ( cmmAbility == 0x4D ) {
+        MSG( MSG_CMM_4D );
+    } else if ( cmmAbility == 0x4F ) {
+        MSG( MSG_CMM_4F );
+    } else if ( cmmAbility == 0x85 ) {
+        MSG( MSG_CMM_85 );
+    } else if ( cmmAbility == 0x89 ) {
+        MSG( MSG_CMM_89 );
+    } else if ( cmmAbility == 0x87 ) {
+        MSG( MSG_CMM_87 );
+    } else if ( cmmAbility == 0x8B ) {
+        MSG( MSG_CMM_8B );
     }
     MSG_WND_CLS();
     BIT_OFF( ( 0x60000000 + 1 ) );
