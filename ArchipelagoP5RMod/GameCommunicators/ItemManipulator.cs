@@ -18,8 +18,8 @@ public class ItemManipulator
     private IHook<StartOpenChest> _startOpenChestHook;
     private IHook<OnCompleteOpenChest> _onCompleteOpenChestHook;
     private IHook<GetItemName> _getItemNameHook;
-    private IHook<GetItemNum> _getItemNumHook;
-    private IHook<SetItemNum> _setItemNumHook;
+    private IHook<GetItemNumFunc> _getItemNumHook;
+    private IHook<SetItemNumFunc> _setItemNumHook;
 
     private IntPtr _getTboxFlagFlowAdr;
     private IntPtr _getItemWindowAdr;
@@ -46,18 +46,22 @@ public class ItemManipulator
     private delegate long GetTboxFlagFlow();
 
     [Function(CallingConventions.Fastcall)]
-    private delegate byte GetItemNum(ushort itemId);
+    private delegate byte GetItemNumFunc(ushort itemId);
 
     [Function(CallingConventions.Fastcall)]
-    private delegate void SetItemNum(ushort itemId, byte newItemCount, byte shouldUpdateRecentItem);
+    private delegate void SetItemNumFunc(ushort itemId, byte newItemCount, byte shouldUpdateRecentItem);
 
     [Function(CallingConventions.Fastcall)]
-    private unsafe delegate IntPtr GetItemWindow(short* itemIds, int* itemNum, uint length, int flag);
+    private unsafe delegate IntPtr GetItemWindowFunc(short* itemIds, int* itemNum, uint length, int flag);
+
+    public delegate void OnItemCountChangedEvent(ushort itemId, byte itemNum);
+
+    public event OnItemCountChangedEvent OnItemCountChanged = (_, _) => { };
 
     private delegate bool GetItemWindowFlow();
 
     private GetTboxFlagFlow? _getTboxFlag { get; set; }
-    private GetItemWindow? _getItemWindow { get; set; }
+    private GetItemWindowFunc? _getItemWindow { get; set; }
     private GetItemWindowFlow? _getItemWindowFlow { get; set; }
 
     public event OnChestOpenedEvent OnChestOpened;
@@ -86,16 +90,16 @@ public class ItemManipulator
             address => _getItemNameHook = hooks.CreateHook<GetItemName>(GetItemNameImpl, address).Activate());
         AddressScanner.DelayedAddressHack(
             0xd68720,
-            address => _getItemNumHook = hooks.CreateHook<GetItemNum>(GetItemNumImpl, address).Activate());
+            address => _getItemNumHook = hooks.CreateHook<GetItemNumFunc>(GetItemNumImpl, address).Activate());
         AddressScanner.DelayedScanPattern(
             "4C 8B DC 49 89 5B ?? 57 48 83 EC 70 48 8D 05 ?? ?? ?? ??",
-            address => _setItemNumHook = hooks.CreateHook<SetItemNum>(SetItemNumImpl, address).Activate());
+            address => _setItemNumHook = hooks.CreateHook<SetItemNumFunc>(SetItemNumImpl, address).Activate());
         AddressScanner.DelayedScanPattern(
             "48 83 EC 28 E8 ?? ?? ?? ?? 48 85 C0 74 ?? 4C 8B 48 ?? 4D 85 C9 74 ?? 49 8B 91 ?? ?? ?? ??",
             address => _getTboxFlag = hooks.CreateWrapper<GetTboxFlagFlow>(address, out _getTboxFlagFlowAdr));
         AddressScanner.DelayedScanPattern(
             "48 8B C4 48 81 EC B8 00 00 00 48 89 58 ??",
-            address => _getItemWindow = hooks.CreateWrapper<GetItemWindow>(address, out _getItemWindowAdr));
+            address => _getItemWindow = hooks.CreateWrapper<GetItemWindowFunc>(address, out _getItemWindowAdr));
         AddressScanner.DelayedScanPattern(
             "48 83 EC 28 33 C9 E8 ?? ?? ?? ?? B9 01 00 00 00 44 8B C8 E8 ?? ?? ?? ?? B9 02 00 00 00 44 8B D0 E8 ?? " +
             "?? ?? ?? 48 8B 0D ?? ?? ?? ?? 48 85 C9 74 ?? 83 B9 ?? ?? ?? ?? 00 74 ?? 33 C0",
@@ -137,6 +141,8 @@ public class ItemManipulator
         }
 
         _setItemNumHook.OriginalFunction(itemId, newItemCount, shouldUpdateRecentItem);
+
+        OnItemCountChanged.Invoke(itemId, newItemCount);
     }
 
     private void OnCompleteOpenChestImpl(long param1, IntPtr param2, long param3, int param4)
@@ -195,6 +201,16 @@ public class ItemManipulator
         return FlowFunctionWrapper.CallFlowFunctionCleanup();
     }
 
+    public byte GetItemNum(ushort itemId)
+    {
+        return _getItemNumHook.OriginalFunction(itemId);
+    }
+
+    public bool HasItem(ushort itemId)
+    {
+        return _getItemNumHook.OriginalFunction(itemId) > 0;
+    }
+
     public void RewardItem(ushort itemId, byte count)
     {
         _logger.WriteLine($"Rewarding item {itemId:X} x{count}");
@@ -205,7 +221,7 @@ public class ItemManipulator
 
     public void HandleApItem(object? sender, ApConnector.ApItemReceivedEvent? e)
     {
-        if (e.Handled || e.ApItem.Type != ItemType.Item || _flagManipulator.CheckBit(FlagManipulator.SHOWING_MESSAGE) 
+        if (e.Handled || e.ApItem.Type != ItemType.Item || _flagManipulator.CheckBit(FlagManipulator.SHOWING_MESSAGE)
             || _flagManipulator.CheckBit(FlagManipulator.SHOWING_GAME_MSG) || !SequenceMonitor.SequenceCanShowMessage)
             return;
 

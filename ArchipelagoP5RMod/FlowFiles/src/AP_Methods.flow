@@ -54,3 +54,14 @@ void NotifyConfidantLocation()
     BIT_OFF( ( 0x60000000 + 1 ) );
     BIT_OFF( ( 0x60000000 + 3 ) );
 }
+
+// Procedure Index: 3
+void NotifyInfiltration() 
+{
+    BIT_ON( ( 0x60000000 + 1 ) )
+    
+    MSG_WND_DSP();
+    MSG( MSG_NOTIFY_INFILTRATION_LUST );
+    MSG_WND_CLS();
+    BIT_OFF( ( 0x60000000 + 1 ) );
+}

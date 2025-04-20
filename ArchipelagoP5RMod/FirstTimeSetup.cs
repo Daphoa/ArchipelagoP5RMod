@@ -38,6 +38,10 @@ public class FirstTimeSetup
         0x20000000 + 4484, 0x20000000 + 4360, 0x20000000 + 4480, 0x20000000 + 4372, 0x20000000 + 4478,
         0x20000000 + 4486, 0x20000000 + 4479,
 
+        // Maps
+        6148, // Castle map 1
+
+        
         // Tutorial
         0x20000000 + 171, // Grappling Hook Tutorial
         0x20000000 + 4081, // Chest Tutorial

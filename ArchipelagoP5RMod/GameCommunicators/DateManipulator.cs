@@ -75,7 +75,8 @@ public class DateManipulator
     {
         var dateInfo = DateInfoAddress;
 
-        if (dateInfo->currTime < 6) return; // Only mess with dates at the end of the day.
+        // Only mess with dates at the end of the day unless we are outside of AP days.
+        if (dateInfo->currTime < 6 && _loopDates.Contains(dateInfo->currTotalDays)) return; 
 
         dateInfo->nextTime = 0;
         dateInfo->nextTotalDays = NextDay(dateInfo->currTotalDays);
