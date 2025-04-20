@@ -174,12 +174,18 @@ public class FlagManipulator
     private uint SetCountImpl()
     {
         int countId = FlowFunctionWrapper.GetFlowscriptInt4Arg(0);
+        uint value = (uint)FlowFunctionWrapper.GetFlowscriptInt4Arg(1);
 
+        if (countId == 56 && value == 15)
+        {
+            // Doing a sneaky swap of 15 to 13 so Ryuji will hang out with us even if we can send a calling card. 
+            FlowFunctionWrapper.ReplaceArgInt4(1, 13);
+        }
+        
         if (countId < SectionMask * ExternalCountSection ||
             countId >= SectionMask * ExternalCountSection + NumExternalCounts)
             return _setCountFlowHook.OriginalFunction();
 
-        uint value = (uint)FlowFunctionWrapper.GetFlowscriptInt4Arg(1);
         externalCounts[countId % SectionMask] = value;
 
         return 1;

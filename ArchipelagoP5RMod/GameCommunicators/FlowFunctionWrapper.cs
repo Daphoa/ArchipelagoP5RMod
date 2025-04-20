@@ -72,10 +72,10 @@ public static class FlowFunctionWrapper
 
         unsafe
         {
-            AddressScanner.DelayedScanPattern(
-                "48 83 EC 28 48 8B 49 ?? E8 ?? ?? ?? ?? 83 E0 FD",
-                address => _onFlowUpdateDelegate =
-                    hooks.CreateHook<OnUpdateDelegate>(FlowOnUpdateImpl, address).Activate());
+            // AddressScanner.DelayedScanPattern(
+            //     "48 83 EC 28 48 8B 49 ?? E8 ?? ?? ?? ?? 83 E0 FD",
+            //     address => _onFlowUpdateDelegate =
+            //         hooks.CreateHook<OnUpdateDelegate>(FlowOnUpdateImpl, address).Activate());
 
             AddressScanner.DelayedAddressHack(0x293d008,
                 address => _flowCommanderDataRefAddress = (FlowCommandData**)address);
@@ -99,6 +99,12 @@ public static class FlowFunctionWrapper
         // _logger?.WriteLine($"FlowFunctionWrapper flow function called with method {funcName}");
 
         return _onFlowUpdateDelegate.OriginalFunction(eventInfo);
+    }
+
+    public static unsafe void ReplaceArgInt4(int index, int newValue)
+    {
+        var stackIndex = FlowCommandDataAddress->StackSize - index - 1;
+        FlowCommandDataAddress->ArgData[stackIndex] = newValue;
     }
 
     public static unsafe void CallFlowFunctionSetup(params long[] args)

@@ -18,7 +18,7 @@ public class DateManipulator
     private static unsafe DateInfo** _dateInfoRefAddress;
 
     
-    private readonly SortedSet<short> _loopDates = [22];
+    private readonly SortedSet<short> _loopDates = [21];
 
     private bool disablingCalendarAnimation = false;
 
