@@ -30,7 +30,7 @@ public class Config : Configurable<Config>
     [DisplayName("Slot Name")]
     [Description("The P5R slot to connect to.")]
     [DefaultValue("Player1")]
-    public string SlotName { get; set; } = "Slot Name";
+    public string SlotName { get; set; } = "Player1";
 }
 
 /// <summary>

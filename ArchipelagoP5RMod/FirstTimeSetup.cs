@@ -1,4 +1,7 @@
-﻿namespace ArchipelagoP5RMod;
+﻿using ArchipelagoP5RMod.GameCommunicators;
+using ArchipelagoP5RMod.Types;
+
+namespace ArchipelagoP5RMod;
 
 /**
  * Intended to be call the first time a save is loaded with AP integrated.
@@ -41,7 +44,6 @@ public class FirstTimeSetup
         // Maps
         6148, // Castle map 1
 
-        
         // Tutorial
         0x20000000 + 171, // Grappling Hook Tutorial
         0x20000000 + 4081, // Chest Tutorial
@@ -60,9 +62,110 @@ public class FirstTimeSetup
         0x20000000 + 5103
     ];
 
-    public void Setup(FlagManipulator flagManipulator)
+    public void Setup(FlagManipulator flagManipulator, PersonaManipulator personaManipulator,
+        ConfidantManipulator confidantManipulator)
     {
-        flagManipulator.SetBit(10811, false); // GRAPPLING HOOK
+        // DbgScript_150_000
+        flagManipulator.SetBit(6144, true);
+        flagManipulator.SetBit(12538, true);
+        flagManipulator.SetBit(12308, true);
+        flagManipulator.SetBit(10662, false);
+        flagManipulator.SetBit(81, false);
+        flagManipulator.SetBit(82, false);
+        flagManipulator.SetBit(83, false);
+        flagManipulator.SetBit(84, false);
+        flagManipulator.SetBit(85, false);
+        flagManipulator.SetBit(86, false);
+        
+        // local_flag_clear
+        flagManipulator.SetCount(144, 0);
+        flagManipulator.SetCount(145, 0);
+        flagManipulator.SetCount(146, 0);
+        flagManipulator.SetCount(147, 0);
+        flagManipulator.SetCount(148, 0);
+        flagManipulator.SetCount(149, 0);
+        flagManipulator.SetCount(150, 0);
+        flagManipulator.SetCount(151, 0);
+
+        // palace_clear_flag
+        flagManipulator.SetBit(8735, true);
+        flagManipulator.SetBit(8734, true);
+
+        // Script -> Kamoshida palace
+        flagManipulator.SetBit( 1072, true );
+
+        
+        // SUB_ConqusetKamoshida_Start
+        confidantManipulator.CmmOpen(Confidant.Morgana);
+        confidantManipulator.CmmOpen(Confidant.Ann);
+        confidantManipulator.CmmOpen(Confidant.Ryuji);
+        // confidantManipulator.CmmOpen(Confidant.Takemi);
+        // confidantManipulator.CmmOpen(Confidant.Sojiro);
+        personaManipulator.AddPersonaStock(201);
+        personaManipulator.AddPersonaStock(131);
+        personaManipulator.AddPersonaStock(4);
+        personaManipulator.AddPersonaStock(121);
+        personaManipulator.SetPartyLvl(PartyMember.Joker, 99);
+        personaManipulator.SetPartyLvl(PartyMember.Skull, 99);
+        personaManipulator.SetPartyLvl(PartyMember.Mona, 99);
+        personaManipulator.SetPartyLvl(PartyMember.Panther, 99);
+        personaManipulator.SetPartyLvl(PartyMember.Fox, 5);
+        // personaManipulator.SetPartyLvl(PartyMember.Noir, 5);
+        // personaManipulator.SetPartyLvl(PartyMember.Oracle, 5);
+        personaManipulator.AddPersonaSkill(PartyMember.Skull, 200);
+        personaManipulator.AddPersonaSkill(PartyMember.Mona, 325);
+        flagManipulator.SetBit(4012, true);
+        flagManipulator.SetBit(11971, true);
+        flagManipulator.SetBit(11972, true);
+        flagManipulator.SetBit(11973, true);
+        flagManipulator.SetBit(11974, true);
+        flagManipulator.SetBit(11467, true);
+        flagManipulator.SetBit(6309, true);
+        flagManipulator.SetBit(11464, true);
+        flagManipulator.SetBit(11496, true);
+        flagManipulator.SetBit(11276, true);
+
+        // Some flags stolen from debug that might be helpful
+        flagManipulator.SetBit(11974, true);
+        flagManipulator.SetBit(3920, false);
+        flagManipulator.SetBit(105, false);
+        flagManipulator.SetBit(6206, false);
+        flagManipulator.SetBit(6724, true);
+        flagManipulator.SetBit(8826, false);
+        flagManipulator.SetBit(8828, false);
+        flagManipulator.SetBit(8830, true);
+        flagManipulator.SetBit(8843, true);
+        flagManipulator.SetCount(159, 1);
+        flagManipulator.SetBit(6211, false);
+        flagManipulator.SetBit(6217, false);
+        flagManipulator.SetBit(6723, true);
+        flagManipulator.SetBit(10808, true);
+        flagManipulator.SetBit(10810, true);
+        flagManipulator.SetBit(6194, true);
+        flagManipulator.SetBit(6403, true);
+        flagManipulator.SetBit(8829, false);
+        flagManipulator.SetBit(8830, false);
+        flagManipulator.SetBit(10760, true);
+        flagManipulator.SetBit(10761, true);
+        flagManipulator.SetBit(11541, true);
+        flagManipulator.SetBit(11556, true);
+        flagManipulator.SetBit(6176, false);
+        flagManipulator.SetBit(6180, false);
+        flagManipulator.SetBit(6195, true);
+        flagManipulator.SetBit(6400, true);
+        flagManipulator.SetBit(11246, true);
+
+        // Party members
+        flagManipulator.SetBit(11779, true); // Can Edit Party
+        flagManipulator.SetBit(11824, true); // Ryuji
+        flagManipulator.SetBit(11825, true); // Morgana
+        flagManipulator.SetBit(11826, true); // Ann
+        // flagManipulator.SetBit(11827, true); // Yusuke
+        // flagManipulator.SetBit(11828, true); // Makoto
+        // flagManipulator.SetBit(11829, true); // Haru
+        // flagManipulator.SetBit(11830, true); // Futaba
+        // flagManipulator.SetBit(11831, true); // Aketchi
+        // flagManipulator.SetBit(11832, true); // Kasumi
 
         foreach (uint adr in _onBits)
         {

@@ -66,6 +66,9 @@
         <None Update="FEmulator\PAK\EN.CPK\CMM.BIN\cmmFunctionName.ctd">
           <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
+        <None Update="P5REssentials\CPK\en.cpk\field\init\*S.bf">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
     </ItemGroup>
 
     <ItemGroup>
@@ -94,6 +97,7 @@
 
     <ItemGroup>
       <Folder Include="FlowFiles\bin\" />
+      <Folder Include="P5REssentials\CPK\en.cpk\field\init\" />
     </ItemGroup>
 
     <Target Name="PreBuild" BeforeTargets="PreBuildEvent">

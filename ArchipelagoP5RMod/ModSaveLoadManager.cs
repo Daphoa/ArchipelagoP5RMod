@@ -4,15 +4,21 @@ using Reloaded.Mod.Interfaces;
 
 namespace ArchipelagoP5RMod;
 
-public class ModSaveLoadManager(string saveDirectory, ILogger logger)
+public class ModSaveLoadManager(string saveDirectory, string uniqueApConnectionStr, ILogger logger)
 {
-    private const string Filename = "{0}/AP_Mod_Save_Data_{1:d2}";
+    private const string Filename = "{0}/AP_Mod_Save_Data_{1}_{2:d2}";
 
     private readonly Dictionary<byte, Func<byte[]>> _registeredSaveMethods = new();
     private readonly Dictionary<byte, Action<MemoryStream>> _registeredLoadMethods = new();
 
     private static readonly byte[] header = [0xAA, 0xAA, 0x0, 0xBD];
     private static readonly byte[] sectionHeader = [0x4A, 0x5, 0x34];
+
+    public delegate void LoadCompleteEventHandler(uint index, bool success);
+
+    public event LoadCompleteEventHandler OnLoadComplete;
+
+    private bool lastSaveIndexHadFile = false;
 
     public void RegisterSaveLoad(Func<byte[]> saveMethod, Action<MemoryStream> loadMethod, int section = -1)
     {
@@ -26,6 +32,11 @@ public class ModSaveLoadManager(string saveDirectory, ILogger logger)
         _registeredSaveMethods.Add(sectionNum, saveMethod);
         _registeredLoadMethods.Add(sectionNum, loadMethod);
     }
+    
+    private string GetFilename(uint fileIndex)
+    {
+        return String.Format(Filename, saveDirectory, uniqueApConnectionStr, fileIndex);
+    }
 
     public void Save(uint fileIndex)
     {
@@ -33,8 +44,8 @@ public class ModSaveLoadManager(string saveDirectory, ILogger logger)
         {
             return;
         }
-        
-        string fileName = String.Format(Filename, saveDirectory, fileIndex);
+
+        string fileName = GetFilename(fileIndex);
         string backupFileName = fileName + "_bak";
 
         // Delete the backup file if it exists.
@@ -42,14 +53,14 @@ public class ModSaveLoadManager(string saveDirectory, ILogger logger)
         {
             File.Delete(backupFileName);
         }
-        
+
         // Move the original file to the backup file if it exists
         if (File.Exists(fileName))
         {
             File.Move(fileName, backupFileName);
         }
 
-        //Create the file.
+        // Create the file.
         using FileStream fs = File.Create(fileName);
         SaveToStream(fs);
     }
@@ -61,17 +72,21 @@ public class ModSaveLoadManager(string saveDirectory, ILogger logger)
             return;
         }
 
-        string fileName = String.Format(Filename, saveDirectory, fileIndex);
+        string fileName = GetFilename(fileIndex);
 
         if (!File.Exists(fileName))
         {
             // Fail gracefully.
             logger.WriteLine($"No file found for index {fileIndex}");
+
+            OnLoadComplete?.Invoke(fileIndex, false);
             return;
         }
 
         using FileStream fs = File.OpenRead(fileName);
         LoadFromStream(fs);
+
+        OnLoadComplete?.Invoke(fileIndex, true);
     }
 
     private void SaveToStream(Stream writeStream)
@@ -168,7 +183,7 @@ public class ModSaveLoadManager(string saveDirectory, ILogger logger)
 
     #region TestingCode
 
-    private ModSaveLoadManager(ILogger logger) : this(null, logger)
+    private ModSaveLoadManager(ILogger logger) : this(null, null, logger)
     {
     }
 
@@ -191,7 +206,7 @@ public class ModSaveLoadManager(string saveDirectory, ILogger logger)
         private void CompareValues(MemoryStream newDataStream)
         {
             var newData = newDataStream.ToArray();
-            
+
             for (int i = 0; i < newData.Length; i++)
             {
                 if (newData[i] == data[i]) continue;

@@ -49,7 +49,7 @@ public class Mod : ModBase // <= Do not Remove.
     /// <summary>
     /// 
     /// </summary>
-    private event EventHandler OnGameLoaded;
+    private event EventHandler OnGameLoadedFirstTime;
 
     private readonly GameTaskListener _gameTaskListener;
     private readonly ApConnector _apConnector;
@@ -65,6 +65,7 @@ public class Mod : ModBase // <= Do not Remove.
     private readonly MessageManipulator _messageManipulator;
     private readonly ScheduleManipulator _scheduleManipulator;
     private readonly InfiltrationManager _infiltrationManager;
+    private readonly PersonaManipulator _personaManipulator;
 
     private readonly DebugTools _debugTools;
 
@@ -80,12 +81,14 @@ public class Mod : ModBase // <= Do not Remove.
         FlowFunctionWrapper.SetLogger(_logger);
         FlowFunctionWrapper.Setup(_hooks);
 
+        string apConnectionHash = (_configuration.ServerAddress + _configuration.SlotName).GetHashCode().ToString();
+
         _gameTaskListener = new GameTaskListener(_hooks, _logger);
         _flagManipulator = new FlagManipulator(_hooks, _logger);
         _dateManipulator = new DateManipulator(_gameTaskListener, _flagManipulator, _hooks, _logger);
         _itemManipulator = new ItemManipulator(_flagManipulator, _hooks, _logger);
         _gameSaveLoadConnector = new GameSaveLoadConnector(_hooks, _logger);
-        _modSaveLoadManager = new ModSaveLoadManager(_configuration.SaveDirectory, _logger);
+        _modSaveLoadManager = new ModSaveLoadManager(_configuration.SaveDirectory, apConnectionHash, _logger);
         _confidantManipulator = new ConfidantManipulator(_flagManipulator, _hooks, _logger);
         _apConnector = new ApConnector(serverAddress: _configuration.ServerAddress,
             serverPassword: _configuration.ServerPassword,
@@ -98,6 +101,7 @@ public class Mod : ModBase // <= Do not Remove.
         _messageManipulator = new MessageManipulator(_flagManipulator, _hooks, _logger);
         _scheduleManipulator = new ScheduleManipulator(_flagManipulator, _hooks, _logger);
         _infiltrationManager = new InfiltrationManager(_flagManipulator, _itemManipulator, _logger);
+        _personaManipulator = new PersonaManipulator(_hooks, _logger);
         BfLoader.Setup(_logger);
         SequenceMonitor.Setup();
 
@@ -106,20 +110,26 @@ public class Mod : ModBase // <= Do not Remove.
 
         _debugTools = new DebugTools();
 
-        OnGameLoaded += (_, _) =>
+        OnGameLoadedFirstTime += (_, _) =>
         {
             _apConnector.OnItemReceivedEvent += _itemManipulator.HandleApItem;
             _apConnector.OnItemReceivedEvent += _confidantManipulator.HandleApItem;
             _apConnector.OnItemReceivedEvent += _apFlagItemRewarder.HandleApItem;
-
-            _ = _apConnector.StartCollectionAsync();
         };
+
+        _modSaveLoadManager.OnLoadComplete += (_, _) => EveryGameLoadedChanges();
+        _modSaveLoadManager.OnLoadComplete += (_, _) => _apConnector.StartCollectionAsync();
+        _modSaveLoadManager.OnLoadComplete += (_, _) => _chestRewardDirector.CloseUnopenedChests();
 
         // OnGameLoaded += TestFlowFuncWrapper;
         // OnGameLoaded += TestBitManipulator;
-        OnGameLoaded += (_, _) => _firstTimeSetup.Setup(_flagManipulator);
+        _modSaveLoadManager.OnLoadComplete += (_, success) =>
+        {
+            if (success) return; // Only setup if this is the first time we are loading with a new AP file. 
+            _firstTimeSetup.Setup(_flagManipulator, _personaManipulator, _confidantManipulator);
+        };
 
-        OnGameLoaded += (_, _) => _apConnector.ReadyToCollect();
+        OnGameLoadedFirstTime += (_, _) => _apConnector.ReadyToCollect();
 
         _chestRewardDirector.Setup(_apConnector, _itemManipulator, _flagManipulator, _logger);
 
@@ -131,8 +141,7 @@ public class Mod : ModBase // <= Do not Remove.
         logTimer.Elapsed += LogStuff;
         logTimer.AutoReset = true;
 
-        OnGameLoaded += (_, _) => logTimer.Start();
-
+        OnGameLoadedFirstTime += (_, _) => logTimer.Start();
 
         var sequenceTimer = new Timer(1000);
         sequenceTimer.Elapsed += (object? _, ElapsedEventArgs _) =>
@@ -165,17 +174,23 @@ public class Mod : ModBase // <= Do not Remove.
         sequenceTimer.AutoReset = true;
         sequenceTimer.Start();
 
-        _itemManipulator.OnChestOpened += id => { _logger.WriteLine($"StartOpenChest got flag: 0x{id:X}"); };
+        // _itemManipulator.OnChestOpened += id => { _logger.WriteLine($"StartOpenChest got flag: 0x{id:X}"); };
 
         _itemManipulator.OnChestOpenedCompleted += id => { _apConnector.ReportLocationCheckAsync(id); };
         _confidantManipulator.OnCmmSetLv += ReportCmmLvl;
-        _logger.WriteLine("End Mod Constructor");
 
         // Register save/load events
         _gameSaveLoadConnector.OnGameFileSaved += _modSaveLoadManager.Save;
         _gameSaveLoadConnector.OnGameFileLoaded += _modSaveLoadManager.Load;
 
         AsyncStartCheckingForGameLoaded();
+    }
+
+    private void EveryGameLoadedChanges()
+    {
+        _itemManipulator.SetItemNumImpl(0x3065, 99, 0); // Goho-M
+        _itemManipulator.SetItemNumImpl(0x306D, 99, 0); // Silk Yarn (Lockpicks)
+        _itemManipulator.SetItemNumImpl(0x306F, 99, 0); // Tin Clasp (Lockpicks)
     }
 
     private async void ReportCmmLvl(ushort cmmId, short rank)
@@ -216,7 +231,7 @@ public class Mod : ModBase // <= Do not Remove.
         // await Task.Delay(5000);
 
         _logger.WriteLine("Game loaded, calling onGameLoaded");
-        OnGameLoaded.Invoke(this, EventArgs.Empty);
+        OnGameLoadedFirstTime.Invoke(this, EventArgs.Empty);
     }
 
     private void LogStuff(object? sender, ElapsedEventArgs elapsedEventArgs)

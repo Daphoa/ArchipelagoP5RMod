@@ -1,0 +1,1995 @@
+
+// 
+// FlowScript decompiled using Atlus Script Tools by TGE (2017-2021)
+// In the unfortunate case of any bugs, please report them back to me.
+// 
+
+
+// 
+// Imports
+// 
+
+import( "FINI_151_004.BF.msg" );
+
+// 
+// Script-level variable definitions
+// 
+
+int sVar69;
+int sVar71;
+
+// 
+// Procedure declarations
+// 
+
+// Procedure Index: 0
+void f151_004_init()
+{
+    int var0;
+    var0 = 0;
+    var0 = FLD_GET_SCRIPT_TIMING();
+    
+    if ( var0 == 1 )
+    {
+        D01_ENEMY_FLAG_SET();
+        return;
+    }
+    else if ( var0 == 2 )
+    {
+        MAPOBJ_SET();
+        GIM_COUNT_SET();
+        D151_04_MINI_MAP_SET();
+        return;
+    }
+    else if ( var0 == 3 )
+    {
+        ENEMY_SET();
+        D151_04_START_EV();
+        return;
+    }
+    else if ( var0 == 4 )
+    {
+        return;
+    }
+
+}
+
+
+// Procedure Index: 1
+void MAPOBJ_SET()
+{
+    int var1;
+    Gimmick_SET();
+    // bit id (536870912) + (206) = 6350
+    
+    if ( BIT_CHK( ( 0x20000000 + 206 ) ) == 1 )
+    {
+        Door_Lock_Gimmick();
+    }
+
+    var1 = FLD_OBJ_CNV_RESHND( 24 );
+    MDL_ANIM( var1, 0, 0, 0, 1.00f );
+    FLD_OBJ_MODEL_COLLIS( var1, 0 );
+    SYNC();
+    FLD_OBJ_MODEL_COLLIS( var1, 1 );
+    FLD_SET_DOOR_HIT_TYPE( 11, 11, 265 );
+    // bit id (536870912) + (353) = 6497
+    
+    if ( BIT_CHK( ( 0x20000000 + 353 ) ) == 0 )
+    {
+        FLD_SET_DOOR_HIT_TYPE( 10, 0, 9 );
+    }
+    else 
+    {
+        FLD_SET_DOOR_HIT_TYPE( 10, 11, 259 );
+    }
+
+    
+    if ( GET_COUNT( 145 ) < 43000 )
+    {
+        FLD_SET_DOOR_HIT_TYPE( 8, 9, 0x10 );
+    }
+    else 
+    {
+        FLD_SET_DOOR_HIT_TYPE( 8, 11, 267 );
+    }
+
+    FLD_SET_DOOR_HIT_TYPE( 1603, 9, 0x10 );
+    FLD_SET_DOOR_HIT_TYPE( 9, 9, 0x10 );
+    FLD_SET_DOOR_HIT_TYPE( 6, 9, 0x10 );
+    FLD_SET_DOOR_HIT_TYPE( 5, 9, 0x10 );
+}
+
+
+// Procedure Index: 2
+void BookIrregularReset()
+{
+    int var2;
+    int var3;
+    int var4;
+    // bit id (536870912) + (592) = 6736
+    // bit id (536870912) + (593) = 6737
+    // bit id (536870912) + (594) = 6738
+    // bit id (536870912) + (261) = 6405
+    
+    if ( ( ( ( ( BIT_CHK( ( 0x20000000 + 592 ) ) == 1 ) || ( BIT_CHK( ( 0x20000000 + 593 ) ) == 1 ) ) || ( BIT_CHK( ( 0x20000000 + 594 ) ) == 1 ) ) && ( BIT_CHK( ( 0x20000000 + 261 ) ) == 0 ) ) && ( GET_COUNT( 160 ) == 0 ) )
+    {
+        PUTS( "patternA" );
+        var2 = 1;
+    }
+
+    // bit id (536870912) + (261) = 6405
+    
+    if ( ( GET_ITEM_NUM( ( 0x4000 + 110 ) ) >= 1 ) && ( BIT_CHK( ( 0x20000000 + 261 ) ) == 0 ) )
+    {
+        PUTS( "patternBC" );
+        var2 = 1;
+    }
+
+    var3 = 0;
+    sVar69 = 0;
+    TakeShelfState();
+    
+    if ( sVar71 > 0 )
+    {
+        var3 = ( var3 + 1 );
+    }
+
+    sVar69 = 1;
+    TakeShelfState();
+    
+    if ( sVar71 > 0 )
+    {
+        var3 = ( var3 + 1 );
+    }
+
+    sVar69 = 2;
+    TakeShelfState();
+    
+    if ( sVar71 > 0 )
+    {
+        var3 = ( var3 + 1 );
+    }
+
+    // bit id (536870912) + (297) = 6441
+    
+    if ( ( BIT_CHK( ( 0x20000000 + 297 ) ) == 1 ) && ( GET_ITEM_NUM( ( 0x4000 + 111 ) ) == 0 ) )
+    {
+        var4 = ( var4 + 1 );
+    }
+
+    // bit id (536870912) + (298) = 6442
+    
+    if ( ( BIT_CHK( ( 0x20000000 + 298 ) ) == 1 ) && ( GET_ITEM_NUM( ( 0x4000 + 112 ) ) == 0 ) )
+    {
+        var4 = ( var4 + 1 );
+    }
+
+    // bit id (536870912) + (299) = 6443
+    
+    if ( ( BIT_CHK( ( 0x20000000 + 299 ) ) == 1 ) && ( GET_ITEM_NUM( ( 0x4000 + 113 ) ) == 0 ) )
+    {
+        var4 = ( var4 + 1 );
+    }
+
+    // bit id (536870912) + (4659) = 10803
+    // bit id (536870912) + (4663) = 10807
+    
+    if ( ( ( BIT_CHK( ( 0x20000000 + 4659 ) ) == 1 ) && ( BIT_CHK( ( 0x20000000 + 4663 ) ) == 0 ) ) && ( GET_ITEM_NUM( ( 0x4000 + 160 ) ) == 0 ) )
+    {
+        var4 = ( var4 + 1 );
+    }
+
+    PUT( var3 );
+    PUT( var4 );
+    // bit id (536870912) + (261) = 6405
+    
+    if ( ( var3 < var4 ) && ( BIT_CHK( ( 0x20000000 + 261 ) ) == 0 ) )
+    {
+        PUTS( "patternD" );
+        var2 = 1;
+    }
+
+    // bit id (536870912) + (297) = 6441
+    // bit id (536870912) + (298) = 6442
+    // bit id (536870912) + (299) = 6443
+    // bit id (536870912) + (4659) = 10803
+    // bit id (536870912) + (4663) = 10807
+    // bit id (536870912) + (592) = 6736
+    // bit id (536870912) + (593) = 6737
+    // bit id (536870912) + (594) = 6738
+    
+    if ( var2 == 1 )
+    {
+        
+        if ( BIT_CHK( ( 0x20000000 + 297 ) ) == 1 )
+        {
+            SET_ITEM_NUM( ( 0x4000 + 111 ), 1 );
+        }
+
+        
+        if ( BIT_CHK( ( 0x20000000 + 298 ) ) == 1 )
+        {
+            SET_ITEM_NUM( ( 0x4000 + 112 ), 1 );
+        }
+
+        
+        if ( BIT_CHK( ( 0x20000000 + 299 ) ) == 1 )
+        {
+            SET_ITEM_NUM( ( 0x4000 + 113 ), 1 );
+        }
+
+        
+        if ( ( BIT_CHK( ( 0x20000000 + 4659 ) ) == 1 ) && ( BIT_CHK( ( 0x20000000 + 4663 ) ) == 0 ) )
+        {
+            SET_ITEM_NUM( ( 0x4000 + 160 ), 1 );
+        }
+
+        
+        if ( GET_ITEM_NUM( ( 0x4000 + 110 ) ) >= 1 )
+        {
+            SET_ITEM_NUM( ( 0x4000 + 110 ), 0 );
+        }
+
+        BIT_OFF( ( 0x20000000 + 592 ) );
+        BIT_OFF( ( 0x20000000 + 593 ) );
+        BIT_OFF( ( 0x20000000 + 594 ) );
+        SET_COUNT( 160, 0 );
+    }
+
+}
+
+
+// Procedure Index: 3
+void Gimmick_SET()
+{
+    int var5;
+    int var6;
+    int var7;
+    int var8;
+    int var9;
+    int var10;
+    int var11;
+    int var12;
+    int var13;
+    int var14;
+    int var15;
+    int var16;
+    BookIrregularReset();
+    var5 = FLD_OBJ_CNV_RESHND( 64083 );
+    // bit id (536870912) + (297) = 6441
+    
+    if ( BIT_CHK( ( 0x20000000 + 297 ) ) == 1 )
+    {
+        FLD_MODEL_SET_VISIBLE( var5, 0, 0 );
+    }
+
+    var5 = FLD_OBJ_CNV_RESHND( 64075 );
+    // bit id (536870912) + (298) = 6442
+    
+    if ( BIT_CHK( ( 0x20000000 + 298 ) ) == 1 )
+    {
+        FLD_MODEL_SET_VISIBLE( var5, 0, 0 );
+    }
+
+    var5 = FLD_OBJ_CNV_RESHND( 64076 );
+    // bit id (536870912) + (299) = 6443
+    
+    if ( BIT_CHK( ( 0x20000000 + 299 ) ) == 1 )
+    {
+        FLD_MODEL_SET_VISIBLE( var5, 0, 0 );
+    }
+
+    var5 = FLD_OBJ_CNV_RESHND( 64074 );
+    // bit id (536870912) + (4659) = 10803
+    
+    if ( BIT_CHK( ( 0x20000000 + 4659 ) ) == 1 )
+    {
+        FLD_MODEL_SET_VISIBLE( var5, 0, 0 );
+    }
+
+    
+    if ( GET_COUNT( 145 ) >= 42100 )
+    {
+        FLD_OPEN_DOOR_NO( 1603 );
+    }
+
+    var6 = FLD_OBJ_CNV_RESHND( 64000 );
+    var7 = FLD_OBJ_CNV_RESHND( 64001 );
+    var8 = FLD_OBJ_CNV_RESHND( 64047 );
+    var9 = FLD_OBJ_CNV_RESHND( 64086 );
+    var10 = FLD_OBJ_CNV_RESHND( 64087 );
+    var11 = FLD_OBJ_CNV_RESHND( 64088 );
+    var12 = FLD_OBJ_CNV_RESHND( 64090 );
+    var13 = FLD_OBJ_CNV_RESHND( 64089 );
+    FLD_MODEL_SET_VISIBLE( var6, 0, 0 );
+    FLD_MODEL_SET_VISIBLE( var7, 0, 0 );
+    FLD_MODEL_SET_VISIBLE( var8, 0, 0 );
+    FLD_MODEL_SET_VISIBLE( var9, 0, 0 );
+    FLD_MODEL_SET_VISIBLE( var10, 0, 0 );
+    FLD_MODEL_SET_VISIBLE( var11, 0, 0 );
+    FLD_MODEL_SET_VISIBLE( var12, 0, 0 );
+    FLD_MODEL_SET_VISIBLE( var13, 0, 0 );
+    // bit id (536870912) + (592) = 6736
+    
+    if ( BIT_CHK( ( 0x20000000 + 592 ) ) == 1 )
+    {
+        sVar69 = 0;
+        TakeShelfState();
+        
+        if ( sVar71 == 4 )
+        {
+            var11 = FLD_OBJ_CNV_RESHND( 64088 );
+            FLD_MODEL_SET_VISIBLE( var11, 1, 0 );
+        }
+        else 
+        {
+            var6 = FLD_OBJ_CNV_RESHND( 64000 );
+            FLD_MODEL_ADD_TRANSLATE( var6, -10, 0, 0, 0 );
+            FLD_MODEL_SET_VISIBLE( var6, 1, 0 );
+        }
+
+    }
+
+    // bit id (536870912) + (593) = 6737
+    
+    if ( BIT_CHK( ( 0x20000000 + 593 ) ) == 1 )
+    {
+        sVar69 = 1;
+        TakeShelfState();
+        
+        if ( sVar71 == 4 )
+        {
+            var13 = FLD_OBJ_CNV_RESHND( 64089 );
+            FLD_MODEL_SET_VISIBLE( var13, 1, 0 );
+        }
+        else 
+        {
+            var8 = FLD_OBJ_CNV_RESHND( 64047 );
+            FLD_MODEL_ADD_TRANSLATE( var8, 10, 0, 0, 0 );
+            FLD_MODEL_SET_VISIBLE( var8, 1, 0 );
+        }
+
+    }
+
+    // bit id (536870912) + (594) = 6738
+    
+    if ( BIT_CHK( ( 0x20000000 + 594 ) ) == 1 )
+    {
+        sVar69 = 2;
+        TakeShelfState();
+        
+        if ( sVar71 == 4 )
+        {
+            var12 = FLD_OBJ_CNV_RESHND( 64090 );
+            FLD_MODEL_SET_VISIBLE( var12, 1, 0 );
+        }
+        else 
+        {
+            var7 = FLD_OBJ_CNV_RESHND( 64001 );
+            FLD_MODEL_ADD_TRANSLATE( var7, 0, 0, -10, 0 );
+            FLD_MODEL_SET_VISIBLE( var7, 1, 0 );
+        }
+
+    }
+
+    // bit id (536870912) + (4661) = 10805
+    
+    if ( BIT_CHK( ( 0x20000000 + 4661 ) ) == 1 )
+    {
+        FLD_MODEL_SET_VISIBLE( var9, 1, 0 );
+        FLD_MODEL_ADD_TRANSLATE( var9, 0, 0, -0x10, 0 );
+    }
+
+    var14 = FLD_OBJ_CNV_RESHND( 1602 );
+    // bit id (536870912) + (261) = 6405
+    
+    if ( BIT_CHK( ( 0x20000000 + 261 ) ) == 1 )
+    {
+        MDL_ANIM( var14, 2, 0, 0, 1.00f );
+        FLD_OBJ_MODEL_COLLIS( var14, 0 );
+        SYNC();
+        FLD_OBJ_MODEL_COLLIS( var14, 1 );
+    }
+
+    var15 = FLD_OBJ_CNV_RESHND( 1623 );
+    var16 = FLD_OBJ_CNV_RESHND( 1626 );
+    // bit id (536870912) + (285) = 6429
+    
+    if ( BIT_CHK( ( 0x20000000 + 285 ) ) == 1 )
+    {
+        MDL_VISIBLE( var15, 0 );
+        MDL_VISIBLE( var16, 0 );
+    }
+
+}
+
+
+// Procedure Index: 4
+void GIM_COUNT_SET()
+{
+    // bit id (536870912) + (500) = 6644
+    
+    if ( BIT_CHK( ( 0x20000000 + 500 ) ) == 1 )
+    {
+        SET_COUNT( 160, 10050 );
+    }
+
+    // bit id (536870912) + (501) = 6645
+    
+    if ( BIT_CHK( ( 0x20000000 + 501 ) ) == 1 )
+    {
+        SET_COUNT( 160, 10100 );
+    }
+
+}
+
+
+// Procedure Index: 5
+void Door_Lock_Gimmick()
+{
+    int var17;
+    int var18;
+    int var19;
+    var17 = FLD_OBJ_CNV_RESHND( 64039 );
+    var18 = FLD_OBJ_CNV_RESHND( 64040 );
+    var19 = FLD_OBJ_CNV_RESHND( 8 );
+    // bit id (536870912) + (248) = 6392
+    
+    if ( BIT_CHK( ( 0x20000000 + 248 ) ) == 0 )
+    {
+        FLD_SET_DOOR_HIT( 8, 0 );
+        FLD_MODEL_ANIM( var19, 10, 0, 0, 1.00f );
+        SYNC();
+        FLD_OBJ_MODEL_COLLIS( var19, 0 );
+        FLD_OBJ_MODEL_COLLIS( var19, 1 );
+        
+        if ( GET_COUNT( 145 ) < 42650 )
+        {
+            MDL_VISIBLE( var18, 0 );
+        }
+        else 
+        {
+            FLD_HIT_SET_TYPE( 6, 9, 15 );
+        }
+
+    }
+    else 
+    {
+        FLD_SET_DOOR_HIT( 8, 1 );
+    }
+
+}
+
+
+// Procedure Index: 6
+void ENEMY_SET()
+{
+    int var20;
+    // bit id (536870912) + (4635) = 10779
+    
+    if ( BIT_CHK( ( 0x20000000 + 4635 ) ) == 0 )
+    {
+        var20 = 5;
+        FLD_PAUSE_ENEMY_MOVE( 0, var20 );
+        FLD_SET_ENEMY_ORNAMENT( 0, var20, 1 );
+        SYNC();
+    }
+
+    var20 = 4;
+    FLD_SET_ENEMY_INOUT( 0, var20, 0 );
+    FLD_PAUSE_ENEMY_MOVE( 0, var20 );
+    SYNC();
+}
+
+
+// Procedure Index: 7
+void D151_04_MINI_MAP_SET()
+{
+    // bit id (536870912) + (526) = 6670
+    BIT_ON( ( 0x20000000 + 526 ) );
+    // bit id (536870912) + (527) = 6671
+    BIT_ON( ( 0x20000000 + 527 ) );
+    miniMAP_icon_clear();
+    // bit id (536870912) + (2687) = 8831
+    BIT_ON( ( 0x20000000 + 2687 ) );
+    // bit id (536870912) + (201) = 6345
+    // bit id (536870912) + (2688) = 8832
+    // bit id (536870912) + (2688) = 8832
+    
+    if ( ( BIT_CHK( ( 0x20000000 + 201 ) ) == 1 ) && ( GET_COUNT( 145 ) <= 38000 ) )
+    {
+        BIT_OFF( ( 0x20000000 + 2688 ) );
+    }
+    else 
+    {
+        BIT_ON( ( 0x20000000 + 2688 ) );
+    }
+
+    // bit id (536870912) + (201) = 6345
+    // bit id (536870912) + (2689) = 8833
+    // bit id (536870912) + (2689) = 8833
+    
+    if ( ( BIT_CHK( ( 0x20000000 + 201 ) ) == 1 ) && ( GET_COUNT( 145 ) <= 42000 ) )
+    {
+        BIT_OFF( ( 0x20000000 + 2689 ) );
+    }
+    else 
+    {
+        BIT_ON( ( 0x20000000 + 2689 ) );
+    }
+
+    // bit id (536870912) + (387) = 6531
+    // bit id (536870912) + (395) = 6539
+    // bit id (536870912) + (396) = 6540
+    // bit id (536870912) + (397) = 6541
+    // bit id (536870912) + (260) = 6404
+    // bit id (536870912) + (261) = 6405
+    
+    if ( FLD_GET_POS_INDEX() == 0 )
+    {
+        BIT_ON( ( 0x20000000 + 387 ) );
+    }
+    else if ( FLD_GET_POS_INDEX() == 1 )
+    {
+        BIT_ON( ( 0x20000000 + 395 ) );
+        BIT_ON( ( 0x20000000 + 396 ) );
+        BIT_ON( ( 0x20000000 + 397 ) );
+        BIT_ON( ( 0x20000000 + 260 ) );
+        BIT_ON( ( 0x20000000 + 261 ) );
+    }
+
+}
+
+
+// Procedure Index: 8
+void D151_04_START_EV()
+{
+    // bit id (536870912) + (206) = 6350
+    // bit id (536870912) + (249) = 6393
+    
+    if ( ( BIT_CHK( ( 0x20000000 + 206 ) ) == 1 ) && ( BIT_CHK( ( 0x20000000 + 249 ) ) == 0 ) )
+    {
+        
+        if ( GET_COUNT( 145 ) < 42000 )
+        {
+            SET_COUNT( 145, 42000 );
+            D01_04_e480_165_START();
+        }
+        else if ( GET_COUNT( 145 ) == 42010 )
+        {
+            D01_04_e480_165_AF();
+        }
+        else if ( GET_COUNT( 145 ) == 42525 )
+        {
+            D01_04_e159_061_START();
+        }
+
+    }
+
+    
+    if ( FLD_GET_POS_INDEX() == 6 )
+    {
+        FLD_OPEN_DOOR_NO( 1603 );
+    }
+
+    D_AREA_NAME_EFFECT();
+}
+
+
+// Procedure Index: 9
+void D01_04_e480_165_START()
+{
+    int var21;
+    FLD_START_FADE_DISABLE();
+    SET_COUNT( 145, 42005 );
+    var21 = FLD_SCRIPT_READ( 151, 4, 100 );
+    FLD_SCRIPT_READ_SYNC( var21 );
+    FLD_SCRIPT_EXEC( var21, 0 );
+    FLD_SCRIPT_FREE( var21 );
+    SET_COUNT( 145, 42010 );
+    Fld_FadeOut_CallEvent();
+    CALL_EVENT( 480, 165 );
+    CALL_FIELD( 151, 4, 0, 0 );
+}
+
+
+// Procedure Index: 10
+void D01_04_e480_165_AF()
+{
+    int var22;
+    EVT_FAST_PROC_START();
+    FLD_START_FADE_DISABLE();
+    SET_COUNT( 145, 42015 );
+    var22 = FLD_SCRIPT_READ( 151, 4, 100 );
+    FLD_SCRIPT_READ_SYNC( var22 );
+    FLD_SCRIPT_EXEC( var22, 0 );
+    FLD_SCRIPT_FREE( var22 );
+    SET_COUNT( 145, 42020 );
+    // bit id (536870912) + (4621) = 10765
+    BIT_ON( ( 0x20000000 + 4621 ) );
+    // bit id (536870912) + (4667) = 10811
+    // BIT_ON( ( 0x20000000 + 4667 ) );
+    EVT_FAST_PROC_END();
+}
+
+
+// Procedure Index: 11
+void D01_04_e159_061_START()
+{
+    int var23;
+    EVT_FAST_PROC_START();
+    FLD_START_FADE_DISABLE();
+    SET_COUNT( 145, 42550 );
+    var23 = FLD_SCRIPT_READ( 151, 4, 100 );
+    FLD_SCRIPT_READ_SYNC( var23 );
+    FLD_SCRIPT_EXEC( var23, 0 );
+    FLD_SCRIPT_FREE( var23 );
+    SET_COUNT( 145, 42600 );
+    // bit id (536870912) + (68) = 6212
+    BIT_OFF( ( 0x20000000 + 68 ) );
+    BTL_UNSTABALE_Tutorial_EV();
+    EVT_FAST_PROC_END();
+}
+
+
+// Procedure Index: 12
+void Fld_FadeOut_CallField()
+{
+    FADEOUT( 27, 10 );
+    FADE_SYNC();
+}
+
+
+// Procedure Index: 13
+void Fld_FadeOut_Crowd()
+{
+    FLD_REQ_SCN_CHANGE( 0 );
+}
+
+
+// Procedure Index: 14
+void Fld_FadeOut_CallEvent()
+{
+    FADEOUT( 15, 10 );
+    FADE_SYNC();
+}
+
+
+// Procedure Index: 15
+void Fld_FadeOut_CallCalendar()
+{
+    FADEOUT( 15, 10 );
+    FADE_SYNC();
+}
+
+
+// Procedure Index: 16
+void Fld_FadeOut_Default()
+{
+    FADEOUT( 0, 10 );
+    FADE_SYNC();
+}
+
+
+// Procedure Index: 17
+void Fld_FadeOut_Wait10()
+{
+    FADEOUT( 0, 10 );
+    FADE_SYNC();
+    WAIT( 10 );
+}
+
+
+// Procedure Index: 18
+void Fld_FadeIn_Default()
+{
+    FADEIN( 0, 20 );
+    FADE_SYNC();
+}
+
+
+// Procedure Index: 19
+void Fld_FadeOut_Subway()
+{
+    FADEOUT( 8, 10 );
+    FADE_SYNC();
+}
+
+
+// Procedure Index: 20
+void Fld_FadeOut_Symbol()
+{
+    FADEOUT( 15, 10 );
+    FADE_SYNC();
+}
+
+
+// Procedure Index: 21
+void Fld_FadeOut_Rain()
+{
+    FADEOUT( 11, 10 );
+    FADE_SYNC();
+}
+
+
+// Procedure Index: 22
+void Fld_FadeOut_Cross()
+{
+    FADEOUT( 13, 10 );
+    FADE_SYNC();
+}
+
+
+// Procedure Index: 23
+void Fld_FadeOut_Parallel()
+{
+    FADEOUT( 14, 10 );
+    FADE_SYNC();
+}
+
+
+// Procedure Index: 24
+void Fld_FadeOut_CutChange()
+{
+    FADEOUT( 5, 10 );
+    FADE_SYNC();
+}
+
+
+// Procedure Index: 25
+void Fld_FadeOut_Velvet()
+{
+    FADEOUT( 19, 10 );
+    FADE_SYNC();
+}
+
+
+// Procedure Index: 26
+void D_AREA_NAME_EFFECT()
+{
+    int var24;
+    int var25;
+    int var26;
+    int var27;
+    PUTS( "+++++++++++++++++++++++++++++++++++++" );
+    PUTS( "00000000000000000000000" );
+    PUTS( "+++++++++++++++++++++++++++++++++++++" );
+    // bit id (536870912) + (98) = 6242
+    // bit id (536870912) + (98) = 6242
+    // bit id (536870912) + (202) = 6346
+    
+    if ( BIT_CHK( ( 0x20000000 + 98 ) ) == 1 )
+    {
+        BIT_OFF( ( 0x20000000 + 98 ) );
+    }
+    else 
+    {
+        var24 = FLD_GET_MAJOR();
+        var25 = FLD_GET_MINOR();
+        var26 = FLD_GET_DIV_INDEX();
+        var27 = FLD_GET_POS_INDEX();
+        
+        if ( var24 == 151 )
+        {
+            
+            if ( var25 == 1 )
+            {
+                
+                if ( var27 == 0 )
+                {
+                    FLD_PLACENAME_TEX( 151, 0, 0, -1 );
+                }
+                else if ( ( var27 == 1 ) || ( var27 == 5 ) )
+                {
+                    FLD_PLACENAME_TEX( 151, 1, 0, -1 );
+                }
+
+            }
+            else if ( var25 == 2 )
+            {
+                FLD_PLACENAME_TEX( 151, 2, 0, -1 );
+            }
+            else if ( var25 == 3 )
+            {
+                
+                if ( ( var27 == 0 ) || ( var27 == 1 ) )
+                {
+                    FLD_PLACENAME_TEX( 151, 3, 0, -1 );
+                }
+
+            }
+            else if ( var25 == 14 )
+            {
+                
+                if ( ( var27 == 0 ) || ( var27 == 1 ) )
+                {
+                    FLD_PLACENAME_TEX( 151, 14, 0, -1 );
+                }
+
+            }
+            else if ( var25 == 4 )
+            {
+                
+                if ( ( var27 == 0 ) || ( var27 == 1 ) )
+                {
+                    FLD_PLACENAME_TEX( 151, 4, 2, -1 );
+                }
+
+            }
+            else if ( var25 == 15 )
+            {
+                
+                if ( ( var27 == 0 ) || ( var27 == 1 ) )
+                {
+                    FLD_PLACENAME_TEX( 151, 4, 0, -1 );
+                }
+
+            }
+            else if ( var25 == 5 )
+            {
+                
+                if ( ( var27 == 0 ) || ( var27 == 1 ) )
+                {
+                    FLD_PLACENAME_TEX( 151, 5, 0, -1 );
+                }
+
+            }
+            else if ( var25 == 6 )
+            {
+                
+                if ( ( var27 == 0 ) || ( var27 == 1 ) )
+                {
+                    FLD_PLACENAME_TEX( 151, 6, 0, -1 );
+                }
+
+            }
+            else if ( var25 == 7 )
+            {
+                
+                if ( ( var27 == 0 ) || ( var27 == 1 ) )
+                {
+                    FLD_PLACENAME_TEX( 151, 7, 0, -1 );
+                }
+
+            }
+            else if ( var25 == 8 )
+            {
+                
+                if ( var27 == 1 )
+                {
+                    FLD_PLACENAME_TEX( 151, 7, 0, -1 );
+                }
+
+            }
+            else if ( var25 == 9 )
+            {
+                
+                if ( ( var27 == 0 ) || ( var27 == 1 ) )
+                {
+                    FLD_PLACENAME_TEX( 151, 9, 0, -1 );
+                }
+
+            }
+            else if ( var25 == 10 )
+            {
+                
+                if ( ( var27 == 0 ) || ( var27 == 1 ) )
+                {
+                    FLD_PLACENAME_TEX( 151, 10, 0, -1 );
+                }
+
+            }
+            else if ( var25 == 11 )
+            {
+                
+                if ( ( var27 == 0 ) || ( var27 == 2 ) )
+                {
+                    FLD_PLACENAME_TEX( 151, 11, 0, -1 );
+                }
+
+            }
+            else if ( var25 == 12 )
+            {
+                
+                if ( var27 == 0 )
+                {
+                    FLD_PLACENAME_TEX( 151, 12, 0, -1 );
+                }
+
+            }
+            else if ( var25 == 13 )
+            {
+                
+                if ( ( ( var27 == 0 ) || ( var27 == 1 ) ) || ( var27 == 2 ) )
+                {
+                    FLD_PLACENAME_TEX( 151, 13, 0, -1 );
+                }
+
+            }
+            else if ( var25 == 0x10 )
+            {
+                
+                if ( ( var27 == 0 ) || ( var27 == 1 ) )
+                {
+                    FLD_PLACENAME_TEX( 151, 0x10, 0, -1 );
+                }
+
+            }
+
+        }
+        else if ( var24 == 152 )
+        {
+            
+            if ( var25 == 1 )
+            {
+                
+                if ( ( var27 == 1 ) || ( var27 == 2 ) )
+                {
+                    FLD_PLACENAME_TEX( 152, 1, 0, -1 );
+                }
+
+            }
+            else if ( ( var25 == 2 ) && ( BIT_CHK( ( 0x20000000 + 202 ) ) == 1 ) )
+            {
+                
+                if ( ( var27 == 0 ) || ( var27 == 1 ) )
+                {
+                    FLD_PLACENAME_TEX( 152, 2, 0, -1 );
+                }
+
+            }
+            else if ( var25 == 4 )
+            {
+                
+                if ( ( var27 == 0 ) || ( var27 == 1 ) )
+                {
+                    FLD_PLACENAME_TEX( 152, 4, 0, -1 );
+                }
+
+            }
+            else if ( var25 == 6 )
+            {
+                
+                if ( var27 == 0 )
+                {
+                    FLD_PLACENAME_TEX( 152, 6, 0, -1 );
+                }
+
+            }
+
+        }
+
+        return;
+    }
+
+}
+
+
+// Procedure Index: 27
+void D01_ENEMY_FLAG_SET()
+{
+    // bit id (536870912) + (345) = 6489
+    BIT_OFF( ( 0x20000000 + 345 ) );
+    // bit id (536870912) + (346) = 6490
+    BIT_OFF( ( 0x20000000 + 346 ) );
+    // bit id (536870912) + (347) = 6491
+    BIT_OFF( ( 0x20000000 + 347 ) );
+    // bit id (536870912) + (348) = 6492
+    BIT_OFF( ( 0x20000000 + 348 ) );
+    // bit id (536870912) + (349) = 6493
+    BIT_OFF( ( 0x20000000 + 349 ) );
+    // bit id (536870912) + (343) = 6487
+    BIT_OFF( ( 0x20000000 + 343 ) );
+    // bit id (536870912) + (344) = 6488
+    BIT_OFF( ( 0x20000000 + 344 ) );
+    // bit id (536870912) + (201) = 6345
+    // bit id (536870912) + (202) = 6346
+    // bit id (536870912) + (345) = 6489
+    // bit id (536870912) + (203) = 6347
+    // bit id (536870912) + (204) = 6348
+    // bit id (536870912) + (346) = 6490
+    // bit id (536870912) + (343) = 6487
+    // bit id (536870912) + (205) = 6349
+    // bit id (536870912) + (206) = 6350
+    // bit id (536870912) + (347) = 6491
+    // bit id (536870912) + (206) = 6350
+    // bit id (536870912) + (249) = 6393
+    // bit id (536870912) + (348) = 6492
+    // bit id (536870912) + (80) = 6224
+    // bit id (536870912) + (200) = 6344
+    // bit id (536870912) + (349) = 6493
+    
+    if ( ( BIT_CHK( ( 0x20000000 + 201 ) ) == 1 ) && ( BIT_CHK( ( 0x20000000 + 202 ) ) == 0 ) )
+    {
+        BIT_ON( ( 0x20000000 + 345 ) );
+    }
+    else if ( ( BIT_CHK( ( 0x20000000 + 203 ) ) == 1 ) && ( BIT_CHK( ( 0x20000000 + 204 ) ) == 0 ) )
+    {
+        
+        if ( GET_COUNT( 145 ) < 27000 )
+        {
+            BIT_ON( ( 0x20000000 + 346 ) );
+        }
+        else 
+        {
+            BIT_ON( ( 0x20000000 + 343 ) );
+        }
+
+    }
+    else if ( ( BIT_CHK( ( 0x20000000 + 205 ) ) == 1 ) && ( BIT_CHK( ( 0x20000000 + 206 ) ) == 0 ) )
+    {
+        BIT_ON( ( 0x20000000 + 347 ) );
+    }
+    else if ( ( BIT_CHK( ( 0x20000000 + 206 ) ) == 1 ) && ( BIT_CHK( ( 0x20000000 + 249 ) ) == 0 ) )
+    {
+        BIT_ON( ( 0x20000000 + 348 ) );
+    }
+    else if ( ( BIT_CHK( ( 0x20000000 + 80 ) ) == 1 ) && ( BIT_CHK( ( 0x20000000 + 200 ) ) == 0 ) )
+    {
+        BIT_ON( ( 0x20000000 + 349 ) );
+    }
+
+    // bit id (536870912) + (345) = 6489
+    // bit id (536870912) + (346) = 6490
+    // bit id (536870912) + (347) = 6491
+    // bit id (536870912) + (348) = 6492
+    // bit id (536870912) + (349) = 6493
+    // bit id (536870912) + (343) = 6487
+    // bit id (536870912) + (344) = 6488
+    // bit id (536870912) + (348) = 6492
+    
+    if ( CHK_DAYS_STARTEND( 4, 1, 4, 1 ) == 1 )
+    {
+        BIT_OFF( ( 0x20000000 + 345 ) );
+        BIT_OFF( ( 0x20000000 + 346 ) );
+        BIT_OFF( ( 0x20000000 + 347 ) );
+        BIT_OFF( ( 0x20000000 + 348 ) );
+        BIT_OFF( ( 0x20000000 + 349 ) );
+        BIT_OFF( ( 0x20000000 + 343 ) );
+        BIT_OFF( ( 0x20000000 + 344 ) );
+        BIT_ON( ( 0x20000000 + 348 ) );
+        return;
+    }
+
+}
+
+
+// Procedure Index: 28
+void miniMAP_icon_clear()
+{
+    // bit id (536870912) + (2683) = 8827
+    BIT_OFF( ( 0x20000000 + 2683 ) );
+    // bit id (536870912) + (2685) = 8829
+    BIT_OFF( ( 0x20000000 + 2685 ) );
+    // bit id (536870912) + (2686) = 8830
+    BIT_OFF( ( 0x20000000 + 2686 ) );
+    // bit id (536870912) + (2689) = 8833
+    BIT_OFF( ( 0x20000000 + 2689 ) );
+    // bit id (536870912) + (125) = 6269
+    BIT_OFF( ( 0x20000000 + 125 ) );
+}
+
+
+// Procedure Index: 29
+void ACTION_Tutorial_EV()
+{
+    int var28;
+    var28 = ( 0x20000000 + 43 );
+    
+    if ( BIT_CHK( var28 ) == 0 )
+    {
+        CALL_TUTORIAL( 3, 2 );
+        BIT_ON( var28 );
+    }
+
+}
+
+
+// Procedure Index: 30
+void A_recover_Tutorial_EV()
+{
+    int var29;
+    var29 = ( 0x20000000 + 44 );
+    
+    if ( BIT_CHK( var29 ) == 0 )
+    {
+        CALL_TUTORIAL( 3, 27 );
+        BIT_ON( var29 );
+    }
+
+}
+
+
+// Procedure Index: 31
+void ATTACK_Tutorial_EV()
+{
+    int var30;
+    var30 = ( 0x20000000 + 45 );
+    
+    if ( BIT_CHK( var30 ) == 0 )
+    {
+        CALL_TUTORIAL( 3, 8 );
+        BIT_ON( var30 );
+    }
+
+}
+
+
+// Procedure Index: 32
+void SAFEROOM_Tutorial_EV()
+{
+    int var31;
+    var31 = ( 0x20000000 + 47 );
+    
+    if ( BIT_CHK( var31 ) == 0 )
+    {
+        CALL_TUTORIAL( 3, 7 );
+        BIT_ON( var31 );
+    }
+
+}
+
+
+// Procedure Index: 33
+void ALERT_Tutorial_EV()
+{
+    int var32;
+    var32 = ( 0x20000000 + 46 );
+    
+    if ( BIT_CHK( var32 ) == 0 )
+    {
+        CALL_TUTORIAL( 3, 13 );
+        BIT_ON( var32 );
+    }
+
+}
+
+
+// Procedure Index: 34
+void FLD_DASH_Tutorial_EV()
+{
+    int var33;
+    var33 = ( 0x20000000 + 48 );
+    
+    if ( BIT_CHK( var33 ) == 0 )
+    {
+        CALL_TUTORIAL( 3, 25 );
+        BIT_ON( var33 );
+    }
+
+}
+
+
+// Procedure Index: 35
+void SHORTCUT_Tutorial_EV()
+{
+    int var34;
+    var34 = ( 0x20000000 + 49 );
+    
+    if ( BIT_CHK( var34 ) == 0 )
+    {
+        CALL_TUTORIAL( 3, 9 );
+        BIT_ON( var34 );
+    }
+
+}
+
+
+// Procedure Index: 36
+void THIRDEYE_Tutorial_EV()
+{
+    int var35;
+    var35 = ( 0x20000000 + 50 );
+    
+    if ( BIT_CHK( var35 ) == 0 )
+    {
+        CALL_TUTORIAL( 3, 10 );
+        BIT_ON( var35 );
+    }
+
+}
+
+
+// Procedure Index: 37
+void COVER_Tutorial_EV()
+{
+    int var36;
+    var36 = ( 0x20000000 + 51 );
+    
+    if ( BIT_CHK( var36 ) == 0 )
+    {
+        CALL_TUTORIAL( 3, 11 );
+        BIT_ON( var36 );
+    }
+
+}
+
+
+// Procedure Index: 38
+void D_MAP_Tutorial_EV()
+{
+    int var37;
+    var37 = ( 0x20000000 + 52 );
+    
+    if ( BIT_CHK( var37 ) == 0 )
+    {
+        CALL_TUTORIAL( 3, 14 );
+        BIT_ON( var37 );
+    }
+
+}
+
+
+// Procedure Index: 39
+void THIRDEYE_02_Tutorial_EV()
+{
+    int var38;
+    var38 = ( 0x20000000 + 53 );
+    
+    if ( BIT_CHK( var38 ) == 0 )
+    {
+        CALL_TUTORIAL( 3, 12 );
+        BIT_ON( var38 );
+    }
+
+}
+
+
+// Procedure Index: 40
+void D_RESULT_Tutorial_EV()
+{
+    int var39;
+    var39 = ( 0x20000000 + 170 );
+    
+    if ( BIT_CHK( var39 ) == 0 )
+    {
+        CALL_TUTORIAL( 3, 6 );
+        BIT_ON( var39 );
+    }
+
+}
+
+
+// Procedure Index: 41
+void FLD_ATD_MAP_Tutorial_EV()
+{
+    int var40;
+    var40 = ( 0x20000000 + 54 );
+    
+    if ( BIT_CHK( var40 ) == 0 )
+    {
+        CALL_TUTORIAL( 3, 26 );
+        BIT_ON( var40 );
+    }
+
+}
+
+
+// Procedure Index: 42
+void Reaper_Tutorial_EV()
+{
+    int var41;
+    var41 = ( 0x20000000 + 165 );
+    
+    if ( BIT_CHK( var41 ) == 0 )
+    {
+        CALL_TUTORIAL( 3, 23 );
+        BIT_ON( var41 );
+    }
+
+}
+
+
+// Procedure Index: 43
+void FLD_ATD_TARGET_Tutorial_EV()
+{
+    int var42;
+    var42 = ( 0x20000000 + 56 );
+    
+    if ( BIT_CHK( var42 ) == 0 )
+    {
+        CALL_TUTORIAL( 3, 22 );
+        BIT_ON( var42 );
+    }
+
+}
+
+
+// Procedure Index: 44
+void Waiting_Room_Tutorial_EV()
+{
+    int var43;
+    var43 = ( 0x20000000 + 166 );
+    
+    if ( BIT_CHK( var43 ) == 0 )
+    {
+        CALL_TUTORIAL( 3, 24 );
+        BIT_ON( var43 );
+    }
+
+}
+
+
+// Procedure Index: 45
+void Laser_Gimmick_Tutorial_EV()
+{
+    int var44;
+    var44 = ( 0x20000000 + 167 );
+    
+    if ( BIT_CHK( var44 ) == 0 )
+    {
+        CALL_TUTORIAL( 3, 0x10 );
+        BIT_ON( var44 );
+    }
+
+}
+
+
+// Procedure Index: 46
+void Rea_Shadow_Tutorial_EV()
+{
+    int var45;
+    var45 = ( 0x20000000 + 168 );
+    
+    if ( BIT_CHK( var45 ) == 0 )
+    {
+        CALL_TUTORIAL( 3, 17 );
+        BIT_ON( var45 );
+    }
+
+}
+
+
+// Procedure Index: 47
+void Party_Change_Tutorial_EV()
+{
+    int var46;
+    var46 = ( 0x20000000 + 169 );
+    
+    if ( BIT_CHK( var46 ) == 0 )
+    {
+        CALL_TUTORIAL( 3, 15 );
+        BIT_ON( var46 );
+    }
+
+}
+
+
+// Procedure Index: 48
+void FLD_ATD_WEATHER_Tutorial_EV()
+{
+    CALL_TUTORIAL( 3, 4 );
+}
+
+
+// Procedure Index: 49
+void FLD_ATD_POLLEN_Tutorial_EV()
+{
+    CALL_TUTORIAL( 3, 5 );
+}
+
+
+// Procedure Index: 50
+void FLD_ATD_GERIRA_Tutorial_EV()
+{
+    CALL_TUTORIAL( 3, 18 );
+}
+
+
+// Procedure Index: 51
+void FLD_ATD_TYPHOON_Tutorial_EV()
+{
+    CALL_TUTORIAL( 3, 20 );
+}
+
+
+// Procedure Index: 52
+void MEME_SHOP_Tutorial_EV()
+{
+    int var47;
+    var47 = ( 0x20000000 + 5103 );
+    
+    if ( BIT_CHK( var47 ) == 0 )
+    {
+        CALL_TUTORIAL( 3, 20 );
+        BIT_ON( var47 );
+    }
+
+}
+
+
+// Procedure Index: 53
+void MEME_STAMP_Tutorial_EV()
+{
+    int var48;
+    var48 = ( 0x20000000 + 5104 );
+    
+    if ( BIT_CHK( var48 ) == 0 )
+    {
+        CALL_TUTORIAL( 3, 19 );
+        BIT_ON( var48 );
+    }
+
+}
+
+
+// Procedure Index: 54
+void MEME_CUSTOM_Tutorial_EV()
+{
+    int var49;
+    var49 = ( 0x20000000 + 5105 );
+    
+    if ( BIT_CHK( var49 ) == 0 )
+    {
+        CALL_TUTORIAL( 3, 30 );
+        BIT_ON( var49 );
+    }
+
+}
+
+
+// Procedure Index: 55
+void SkillCard_Tutorial_EV()
+{
+    int var50;
+    var50 = ( 805306368 + 226 );
+    
+    if ( BIT_CHK( var50 ) == 0 )
+    {
+        CALL_TUTORIAL( 0, 19 );
+        BIT_ON( var50 );
+    }
+
+}
+
+
+// Procedure Index: 56
+void BTL_AI_CHANGE_EV()
+{
+    int var51;
+    var51 = ( 805306368 + 224 );
+    
+    if ( BIT_CHK( var51 ) == 0 )
+    {
+        CALL_TUTORIAL( 0, 17 );
+        BIT_ON( var51 );
+    }
+
+}
+
+
+// Procedure Index: 57
+void BTL_ASSIST_EV()
+{
+    int var52;
+    var52 = ( 805306368 + 216 );
+    
+    if ( BIT_CHK( var52 ) == 0 )
+    {
+        CALL_TUTORIAL( 0, 9 );
+        BIT_ON( var52 );
+    }
+
+}
+
+
+// Procedure Index: 58
+void BTL_RUSH_EV()
+{
+    int var53;
+    var53 = ( 805306368 + 215 );
+    
+    if ( BIT_CHK( var53 ) == 0 )
+    {
+        CALL_TUTORIAL( 0, 8 );
+        BIT_ON( var53 );
+    }
+
+}
+
+
+// Procedure Index: 59
+void All_Out_Attack_Tutorial_EV()
+{
+    int var54;
+    var54 = ( 805306368 + 217 );
+    
+    if ( BIT_CHK( var54 ) == 0 )
+    {
+        CALL_TUTORIAL( 0, 10 );
+        BIT_ON( var54 );
+    }
+
+}
+
+
+// Procedure Index: 60
+void BTL_TALK_Tutorial_EV()
+{
+    int var55;
+    var55 = ( 805306368 + 213 );
+    
+    if ( BIT_CHK( var55 ) == 0 )
+    {
+        CALL_TUTORIAL( 0, 6 );
+        BIT_ON( var55 );
+    }
+
+}
+
+
+// Procedure Index: 61
+void BTL_NETWORK_Tutorial_EV()
+{
+    int var56;
+    var56 = ( 805306368 + 235 );
+    
+    if ( BIT_CHK( var56 ) == 0 )
+    {
+        CALL_TUTORIAL( 0, 28 );
+        BIT_ON( var56 );
+    }
+
+}
+
+
+// Procedure Index: 62
+void BTL_UNSTABALE_Tutorial_EV()
+{
+    int var57;
+    var57 = ( 805306368 + 288 );
+    
+    if ( BIT_CHK( var57 ) == 0 )
+    {
+        CALL_TUTORIAL( 0, 0x20 );
+        BIT_ON( var57 );
+    }
+
+}
+
+
+// Procedure Index: 63
+void BTL_TALK_TECH_Tutorial_EV()
+{
+    int var58;
+    var58 = ( 805306368 + 227 );
+    
+    if ( BIT_CHK( var58 ) == 0 )
+    {
+        CALL_TUTORIAL( 0, 20 );
+        BIT_ON( var58 );
+    }
+
+}
+
+
+// Procedure Index: 64
+void BTL_COMBINE_Tutorial_EV()
+{
+    int var59;
+    var59 = ( 805306368 + 293 );
+    
+    if ( BIT_CHK( var59 ) == 0 )
+    {
+        CALL_TUTORIAL( 0, 36 );
+        BIT_ON( var59 );
+    }
+
+}
+
+
+// Procedure Index: 65
+void BTL_BATTON_RANK_Tutorial_EV()
+{
+    int var60;
+    var60 = ( 805306368 + 300 );
+    
+    if ( BIT_CHK( var60 ) == 0 )
+    {
+        CALL_TUTORIAL( 0, 42 );
+        BIT_ON( var60 );
+    }
+
+}
+
+
+// Procedure Index: 66
+void SAVE_Tutorial_EV()
+{
+}
+
+
+// Procedure Index: 67
+void RATWALK_Tutorial_EV()
+{
+}
+
+
+// Procedure Index: 68
+void CAMP_Tutorial_EV()
+{
+    int var61;
+    var61 = ( 0 + 234 );
+    
+    if ( BIT_CHK( var61 ) == 0 )
+    {
+        CALL_TUTORIAL( 4, 2 );
+        BIT_ON( var61 );
+    }
+
+}
+
+
+// Procedure Index: 69
+void GIMMICK_Tutorial_EV()
+{
+}
+
+
+// Procedure Index: 70
+void Camera_Tutorial_EV()
+{
+}
+
+
+// Procedure Index: 71
+void Camera_Switch_Tutorial_EV()
+{
+}
+
+
+// Procedure Index: 72
+void BTL_BOKO_Tutorial_EV()
+{
+}
+
+
+// Procedure Index: 73
+void FLD_Wire_Tutorial_EV()
+{
+    int var62;
+    var62 = ( 0x20000000 + 171 );
+    
+    if ( BIT_CHK( var62 ) == 0 )
+    {
+        CALL_TUTORIAL( 3, 28 );
+        BIT_ON( var62 );
+    }
+
+}
+
+
+// Procedure Index: 74
+void Direct_Command_Tutorial_EV()
+{
+}
+
+
+// Procedure Index: 75
+void FLD_COVER_AVOID_Tutorial_EV()
+{
+    int var63;
+    var63 = ( 0x20000000 + 5102 );
+    
+    if ( BIT_CHK( var63 ) == 0 )
+    {
+        CALL_TUTORIAL( 3, 31 );
+        BIT_ON( var63 );
+    }
+
+}
+
+
+// Procedure Index: 76
+void FLD_MEME_HAPNING_Tutorial_EV()
+{
+    int var64;
+    var64 = ( 0x20000000 + 172 );
+    
+    if ( BIT_CHK( var64 ) == 0 )
+    {
+        CALL_TUTORIAL( 3, 0x20 );
+        BIT_ON( var64 );
+    }
+
+}
+
+
+// Procedure Index: 77
+void FLD_SAFETY_ROOM_Tutorial_EV()
+{
+    int var65;
+    var65 = ( 0x20000000 + 4666 );
+    
+    if ( BIT_CHK( var65 ) == 0 )
+    {
+        CALL_TUTORIAL( 3, 33 );
+        BIT_ON( var65 );
+    }
+
+}
+
+
+// Procedure Index: 78
+void FLD_STONE_Tutorial_EV()
+{
+    int var66;
+    var66 = ( 0x20000000 + 4665 );
+    
+    if ( BIT_CHK( var66 ) == 0 )
+    {
+        CALL_TUTORIAL( 3, 34 );
+        BIT_ON( var66 );
+    }
+
+}
+
+
+// Procedure Index: 79
+void FLD_SAFETY_ITEM_Tutorial_EV()
+{
+    int var67;
+    var67 = ( 0x20000000 + 4664 );
+    
+    if ( BIT_CHK( var67 ) == 0 )
+    {
+        CALL_TUTORIAL( 3, 35 );
+        BIT_ON( var67 );
+    }
+
+}
+
+
+// Procedure Index: 80
+void BookSet()
+{
+    int var68;
+    int var77;
+    int var72;
+    int var73;
+    int var76;
+    
+    if ( var68 == 3 )
+    {
+        SET_ITEM_NUM( ( 0x4000 + 160 ), 0 );
+    }
+    else 
+    {
+        SET_ITEM_NUM( ( ( 0x4000 + 111 ) + var68 ), 0 );
+    }
+
+    var77 = GET_COUNT( 160 );
+    var72 = sVar69;
+    TakeShelfState();
+    var73 = 0;
+    var76 = 10;
+    _255:
+    
+    if ( var73 < var72 )
+    {
+        var76 = ( var76 * 10 );
+        var73 = ( var73 + 1 );
+        goto _255;
+    }
+
+    var76 = ( var76 / 10 );
+    SET_COUNT( 160, ( var77 + ( ( var68 + 1 ) * var76 ) ) );
+    BIT_ON( ( ( 0x20000000 + 592 ) + sVar69 ) );
+}
+
+
+// Procedure Index: 81
+void BookTakeOut()
+{
+    int var83;
+    int var78;
+    int var79;
+    int var82;
+    var83 = GET_COUNT( 160 );
+    TakeShelfState();
+    // bit id (536870912) + (5031) = 11175
+    // bit id (536870912) + (5031) = 11175
+    
+    if ( sVar71 == 4 )
+    {
+        FLD_GET_FIX_ITEM( ( 0x4000 + 160 ), 1 );
+        
+        if ( BIT_CHK( ( 0x20000000 + 5031 ) ) == 0 )
+        {
+            BIT_ON( ( 0x20000000 + 5031 ) );
+            MSG_WND_DSP();
+            MSG( D151_04_miniEV10_mes01 );
+            MSG_WND_CLS();
+        }
+
+    }
+    else 
+    {
+        FLD_GET_FIX_ITEM( ( ( ( 0x4000 + 111 ) + sVar71 ) - 1 ), 1 );
+    }
+
+    var78 = sVar69;
+    var79 = 0;
+    var82 = 10;
+    _261:
+    
+    if ( var79 < var78 )
+    {
+        var82 = ( var82 * 10 );
+        var79 = ( var79 + 1 );
+        goto _261;
+    }
+
+    var82 = ( var82 / 10 );
+    SET_COUNT( 160, ( var83 - ( sVar71 * var82 ) ) );
+    BIT_OFF( ( ( 0x20000000 + 592 ) + sVar69 ) );
+}
+
+
+// Procedure Index: 82
+void TakeShelfState()
+{
+    int var89;
+    int var84;
+    int var85;
+    int var88;
+    int var87;
+    int var86;
+    var89 = GET_COUNT( 160 );
+    var84 = sVar69;
+    var85 = 0;
+    var88 = 10;
+    _263:
+    
+    if ( var85 < var84 )
+    {
+        var88 = ( var88 * 10 );
+        var85 = ( var85 + 1 );
+        goto _263;
+    }
+
+    var87 = ( var89 / var88 );
+    PUT( var87 );
+    
+    if ( var87 >= 1 )
+    {
+        var87 = ( var89 - ( var87 * var88 ) );
+    }
+    else 
+    {
+        var87 = var89;
+    }
+
+    var85 = 0;
+    var88 = 10;
+    _267:
+    
+    if ( var85 < var84 )
+    {
+        var88 = ( var88 * 10 );
+        var85 = ( var85 + 1 );
+        goto _267;
+    }
+
+    var88 = ( var88 / 10 );
+    var86 = ( var87 / var88 );
+    sVar71 = var86;
+}
+
+
+// Procedure Index: 83
+void JudgeCorrectBook()
+{
+    int var90;
+    // bit id (536870912) + (592) = 6736
+    // bit id (536870912) + (593) = 6737
+    // bit id (536870912) + (594) = 6738
+    
+    if ( ( ( BIT_CHK( ( 0x20000000 + 592 ) ) == 1 ) && ( BIT_CHK( ( 0x20000000 + 593 ) ) == 1 ) ) && ( BIT_CHK( ( 0x20000000 + 594 ) ) == 1 ) )
+    {
+        var90 = 1;
+    }
+
+    
+    if ( var90 == 1 )
+    {
+        
+        if ( 123 == GET_COUNT( 160 ) )
+        {
+            D151_04_GIM_CLEAR();
+        }
+        else 
+        {
+            D151_04_GIM_MISS();
+        }
+
+    }
+
+}
+
+
+// Procedure Index: 84
+void D151_04_GIM_MISS()
+{
+    int var91;
+    var91 = FLD_SCRIPT_READ( 151, 4, 100 );
+    FLD_SCRIPT_READ_SYNC( var91 );
+    FLD_SCRIPT_EXEC( var91, 0 );
+    FLD_SCRIPT_FREE( var91 );
+    // bit id (536870912) + (589) = 6733
+    // bit id (536870912) + (589) = 6733
+    
+    if ( BIT_CHK( ( 0x20000000 + 589 ) ) == 0 )
+    {
+        BIT_ON( ( 0x20000000 + 589 ) );
+    }
+
+    // bit id (536870912) + (592) = 6736
+    BIT_OFF( ( 0x20000000 + 592 ) );
+    // bit id (536870912) + (593) = 6737
+    BIT_OFF( ( 0x20000000 + 593 ) );
+    // bit id (536870912) + (594) = 6738
+    BIT_OFF( ( 0x20000000 + 594 ) );
+    // bit id (536870912) + (500) = 6644
+    BIT_OFF( ( 0x20000000 + 500 ) );
+    // bit id (536870912) + (501) = 6645
+    BIT_OFF( ( 0x20000000 + 501 ) );
+    // bit id (536870912) + (588) = 6732
+    BIT_OFF( ( 0x20000000 + 588 ) );
+}
+
+
+// Procedure Index: 85
+void D151_04_GIM_CLEAR()
+{
+    int var92;
+    SET_COUNT( 145, 42150 );
+    var92 = FLD_SCRIPT_READ( 151, 4, 100 );
+    FLD_SCRIPT_READ_SYNC( var92 );
+    FLD_SCRIPT_EXEC( var92, 0 );
+    FLD_SCRIPT_FREE( var92 );
+    SET_COUNT( 145, 42200 );
+    // bit id (536870912) + (261) = 6405
+    BIT_ON( ( 0x20000000 + 261 ) );
+    // bit id (536870912) + (81) = 6225
+    BIT_OFF( ( 0x20000000 + 81 ) );
+    // bit id (536870912) + (68) = 6212
+    BIT_ON( ( 0x20000000 + 68 ) );
+}
+
+
+// Procedure Index: 86
+void SetMainShelfMask()
+{
+    int var93;
+    var93 = 0;
+    
+    if ( GET_ITEM_NUM( ( 0x4000 + 111 ) ) == 0 )
+    {
+        var93 = ( var93 + 1 );
+    }
+
+    
+    if ( GET_ITEM_NUM( ( 0x4000 + 112 ) ) == 0 )
+    {
+        var93 = ( var93 + 2 );
+    }
+
+    
+    if ( GET_ITEM_NUM( ( 0x4000 + 113 ) ) == 0 )
+    {
+        var93 = ( var93 + 4 );
+    }
+
+    // bit id (536870912) + (5031) = 11175
+    
+    if ( ( GET_ITEM_NUM( ( 0x4000 + 160 ) ) == 0 ) || ( BIT_CHK( ( 0x20000000 + 5031 ) ) == 1 ) )
+    {
+        var93 = ( var93 + 8 );
+    }
+
+    SEL_DEFKEY( 14, 4 );
+    SEL_MASK( var93 );
+}
+

@@ -10,9 +10,9 @@ public class ChestRewardDirector
     private FlagManipulator _flagManipulator;
     private ILogger _logger;
 
-    private readonly Dictionary<long, string> _rewardName = new Dictionary<long, string>();
+    private readonly Dictionary<long, string> _rewardName = new();
 
-    private readonly long[] chestFlags =
+    private readonly long[]? _chestFlags =
     [
         0x200001C2, 0x200001D6, 0x200001D5, 0x200001C4, 0x200001C5, 0x20000173, 0x200001D3, 0x200001D4, 0x200001CA,
         0x200001C9, 0x200001CB, 0x200001D8, 0x200001CC, 0x200001C6, 0x200001C3, 0x200001D9, 0x200001C7, 0x200001CD,
@@ -27,7 +27,7 @@ public class ChestRewardDirector
         _flagManipulator = flagManipulator;
         _logger = logger;
 
-        apConnector.ScoutLocations(chestFlags, ProcessScoutedInfo);
+        apConnector.ScoutLocations(_chestFlags, ProcessScoutedInfo);
 
         itemManipulator.OnChestOpened += chestId =>
         {
@@ -56,6 +56,19 @@ public class ChestRewardDirector
             }
 
             _rewardName.Add(chestId, shortName);
+        }
+    }
+
+    public async void CloseUnopenedChests()
+    {
+        var unopenedChests = _apConnector.GetUnfoundLocations(_chestFlags);
+        await unopenedChests;
+
+        foreach (ulong id in unopenedChests.Result)
+        {
+            _logger.WriteLine($"Trying to close tbox ID: {id:X}");
+            
+            _flagManipulator.SetBit((uint)id, false);
         }
     }
 

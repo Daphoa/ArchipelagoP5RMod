@@ -1,4 +1,5 @@
 ﻿using ArchipelagoP5RMod.GameCommunicators;
+using ArchipelagoP5RMod.Types;
 using Reloaded.Hooks.Definitions;
 using Reloaded.Hooks.Definitions.X86;
 using Reloaded.Mod.Interfaces;
@@ -14,6 +15,13 @@ public class ConfidantManipulator
 
     [Function(CallingConventions.Fastcall)]
     private delegate IntPtr CmmSetLv(ushort cmmId, short cmmLv);
+    
+    [Function(CallingConventions.Fastcall)]
+    public delegate void CmmOpenFunc(ushort cmmId);
+
+    private IntPtr _getCmmOpenPtr;
+
+    public CmmOpenFunc _cmmOpen { get; private set; }
 
     private readonly FlagManipulator _flagManipulator;
 
@@ -67,8 +75,17 @@ public class ConfidantManipulator
         AddressScanner.DelayedScanPattern(
             "66 85 C9 0F 84 ?? ?? ?? ?? 57",
             address => _cmmSetLvHook = hooks.CreateHook<CmmSetLv>(CmmSetLvImpl, address).Activate());
+        AddressScanner.DelayedScanPattern(
+            "48 89 5C 24 ?? 48 89 74 24 ?? 57 48 83 EC 20 48 8B 35 ?? ?? ?? ?? 33 FF 0F B7 D9",
+            address => _cmmOpen =
+                hooks.CreateWrapper<CmmOpenFunc>(address, out _getCmmOpenPtr));
 
         logger.WriteLine("Created ItemManipulator Hooks");
+    }
+
+    public void CmmOpen(Confidant confidant)
+    {
+        _cmmOpen((ushort)confidant);
     }
 
     public bool EnableCmmFeature(uint feature)
@@ -164,6 +181,7 @@ public class ConfidantManipulator
                 {
                     _logger.WriteLine("WARNING: Read unusual data while loading CMM data.");
                 }
+
                 return;
             }
 

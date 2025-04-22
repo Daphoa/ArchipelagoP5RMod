@@ -260,14 +260,14 @@ public class ApConnector
         _isProcessingItems = false;
     }
 
-    public async void ReportLocationCheckAsync(params long[] locationIds)
+    public async Task ReportLocationCheckAsync(params long[] locationIds)
     {
         await WaitForConnection();
 
         await _session.Locations.CompleteLocationChecksAsync(locationIds);
     }
 
-    public async void ScoutLocations(long[] locationIds,
+    public async void ScoutLocations(long[]? locationIds,
         Action<Dictionary<long, ScoutedItemInfo>> scoutLocationsCallback)
     {
         await WaitForConnection();
@@ -277,4 +277,17 @@ public class ApConnector
 
         scoutLocationsCallback.Invoke(results.Result);
     }
+
+    public async Task<IEnumerable<long>> GetUnfoundLocations(IEnumerable<long>? locationIds = null)
+    {
+        await WaitForConnection();
+
+        IEnumerable<long> retVal = _session.Locations.AllMissingLocations;
+        if (locationIds is not null)
+        {
+            retVal = retVal.Intersect(locationIds);
+        }
+
+        return retVal;
+    } 
 }

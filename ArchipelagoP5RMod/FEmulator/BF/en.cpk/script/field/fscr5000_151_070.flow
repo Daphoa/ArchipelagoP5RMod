@@ -1,0 +1,6 @@
+﻿void General_5000_151_070_hook()
+{
+    MSG_WND_DSP();
+    MSG( 1 );
+    MSG_WND_CLS();
+}

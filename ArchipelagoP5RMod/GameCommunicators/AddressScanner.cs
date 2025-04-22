@@ -13,12 +13,12 @@ public static class AddressScanner
 {
     private static Dictionary<string, Action<IntPtr>> scanRequests = new();
     private static Dictionary<nint, Action<IntPtr>> offsetRequests = new();
-    private static bool hasScanned = false;
+
+    public static bool HasScanned { get; private set; }
 
     private static ILogger _logger;
 
     public static unsafe BitFlagArrayInfo* BitFlagSectionMap { get; private set; }
-
 
     private static IntPtr _baseAddress;
     private static int _exeSize;
@@ -29,7 +29,7 @@ public static class AddressScanner
      */
     public static void DelayedAddressHack(nint offset, Action<IntPtr> onResponse)
     {
-        if (hasScanned)
+        if (HasScanned)
         {
             // I could spit out an error... but it's a hack anyway so whatever.
             onResponse.Invoke(_baseAddress + offset);
@@ -42,7 +42,7 @@ public static class AddressScanner
 
     public static void DelayedScanPattern(string pattern, Action<IntPtr> onResponse, bool suppressWarning = false)
     {
-        if (hasScanned)
+        if (HasScanned)
         {
             if (!suppressWarning)
             {
@@ -112,6 +112,6 @@ public static class AddressScanner
 
         offsetRequests.Clear();
         scanRequests.Clear();
-        hasScanned = true;
+        HasScanned = true;
     }
 }
