@@ -72,7 +72,7 @@ public class Mod : ModBase // <= Do not Remove.
         _configuration = context.Configuration;
         _modConfig = context.ModConfig;
 
-        MyLogger.Setup(context.Logger);
+        MyLogger.Setup(context.Logger, _configuration);
         FlowFunctionWrapper.Setup(_hooks);
 
         string apConnectionHash = (_configuration.ServerAddress + _configuration.SlotName).GetHashCode().ToString();

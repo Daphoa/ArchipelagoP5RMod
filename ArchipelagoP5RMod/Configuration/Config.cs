@@ -17,7 +17,7 @@ public class Config : Configurable<Config>
         multiSelect: false,
         forceFileSystem: false)]
     public string SaveDirectory { get; set; } = "";
-    
+
     [DisplayName("Server Address")]
     [Description("The archipelago server address.")]
     [DefaultValue("archipelago.gg:99999")]
@@ -26,11 +26,16 @@ public class Config : Configurable<Config>
     [DisplayName("Server Password")]
     [Description("The password for the archipelago server.")]
     public string ServerPassword { get; set; } = "";
-    
+
     [DisplayName("Slot Name")]
     [Description("The P5R slot to connect to.")]
     [DefaultValue("Player1")]
     public string SlotName { get; set; } = "Player1";
+
+    [DisplayName("Debug Logs")]
+    [Description("Enable to log more detailed information")]
+    [DefaultValue(false)]
+    public bool LogDebug { get; set; } = false;
 }
 
 /// <summary>

@@ -198,7 +198,7 @@ public class ApConnector
 
     private void OnMessageReceived(LogMessage message)
     {
-        MyLogger.ApLog(message.ToString());
+        MyLogger.Log("[AP]" + message);
     }
 
     private void OnItemReceived(ReceivedItemsHelper receivedItemsHelper)

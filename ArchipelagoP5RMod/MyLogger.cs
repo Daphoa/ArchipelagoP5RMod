@@ -1,28 +1,29 @@
-﻿using Reloaded.Mod.Interfaces;
+﻿using ArchipelagoP5RMod.Configuration;
+using Reloaded.Mod.Interfaces;
 
 namespace ArchipelagoP5RMod;
 
 public static class MyLogger
 {
     private static ILogger _logger;
-    
-    public static void Setup(ILogger logger)
+    private static bool _logDebug;
+
+    public static void Setup(ILogger logger, Config configuration)
     {
         _logger = logger;
+        _logDebug = configuration.LogDebug;
     }
 
-    public static void ApLog(string message)
-    {
-        _logger.WriteLine("[AP Server] " + message);
-    } 
-    
     public static void Log(string message)
     {
         _logger.WriteLine(message);
     }
-    
+
     public static void DebugLog(string message)
     {
+        if (!_logDebug)
+            return;
+        _logger.Write("[AP] [DEBUG] ");
         _logger.WriteLine(message);
     }
 }
