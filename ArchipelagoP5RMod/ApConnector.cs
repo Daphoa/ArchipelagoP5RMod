@@ -23,7 +23,6 @@ public class ApConnector
     }
 
     private readonly ArchipelagoSession _session;
-    private readonly ILogger _logger;
     public event EventHandler<ApItemReceivedEvent> OnItemReceivedEvent;
     private bool _isTryingToConnect = false;
     private bool _closeConnection = false;
@@ -40,10 +39,9 @@ public class ApConnector
     private string SlotName { get; set; }
 
     public ApConnector(string serverAddress, string serverPassword, string slotName,
-        FlagManipulator flagManipulator, ILogger logger)
+        FlagManipulator flagManipulator)
     {
         _session = ArchipelagoSessionFactory.CreateSession(serverAddress);
-        this._logger = logger;
         this.ServerPassword = serverPassword;
         this.SlotName = slotName;
 
@@ -77,7 +75,7 @@ public class ApConnector
 
             await Task.Delay(waitTime);
 
-            _logger.WriteLine($"Connecting as {SlotName}...");
+            MyLogger.DebugLog($"Connecting as {SlotName}...");
 
             try
             {
@@ -87,8 +85,8 @@ public class ApConnector
             }
             catch (Exception ex)
             {
-                _logger.WriteLine("Failed to connect to server");
-                _logger.WriteLine(ex.Message);
+                MyLogger.Log("Failed to connect to server");
+                MyLogger.DebugLog(ex.Message);
                 failureCount++;
                 continue;
             }
@@ -103,7 +101,7 @@ public class ApConnector
             }
             catch (Exception ex)
             {
-                _logger.WriteLine(ex.Message);
+                MyLogger.DebugLog(ex.Message);
                 failureCount++;
                 continue;
             }
@@ -127,7 +125,7 @@ public class ApConnector
                 errorMessage += $"\n    {error}";
             }
 
-            _logger.WriteLine(errorMessage);
+            MyLogger.DebugLog(errorMessage);
         }
 
         _isTryingToConnect = false;
@@ -175,8 +173,6 @@ public class ApConnector
         if (_session.Socket.Connected)
             return true;
 
-        _logger.WriteLine("No connection to server.");
-
         if (!_isTryingToConnect)
         {
             ConnectToServerAsync();
@@ -202,7 +198,7 @@ public class ApConnector
 
     private void OnMessageReceived(LogMessage message)
     {
-        _logger.WriteLine(message.ToString());
+        MyLogger.ApLog(message.ToString());
     }
 
     private void OnItemReceived(ReceivedItemsHelper receivedItemsHelper)
@@ -231,12 +227,12 @@ public class ApConnector
             await Task.Delay(1000);
         }
 
-        _logger.WriteLine("Collecting items from archipelago");
-        _logger.WriteLine($"LastRewardIndex: {LastRewardIndex}");
-        _logger.WriteLine($"session: {LastRewardIndex}");
+        MyLogger.DebugLog("Collecting items from archipelago");
+        MyLogger.DebugLog($"LastRewardIndex: {LastRewardIndex}");
+        MyLogger.DebugLog($"session: {LastRewardIndex}");
         while (LastRewardIndex < _session.Items.AllItemsReceived.Count)
         {
-            _logger.WriteLine(
+            MyLogger.DebugLog(
                 $"Collecting item {LastRewardIndex}: {_session.Items.AllItemsReceived[(int)LastRewardIndex].ItemName}");
 
             var itemInfo = _session.Items.AllItemsReceived[(int)LastRewardIndex];
@@ -254,7 +250,7 @@ public class ApConnector
 
             LastRewardIndex++;
 
-            _logger.WriteLine($"Processed index {LastRewardIndex} for item {item.ToString()}");
+            MyLogger.DebugLog($"Processed index {LastRewardIndex} for item {item.ToString()}");
         }
 
         _isProcessingItems = false;

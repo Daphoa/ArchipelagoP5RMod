@@ -27,7 +27,6 @@ public class ConfidantManipulator
 
     private IHook<CmmCheckEnableFunc> _cmmCheckEnableFuncHook;
     private IHook<CmmSetLv> _cmmSetLvHook;
-    private static ILogger _logger;
 
 
     private static readonly HashSet<idType> allCmmFuncIds =
@@ -64,10 +63,9 @@ public class ConfidantManipulator
     public delegate void OnCmmSetLvEvent(ushort cmmId, short cmmLv);
 
 
-    public ConfidantManipulator(FlagManipulator flagManipulator, IReloadedHooks hooks, ILogger logger)
+    public ConfidantManipulator(FlagManipulator flagManipulator, IReloadedHooks hooks)
     {
         _flagManipulator = flagManipulator;
-        _logger = logger;
         AddressScanner.DelayedScanPattern(
             "40 53 55 56 41 54 41 56 48 83 EC 20",
             address => _cmmCheckEnableFuncHook =
@@ -80,7 +78,7 @@ public class ConfidantManipulator
             address => _cmmOpen =
                 hooks.CreateWrapper<CmmOpenFunc>(address, out _getCmmOpenPtr));
 
-        logger.WriteLine("Created ItemManipulator Hooks");
+        MyLogger.DebugLog("Created ItemManipulator Hooks");
     }
 
     public void CmmOpen(Confidant confidant)
@@ -92,12 +90,12 @@ public class ConfidantManipulator
     {
         if (!allCmmFuncIds.Contains(feature))
         {
-            _logger.WriteLine(
+            MyLogger.DebugLog(
                 $"{nameof(EnableCmmFeature)} called with {nameof(feature)}:{feature:X} but it's not supported.");
             return false;
         }
 
-        _logger.WriteLine($"{nameof(EnableCmmFeature)} called. {nameof(feature)}:{feature:X} enabled.");
+        MyLogger.DebugLog($"{nameof(EnableCmmFeature)} called. {nameof(feature)}:{feature:X} enabled.");
         return _acquiredCmmFuncIds.Add(feature);
     }
 
@@ -122,7 +120,7 @@ public class ConfidantManipulator
     {
         IntPtr val = _cmmSetLvHook.OriginalFunction(cmmId, cmmLv);
 
-        _logger.WriteLine($"CmmSetLv called with id: {cmmId} | lv: {cmmLv}");
+        MyLogger.DebugLog($"CmmSetLv called with id: {cmmId} | lv: {cmmLv}");
 
         OnCmmSetLv?.Invoke(cmmId, cmmLv);
 
@@ -179,7 +177,7 @@ public class ConfidantManipulator
             {
                 if (readBytes < 1 || buffer[0] != 0x0)
                 {
-                    _logger.WriteLine("WARNING: Read unusual data while loading CMM data.");
+                    MyLogger.DebugLog("WARNING: Read unusual data while loading CMM data.");
                 }
 
                 return;

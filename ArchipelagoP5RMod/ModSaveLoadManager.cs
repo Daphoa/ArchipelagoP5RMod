@@ -1,10 +1,11 @@
 ﻿using System.Runtime.InteropServices.ComTypes;
+using System.Text;
 using Reloaded.Memory.Extensions;
 using Reloaded.Mod.Interfaces;
 
 namespace ArchipelagoP5RMod;
 
-public class ModSaveLoadManager(string saveDirectory, string uniqueApConnectionStr, ILogger logger)
+public class ModSaveLoadManager(string saveDirectory, string uniqueApConnectionStr)
 {
     private const string Filename = "{0}/AP_Mod_Save_Data_{1}_{2:d2}";
 
@@ -77,7 +78,7 @@ public class ModSaveLoadManager(string saveDirectory, string uniqueApConnectionS
         if (!File.Exists(fileName))
         {
             // Fail gracefully.
-            logger.WriteLine($"No file found for index {fileIndex}");
+            MyLogger.DebugLog($"No file found for index {fileIndex}");
 
             OnLoadComplete?.Invoke(fileIndex, false);
             return;
@@ -111,22 +112,23 @@ public class ModSaveLoadManager(string saveDirectory, string uniqueApConnectionS
         {
             if (buffer[i] == header[i]) continue;
 
-            logger.Write("Loaded header: ");
+            StringBuilder logMsg = new StringBuilder();
+            
+            logMsg.Append("Loaded header: ");
             foreach (byte t in buffer)
             {
-                logger.Write($"{t:X2} ");
+                logMsg.Append($"{t:X2} ");
             }
 
-            logger.WriteLine("");
+            logMsg.Append('\n');
 
-            logger.Write("Expected header: ");
+            logMsg.Append("Expected header: ");
             foreach (byte t in header)
             {
-                logger.Write($"{t:X2} ");
+                logMsg.Append($"{t:X2} ");
             }
 
-            logger.WriteLine("");
-
+            MyLogger.DebugLog(logMsg.ToString());
 
             throw new InvalidDataException("Tried to read file, but no header was present.");
         }
@@ -183,19 +185,16 @@ public class ModSaveLoadManager(string saveDirectory, string uniqueApConnectionS
 
     #region TestingCode
 
-    private ModSaveLoadManager(ILogger logger) : this(null, null, logger)
+    private ModSaveLoadManager() : this(null, null)
     {
     }
 
     private class TestSection
     {
         private byte[] data;
-        private ILogger logger;
 
-        public TestSection(Random rand, ModSaveLoadManager modSaveLoadManager, ILogger logger)
+        public TestSection(Random rand, ModSaveLoadManager modSaveLoadManager)
         {
-            this.logger = logger;
-
             var size = rand.Next(10, 500);
             data = new byte[size];
             rand.NextBytes(data);
@@ -210,34 +209,36 @@ public class ModSaveLoadManager(string saveDirectory, string uniqueApConnectionS
             for (int i = 0; i < newData.Length; i++)
             {
                 if (newData[i] == data[i]) continue;
-                logger.WriteLine(
+                MyLogger.DebugLog(
                     $"Original data wasn't equal to new data at index {i}: {newData[i]:X2} expected: {data[i]:X2}");
 
-                logger.Write("New Data:      ");
+                StringBuilder logMsg = new StringBuilder();
+                logMsg.Append("New Data:      ");
                 foreach (byte t in newData)
                 {
-                    logger.Write($"{t:X2} ");
+                    logMsg.Append($"{t:X2} ");
                 }
 
-                logger.WriteLine("");
+                logMsg.Append('\n');
 
-                logger.Write("Expected data: ");
+                logMsg.Append("Expected data: ");
                 foreach (byte t in data)
                 {
-                    logger.Write($"{t:X2} ");
+                    logMsg.Append($"{t:X2} ");
                 }
 
-                logger.WriteLine("");
+                logMsg.Append('\n');
+                MyLogger.DebugLog(logMsg.ToString());
                 return;
             }
 
-            logger.WriteLine("TestSection: Equal");
+            MyLogger.DebugLog("TestSection: Equal");
         }
     }
 
-    public static void TestSaveLoad(ILogger logger)
+    public static void TestSaveLoad()
     {
-        logger.WriteLine("Testing Save/Load");
+        MyLogger.DebugLog("Testing Save/Load");
 
         var rand = new Random();
 
@@ -245,28 +246,28 @@ public class ModSaveLoadManager(string saveDirectory, string uniqueApConnectionS
 
         for (int i = 0; i < numAttempts; i++)
         {
-            logger.WriteLine($"Starting attempt {i}");
+            MyLogger.DebugLog($"Starting attempt {i}");
 
-            var handler = new ModSaveLoadManager(logger);
-            logger.WriteLine("Created handler");
+            var handler = new ModSaveLoadManager();
+            MyLogger.DebugLog("Created handler");
 
             int numSection = rand.Next(2, 10);
-            logger.WriteLine($"Testing with {numSection} sections");
+            MyLogger.DebugLog($"Testing with {numSection} sections");
             List<TestSection> testSections = [];
             for (int j = 0; j < numSection; j++)
             {
-                testSections.Add(new TestSection(rand, handler, logger));
-                logger.WriteLine($"Created section {j}");
+                testSections.Add(new TestSection(rand, handler));
+                MyLogger.DebugLog($"Created section {j}");
             }
 
             MemoryStream testSaveFile = new MemoryStream();
-            logger.WriteLine($"Trying to save file");
+            MyLogger.DebugLog($"Trying to save file");
             handler.SaveToStream(testSaveFile);
-            logger.WriteLine($"File saved, moving \"file\" position to start for load");
+            MyLogger.DebugLog($"File saved, moving \"file\" position to start for load");
 
             testSaveFile.Seek(0, SeekOrigin.Begin);
 
-            logger.WriteLine($"Trying to load file (position: {testSaveFile.Position})");
+            MyLogger.DebugLog($"Trying to load file (position: {testSaveFile.Position})");
             handler.LoadFromStream(testSaveFile);
         }
     }

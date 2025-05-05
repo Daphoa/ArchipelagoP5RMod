@@ -17,12 +17,8 @@ public class SaveLoadConnector
     private IHook<AppStorageReadWrite> _appStorageReadHook;
     private IHook<AppStorageReadWrite> _appStorageWriteHook;
 
-    private readonly ILogger _logger;
-
-    public SaveLoadConnector(IReloadedHooks hooks, ILogger logger)
+    public SaveLoadConnector(IReloadedHooks hooks)
     {
-        _logger = logger;
-
         AddressScanner.DelayedScanPattern(
             "48 89 5C 24 ?? 57 48 83 EC 60 89 CB",
             address => _appStorageReadHook =
@@ -36,7 +32,7 @@ public class SaveLoadConnector
     private IntPtr AppStorageReadImpl(int param1, uint fileIndex)
     {
         IntPtr val = _appStorageWriteHook.OriginalFunction(param1, fileIndex);
-        _logger.WriteLine($"AppStorageRead called with {nameof(fileIndex)} {fileIndex}");
+        MyLogger.DebugLog($"AppStorageRead called with {nameof(fileIndex)} {fileIndex}");
         OnGameFileLoaded?.Invoke(fileIndex);
         return val;
     }
@@ -44,7 +40,7 @@ public class SaveLoadConnector
     private IntPtr AppStorageWriteImpl(int param1, uint fileIndex)
     {
         IntPtr val = _appStorageReadHook.OriginalFunction(param1, fileIndex);
-        _logger.WriteLine($"AppStorageWrite called with {nameof(fileIndex)} {fileIndex}");
+        MyLogger.DebugLog($"AppStorageWrite called with {nameof(fileIndex)} {fileIndex}");
         OnGameFileSaved?.Invoke(fileIndex);
         return val;
     }

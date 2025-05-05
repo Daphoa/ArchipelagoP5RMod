@@ -33,7 +33,7 @@ public class DebugTools
         }
     }
 
-    public unsafe List<BitAddress> FindChangedFlags(ILogger? logger = null)
+    public unsafe List<BitAddress> FindChangedFlags()
     {
         if (_flagBackup == null)
         {
@@ -69,17 +69,14 @@ public class DebugTools
                         ID = flag
                     };
                     changedFlags.Add(changedFlag);
-                    logger?.WriteLine(
+                    MyLogger.DebugLog(
                         $"Found changed bit: 0x{section:X}0000000 + {flag} | value: {value} | adr: {(IntPtr)(&currBitArray[flagGroup]):X}");
                 }
                
             }
         }
 
-        if (logger != null && changedFlags.Count == 0)
-        {
-            logger.WriteLine("FindChangedFlags: No changes found");
-        }
+        MyLogger.DebugLog("FindChangedFlags: No changes found");
 
         return changedFlags;
     }

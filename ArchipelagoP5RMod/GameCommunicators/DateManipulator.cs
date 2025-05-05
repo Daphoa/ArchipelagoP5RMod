@@ -11,7 +11,6 @@ public class DateManipulator
     public const uint CALENDAR_ANIM_TOGGLE = 0x50000000 + 17;
 
     /* Fields */
-    private readonly ILogger _logger;
     private readonly FlagManipulator _flagManipulator;
 
     public static unsafe DateInfo* DateInfoAddress => *_dateInfoRefAddress;
@@ -22,10 +21,8 @@ public class DateManipulator
 
     private bool disablingCalendarAnimation = false;
 
-    public DateManipulator(GameTaskListener gameTaskListener, FlagManipulator flagManipulator, IReloadedHooks hooks,
-        ILogger logger)
+    public DateManipulator(GameTaskListener gameTaskListener, FlagManipulator flagManipulator, IReloadedHooks hooks)
     {
-        _logger = logger;
         _flagManipulator = flagManipulator;
 
         AddressScanner.DelayedScanPattern(
@@ -41,7 +38,7 @@ public class DateManipulator
             AddressScanner.DelayedAddressHack(0x286c188, address => _dateInfoRefAddress = (DateInfo**)address);
         }
 
-        logger.WriteLine("Created DateManipulator Hooks");
+        MyLogger.DebugLog("Created DateManipulator Hooks");
     }
 
     private void OnTimeUpdateCreated()

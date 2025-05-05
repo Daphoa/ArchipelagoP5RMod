@@ -6,7 +6,6 @@ namespace ArchipelagoP5RMod.GameCommunicators;
 
 public class ScheduleManipulator
 {
-    ILogger _logger;
     readonly FlagManipulator _flagManipulator;
 
     [Function(CallingConventions.Fastcall)]
@@ -14,9 +13,8 @@ public class ScheduleManipulator
 
     private IHook<RunScheduleForDay> _runScheduleForDayHook;
 
-    public ScheduleManipulator(FlagManipulator flagManipulator, IReloadedHooks hooks, ILogger logger)
+    public ScheduleManipulator(FlagManipulator flagManipulator, IReloadedHooks hooks)
     {
-        _logger = logger;
         _flagManipulator = flagManipulator;
 
         AddressScanner.DelayedScanPattern(

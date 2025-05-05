@@ -9,7 +9,6 @@ namespace ArchipelagoP5RMod;
 
 public class ItemManipulator
 {
-    private readonly ILogger _logger;
     private readonly FlagManipulator _flagManipulator;
 
     private const long DUMMY_ITEM = 0;
@@ -69,10 +68,9 @@ public class ItemManipulator
 
     public delegate void OnChestOpenedEvent(long chestId);
 
-    public unsafe ItemManipulator(FlagManipulator flagManipulator, IReloadedHooks hooks, ILogger logger)
+    public unsafe ItemManipulator(FlagManipulator flagManipulator, IReloadedHooks hooks)
     {
         _flagManipulator = flagManipulator;
-        _logger = logger;
         AddressScanner.DelayedScanPattern(
             "48 8B C4 48 89 58 ?? 48 89 48 ?? 55 56 57 41 54 41 55 41 56 41 57 48 8D A8 ?? ?? ?? ?? 48 81 EC 70 08 00 00",
             address => _openChestHook =
@@ -105,7 +103,7 @@ public class ItemManipulator
             "?? ?? ?? 48 8B 0D ?? ?? ?? ?? 48 85 C9 74 ?? 83 B9 ?? ?? ?? ?? 00 74 ?? 33 C0",
             address => _getItemWindowFlow = hooks.CreateWrapper<GetItemWindowFlow>(address, out _getItemWindowFlowAdr));
 
-        logger.WriteLine("Created ItemManipulator Hooks");
+        MyLogger.DebugLog("Created ItemManipulator Hooks");
     }
 
     private unsafe long OpenChestOnUpdateImpl(int* param1, float param2, long param3, float param4)
@@ -214,7 +212,7 @@ public class ItemManipulator
 
     public void RewardItem(ushort itemId, byte count)
     {
-        _logger.WriteLine($"Rewarding item {itemId:X} x{count}");
+        MyLogger.DebugLog($"Rewarding item {itemId:X} x{count}");
         byte newCount = GetItemNumImpl(itemId);
         newCount += count;
         SetItemNumImpl(itemId, newCount, 1);
@@ -240,7 +238,7 @@ public class ItemManipulator
 
             FlowFunctionWrapper.CallCustomFlowFunction(CustomApMethodsIndexes.RewardItemsFunc);
 
-            _logger.WriteLine($"Opening item window for item {e.ApItem.Id:X}");
+            MyLogger.DebugLog($"Opening item window for item {e.ApItem.Id:X}");
         }
 
         e.Handled = true;

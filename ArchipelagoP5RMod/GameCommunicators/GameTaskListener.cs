@@ -9,7 +9,6 @@ namespace ArchipelagoP5RMod.GameCommunicators;
 
 public class GameTaskListener
 {
-    private readonly ILogger _logger;
     private readonly IReloadedHooks _hooks;
 
     [Function(CallingConventions.Fastcall)]
@@ -38,9 +37,8 @@ public class GameTaskListener
     private IHook<CreateGameTaskType> _createGameTask;
     private readonly IReverseWrapper<GameTaskOnDestroy> _onDestroyWrapperHook;
 
-    public unsafe GameTaskListener(IReloadedHooks hooks, ILogger logger)
+    public unsafe GameTaskListener(IReloadedHooks hooks)
     {
-        _logger = logger;
         _hooks = hooks;
 
         AddressScanner.DelayedScanPattern(

@@ -9,8 +9,6 @@ namespace ArchipelagoP5RMod;
 
 public class FlagManipulator
 {
-    private readonly ILogger _logger;
-
     public const uint AP_LAST_REWARD_INDEX = SectionMask * ExternalCountSection + 0;
     public const uint AP_CURR_REWARD_CMM_ABILITY = SectionMask * ExternalCountSection + 1;
     public const uint AP_CURR_REWARD_ITEM_ID = SectionMask * ExternalCountSection + 2;
@@ -46,10 +44,8 @@ public class FlagManipulator
     private static uint[] externalCounts = new uint[4] { 0, 0, 0, 0 };
     private const int CountTypeSize = sizeof(uint);
 
-    public FlagManipulator(IReloadedHooks hooks, ILogger logger)
+    public FlagManipulator(IReloadedHooks hooks)
     {
-        _logger = logger;
-
         AddressScanner.DelayedScanPattern(
             "4C 8D 05 ?? ?? ?? ?? 33 C0 49 8B D0 0F 1F 40 00 39 0A 74 ?? FF C0 48 83 C2 08 83 F8 10 72 ?? 8B D1",
             address => _bitChkHook = hooks.CreateHook<BitChkType>(BitChkImpl, address).Activate());
@@ -68,7 +64,7 @@ public class FlagManipulator
             address => _setCountFlowHook =
                 hooks.CreateHook<FlowFunctionWrapper.FlowFuncDelegate4>(SetCountImpl, address).Activate());
 
-        logger.WriteLine("Created FlagManipulator Hooks");
+        MyLogger.DebugLog("Created FlagManipulator Hooks");
 
         // Note: this is playing a little bit with fire. If it needed to call the in game function, it'd get a null ref.
         SetBit(SHOWING_MESSAGE, false);

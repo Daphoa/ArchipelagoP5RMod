@@ -27,11 +27,6 @@ public class Mod : ModBase // <= Do not Remove.
     private readonly IReloadedHooks _hooks;
 
     /// <summary>
-    /// Provides access to the Reloaded logger.
-    /// </summary>
-    private readonly ILogger _logger;
-
-    /// <summary>
     /// Entry point into the mod, instance that created this class.
     /// </summary>
     private readonly IMod _owner;
@@ -73,39 +68,36 @@ public class Mod : ModBase // <= Do not Remove.
     {
         _modLoader = context.ModLoader;
         _hooks = context.Hooks ?? throw new ArgumentNullException(nameof(context), "context.hooks cannot be null");
-        _logger = context.Logger;
         _owner = context.Owner;
         _configuration = context.Configuration;
         _modConfig = context.ModConfig;
 
-        FlowFunctionWrapper.SetLogger(_logger);
+        MyLogger.Setup(context.Logger);
         FlowFunctionWrapper.Setup(_hooks);
 
         string apConnectionHash = (_configuration.ServerAddress + _configuration.SlotName).GetHashCode().ToString();
 
-        _gameTaskListener = new GameTaskListener(_hooks, _logger);
-        _flagManipulator = new FlagManipulator(_hooks, _logger);
-        _dateManipulator = new DateManipulator(_gameTaskListener, _flagManipulator, _hooks, _logger);
-        _itemManipulator = new ItemManipulator(_flagManipulator, _hooks, _logger);
-        _gameSaveLoadConnector = new GameSaveLoadConnector(_hooks, _logger);
-        _modSaveLoadManager = new ModSaveLoadManager(_configuration.SaveDirectory, apConnectionHash, _logger);
-        _confidantManipulator = new ConfidantManipulator(_flagManipulator, _hooks, _logger);
+        _gameTaskListener = new GameTaskListener(_hooks);
+        _flagManipulator = new FlagManipulator(_hooks);
+        _dateManipulator = new DateManipulator(_gameTaskListener, _flagManipulator, _hooks);
+        _itemManipulator = new ItemManipulator(_flagManipulator, _hooks);
+        _gameSaveLoadConnector = new GameSaveLoadConnector(_hooks);
+        _modSaveLoadManager = new ModSaveLoadManager(_configuration.SaveDirectory, apConnectionHash);
+        _confidantManipulator = new ConfidantManipulator(_flagManipulator, _hooks);
         _apConnector = new ApConnector(serverAddress: _configuration.ServerAddress,
             serverPassword: _configuration.ServerPassword,
             slotName: _configuration.SlotName,
-            flagManipulator: _flagManipulator,
-            logger: _logger);
+            flagManipulator: _flagManipulator);
         _firstTimeSetup = new FirstTimeSetup();
         _chestRewardDirector = new ChestRewardDirector();
-        _apFlagItemRewarder = new ApFlagItemRewarder(_itemManipulator, _flagManipulator, _logger);
-        _messageManipulator = new MessageManipulator(_flagManipulator, _hooks, _logger);
-        _scheduleManipulator = new ScheduleManipulator(_flagManipulator, _hooks, _logger);
-        _infiltrationManager = new InfiltrationManager(_flagManipulator, _itemManipulator, _logger);
-        _personaManipulator = new PersonaManipulator(_hooks, _logger);
-        BfLoader.Setup(_logger);
+        _apFlagItemRewarder = new ApFlagItemRewarder(_itemManipulator, _flagManipulator);
+        _messageManipulator = new MessageManipulator(_flagManipulator, _hooks);
+        _scheduleManipulator = new ScheduleManipulator(_flagManipulator, _hooks);
+        _infiltrationManager = new InfiltrationManager(_flagManipulator, _itemManipulator);
+        _personaManipulator = new PersonaManipulator(_hooks);
+        BfLoader.Setup();
         SequenceMonitor.Setup();
         CustomLogic.Setup(_itemManipulator, _flagManipulator);
-        MyLogger.Setup(_logger);
 
         AddressScanner.Scan();
         _gameTaskListener.FreezeListeners();
@@ -133,7 +125,7 @@ public class Mod : ModBase // <= Do not Remove.
 
         OnGameLoadedFirstTime += (_, _) => _apConnector.ReadyToCollect();
 
-        _chestRewardDirector.Setup(_apConnector, _itemManipulator, _flagManipulator, _logger);
+        _chestRewardDirector.Setup(_apConnector, _itemManipulator, _flagManipulator);
 
         _modSaveLoadManager.RegisterSaveLoad(_flagManipulator.SaveCountData, _flagManipulator.LoadCountData);
         _modSaveLoadManager.RegisterSaveLoad(_confidantManipulator.SaveEnabledCmmData,
@@ -164,7 +156,7 @@ public class Mod : ModBase // <= Do not Remove.
 
                     uint relevantFlagValue = *flagPointer & 0x300;
 
-                    _logger.WriteLine($"Relevant flag value: {relevantFlagValue:X}");
+                    MyLogger.DebugLog($"Relevant flag value: {relevantFlagValue:X}");
                 }
                 else
                 {
@@ -222,7 +214,7 @@ public class Mod : ModBase // <= Do not Remove.
 
     private async void AsyncStartCheckingForGameLoaded()
     {
-        _logger.WriteLine("Checking if game loaded");
+        MyLogger.DebugLog("Checking if game loaded");
 
         while (!SequenceMonitor.SequenceCanShowMessage)
         {
@@ -232,7 +224,7 @@ public class Mod : ModBase // <= Do not Remove.
         // _logger.WriteLine("Game seemingly loaded, waiting 5 seconds");
         // await Task.Delay(5000);
 
-        _logger.WriteLine("Game loaded, calling onGameLoaded");
+        MyLogger.DebugLog("Game loaded, calling onGameLoaded");
         OnGameLoadedFirstTime.Invoke(this, EventArgs.Empty);
     }
 
@@ -243,7 +235,7 @@ public class Mod : ModBase // <= Do not Remove.
         // _logger.WriteLine($"DateInfo - {AddressScanner.DateInfoAddress->ToString()}");
         if (_debugTools.HasFlagBackup)
         {
-            _debugTools.FindChangedFlags(_logger);
+            _debugTools.FindChangedFlags();
         }
 
         _debugTools.BackupCurrentFlags();
@@ -252,35 +244,35 @@ public class Mod : ModBase // <= Do not Remove.
     private void TestBitManipulator(object? sender, EventArgs eventArgs)
     {
         uint[] TEST_VALS = [1244, 0x20000000 + 54, 0x30000000 + 1, 0x40000000 + 54];
-        _logger.WriteLine("Testing bit manipulator");
+        MyLogger.DebugLog("Testing bit manipulator");
 
         foreach (uint testVal in TEST_VALS)
         {
             bool preVal = _flagManipulator.CheckBit(testVal);
-            _logger.WriteLine($"Pretest {testVal:X} bit value: {preVal}");
+            MyLogger.DebugLog($"Pretest {testVal:X} bit value: {preVal}");
             _flagManipulator.SetBit(testVal, true);
             bool val = _flagManipulator.CheckBit(testVal);
-            _logger.WriteLine(val
+            MyLogger.DebugLog(val
                 ? $"TestBitManipulator test{testVal:X} on passed"
                 : $"TestBitManipulator test{testVal:X} on failed!!!!!!!!!!!!!");
 
             _flagManipulator.SetBit(testVal, false);
             val = _flagManipulator.CheckBit(testVal);
-            _logger.WriteLine(!val
+            MyLogger.DebugLog(!val
                 ? $"TestBitManipulator test{testVal:X} off passed"
                 : $"TestBitManipulator test{testVal:X} off failed!!!!!!!!!!!!!");
 
             _flagManipulator.SetBit(testVal, preVal);
         }
 
-        _logger.WriteLine("Ended TestBitManipulator");
+        MyLogger.DebugLog("Ended TestBitManipulator");
     }
 
     private void TestFlowFuncWrapper(object? sender, EventArgs eventArgs)
     {
-        _logger.WriteLine("Starting flow func wrapper test");
+        MyLogger.DebugLog("Starting flow func wrapper test");
         var success = FlowFunctionWrapper.TestFlowscriptWrapper(5);
-        _logger.WriteLine(success ? "FlowFuncWrapper test Success" : "FlowFuncWrapper test Failed!!!!!!!!!!!!!!!!");
+        MyLogger.DebugLog(success ? "FlowFuncWrapper test Success" : "FlowFuncWrapper test Failed!!!!!!!!!!!!!!!!");
     }
 
     #region Standard Overrides
@@ -290,7 +282,7 @@ public class Mod : ModBase // <= Do not Remove.
         // Apply settings from configuration.
         // ... your code here.
         _configuration = configuration;
-        _logger.WriteLine($"[{_modConfig.ModId}] Config Updated: Applying");
+        MyLogger.DebugLog($"[{_modConfig.ModId}] Config Updated: Applying");
     }
 
     #endregion

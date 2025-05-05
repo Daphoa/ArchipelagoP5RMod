@@ -11,6 +11,11 @@ public static class MyLogger
         _logger = logger;
     }
 
+    public static void ApLog(string message)
+    {
+        _logger.WriteLine("[AP Server] " + message);
+    } 
+    
     public static void Log(string message)
     {
         _logger.WriteLine(message);

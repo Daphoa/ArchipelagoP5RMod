@@ -9,8 +9,6 @@ namespace ArchipelagoP5RMod;
 
 public static class FlowFunctionWrapper
 {
-    private static ILogger? _logger;
-
     [Function(CallingConventions.Fastcall)]
     public delegate uint FlowFuncDelegate4();
     [Function(CallingConventions.Fastcall)]
@@ -51,13 +49,6 @@ public static class FlowFunctionWrapper
     public static unsafe bool IsAdrNullPointer => (IntPtr)_flowCommanderDataRefAddress == IntPtr.Zero;
 
     private static unsafe FlowCommandData** _flowCommanderDataRefAddress;
-
-    public static void SetLogger(ILogger logger)
-    {
-        _logger = logger;
-
-        logger.WriteLine("FlowFunctionWrapper created");
-    }
 
     public static void Setup(IReloadedHooks hooks)
     {
@@ -119,7 +110,7 @@ public static class FlowFunctionWrapper
         int newStackSize = FlowCommandDataAddress->StackSize + args.Length;
         if (newStackSize > 47)
         {
-            _logger?.WriteLine(
+            MyLogger.DebugLog(
                 $"ERROR: trying to push flow command call data stack to {newStackSize} over maximum size 47");
             return;
         }
@@ -164,7 +155,7 @@ public static class FlowFunctionWrapper
                 if (!thisTestSuccess)
                 {
                     success = false;
-                    _logger?.WriteLine(
+                    MyLogger.DebugLog(
                         $"Test {testNum} failed on {i}. {GetFlowscriptInt4Arg(i)} is not equal to parameters[{i}]: {parameters[i]}.");
                 }
             }
@@ -180,7 +171,7 @@ public static class FlowFunctionWrapper
             if (testRetVal != actualRetVal)
             {
                 success = false;
-                _logger?.WriteLine(
+                MyLogger.DebugLog(
                     $"Test {testNum} failed on retVal. Expected value ({testRetVal:X}) is not equal to actual value ({actualRetVal:X}).");
             }
         }

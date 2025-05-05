@@ -29,13 +29,11 @@ public class ApFlagItemRewarder
         new("Lustful Left Eye", bitFlag: 6464, itemId: 0x4000 + 117),
     ];
 
-    private readonly ILogger _logger;
     private readonly ItemManipulator _itemManipulator;
     private readonly FlagManipulator _flagManipulator;
 
-    public ApFlagItemRewarder(ItemManipulator itemManipulator, FlagManipulator flagManipulator, ILogger logger)
+    public ApFlagItemRewarder(ItemManipulator itemManipulator, FlagManipulator flagManipulator)
     {
-        _logger = logger;
         _itemManipulator = itemManipulator;
         _flagManipulator = flagManipulator;
     }

@@ -7,8 +7,6 @@ namespace ArchipelagoP5RMod.GameCommunicators;
 
 public class PersonaManipulator
 {
-    private readonly ILogger _logger;
-
     private FlowFunctionWrapper.BasicFlowFunc _personaSetLvl;
     private FlowFunctionWrapper.BasicFlowFunc _addPersonaStock;
     private FlowFunctionWrapper.BasicFlowFunc _addPersonaSkill;
@@ -19,10 +17,8 @@ public class PersonaManipulator
 
     private readonly IDictionary<PartyMember, uint> _characterPersona;
 
-    public PersonaManipulator(IReloadedHooks hooks, ILogger logger)
+    public PersonaManipulator(IReloadedHooks hooks)
     {
-        _logger = logger;
-
         Dictionary<PartyMember, uint> characterPersona = new Dictionary<PartyMember, uint>
         {
             { PartyMember.Joker, 201 }, // Arsène

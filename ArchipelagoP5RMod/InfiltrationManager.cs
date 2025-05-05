@@ -7,17 +7,15 @@ public class InfiltrationManager
 {
     private readonly FlagManipulator _flagManipulator;
     private readonly ItemManipulator _itemManipulator;
-    private readonly ILogger _logger;
     
     private const ushort RED_LUST_SEED = 0x40E1;
     private const ushort GREEN_LUST_SEED = 0x40E2;
     private const ushort BLUE_LUST_SEED = 0x40E3;
 
-    public InfiltrationManager(FlagManipulator flagManipulator, ItemManipulator itemManipulator, ILogger logger)
+    public InfiltrationManager(FlagManipulator flagManipulator, ItemManipulator itemManipulator)
     {
         _flagManipulator = flagManipulator;
         _itemManipulator = itemManipulator;
-        _logger = logger;
 
         itemManipulator.OnItemCountChanged += (item, _) => InfiltrationCheck(item);
     }

@@ -6,15 +6,13 @@ namespace ArchipelagoP5RMod.GameCommunicators;
 
 public class MessageManipulator
 {
-    private readonly ILogger _logger;
     private readonly FlagManipulator _flagManipulator;
 
     private IHook<FlowFunctionWrapper.FlowFuncDelegate8> _msgWndDps;
     private IHook<FlowFunctionWrapper.FlowFuncDelegate8> _msgWndCls;
 
-    public MessageManipulator(FlagManipulator flagManipulator, IReloadedHooks hooks, ILogger logger)
+    public MessageManipulator(FlagManipulator flagManipulator, IReloadedHooks hooks)
     {
-        _logger = logger;
         _flagManipulator = flagManipulator;
 
         AddressScanner.DelayedScanPattern(

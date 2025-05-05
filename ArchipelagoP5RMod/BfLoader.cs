@@ -6,15 +6,13 @@ namespace ArchipelagoP5RMod;
 
 public static class BfLoader
 {
-    private static ILogger _logger;
     private static GCHandle _apMethodsBfFile;
 
     public static unsafe byte* ApMethodsBfFilePointer => (byte*)_apMethodsBfFile.AddrOfPinnedObject();
     public static uint ApMethodsBfFileLength { get; private set; }
 
-    public static void Setup(ILogger logger)
+    public static void Setup()
     {
-        _logger = logger;
         if (!_apMethodsBfFile.IsAllocated)
         {
             LoadFileIntoMemory();

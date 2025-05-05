@@ -8,7 +8,6 @@ public class ChestRewardDirector
     private ApConnector _apConnector;
     private ItemManipulator _itemManipulator;
     private FlagManipulator _flagManipulator;
-    private ILogger _logger;
 
     private readonly Dictionary<long, string> _rewardName = new();
 
@@ -20,12 +19,11 @@ public class ChestRewardDirector
     ];
 
 
-    public void Setup(ApConnector apConnector, ItemManipulator itemManipulator, FlagManipulator flagManipulator, ILogger logger)
+    public void Setup(ApConnector apConnector, ItemManipulator itemManipulator, FlagManipulator flagManipulator)
     {
         _apConnector = apConnector;
         _itemManipulator = itemManipulator;
         _flagManipulator = flagManipulator;
-        _logger = logger;
 
         apConnector.ScoutLocations(_chestFlags, ProcessScoutedInfo);
 
@@ -41,7 +39,7 @@ public class ChestRewardDirector
 
     private void ProcessScoutedInfo(Dictionary<long, ScoutedItemInfo> scoutedInfo)
     {
-        _logger.WriteLine("Starting to process scouted chest info.");
+        MyLogger.DebugLog("Starting to process scouted chest info.");
 
         foreach (var scoutedItemInfo in scoutedInfo)
         {
@@ -60,7 +58,7 @@ public class ChestRewardDirector
             _rewardName.Add(chestId, shortName);
         }
         
-        _logger.WriteLine("Done processing scouted chest info.");
+        MyLogger.DebugLog("Done processing scouted chest info.");
     }
 
     public async void CloseUnopenedChests()
@@ -70,7 +68,7 @@ public class ChestRewardDirector
 
         foreach (ulong id in unopenedChests.Result)
         {
-            _logger.WriteLine($"Trying to close tbox ID: {id:X}");
+            MyLogger.DebugLog($"Trying to close tbox ID: {id:X}");
             
             _flagManipulator.SetBit((uint)id, false);
         }
