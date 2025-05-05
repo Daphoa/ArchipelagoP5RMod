@@ -267,9 +267,11 @@ public class ApConnector
         Action<Dictionary<long, ScoutedItemInfo>> scoutLocationsCallback)
     {
         await WaitForConnection();
+        
+        MyLogger.DebugLog("Connection made - scouting locations");
 
         var results = _session.Locations.ScoutLocationsAsync(locationIds);
-        await results.WaitAsync(new TimeSpan(0, 0, 0, 6));
+        await results.WaitAsync(new TimeSpan(0, 0, 0, 10));
 
         scoutLocationsCallback.Invoke(results.Result);
     }
