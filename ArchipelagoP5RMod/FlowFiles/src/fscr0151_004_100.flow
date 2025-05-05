@@ -445,37 +445,6 @@ void D01_04_e159_051()
     SYNC();
     MDL_ANIM( var16, ( 60 + 0 ), 0, 3, 1.00f );
     FLD_WAIT( 15 );
-    FLD_MODEL_SET_VISIBLE( var15, 0, 10 );
-    FLD_MODEL_ANIM_SYNC( var16 );
-    FLD_MODEL_ANIM( var16, 58, 1, 5, 1.00f );
-    FLD_WAIT( 15 );
-    FLD_GET_FIX_ITEM( ( 0x4000 + 105 ), 1 );
-    MSG_WND_DSP();
-    MSG( D01_04_e159_051_mes01 );
-    MSG_WND_CLS();
-    // bit id (536870912) + (254) = 6398
-    
-    if ( BIT_CHK( ( 0x20000000 + 254 ) ) == 1 )
-    {
-        MSG_WND_DSP();
-        MSG( D01_04_e159_051_mes02 );
-        MSG_WND_CLS();
-    }
-    else 
-    {
-        MSG_WND_DSP();
-        MSG( D01_04_e159_051_n_mes01 );
-        MSG_WND_CLS();
-        MSG_WND_DSP();
-        MSG( D01_04_e159_051_n_mes02 );
-        MSG_WND_CLS();
-    }
-
-    MSG_WND_DSP();
-    MSG( D01_04_e159_051_mes03 );
-    MSG_WND_CLS();
-    MDL_ANIM( var16, ( 60 + 0 ), 0, 3, 1.00f );
-    FLD_WAIT( 15 );
     FLD_MODEL_SET_VISIBLE( var14, 0, 10 );
     FLD_MODEL_ANIM_SYNC( var16 );
     FLD_MODEL_ANIM( var16, 58, 1, 5, 1.00f );

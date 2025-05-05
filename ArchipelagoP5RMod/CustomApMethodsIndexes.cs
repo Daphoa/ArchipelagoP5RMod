@@ -1,6 +1,6 @@
 ﻿namespace ArchipelagoP5RMod;
 
-public enum ApMethodsIndexes
+public enum CustomApMethodsIndexes
 {
     RewardItemsFunc = 0,
     NotifyConfidantAbilityReward = 1,

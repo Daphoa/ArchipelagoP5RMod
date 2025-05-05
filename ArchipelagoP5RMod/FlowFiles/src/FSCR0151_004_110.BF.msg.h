@@ -1,0 +1,21 @@
+// Decompiled by Atlus Script Tools (2017-2021) © TGE
+const int D01_04_e159_040_mes01            = 0;
+const int D01_04_e159_040_mes02            = 1;
+const int D01_04_e159_040_mes03            = 2;
+const int D01_04_e159_040_mes04            = 3;
+const int D01_04_e159_040_mes05            = 4;
+const int D01_04_e159_040_mes06            = 5;
+const int D01_04_e159_040_mes07            = 6;
+const int D01_04_e159_041_mes01            = 7;
+const int D01_04_e159_041_mes02            = 8;
+const int D01_04_e159_041_mes03            = 9;
+const int D01_04_e159_041_mes04            = 10;
+const int D01_04_e159_041_mes05            = 11;
+const int D151_04_Door_CHECK_mes01         = 12;
+const int D151_04_Door_CHECK_mes02         = 13;
+const int D01_04_e159_052_mes01            = 14;
+const int D01_04_e159_052_selA             = 15;
+const int D01_04_e159_052_selA_1_m         = 16;
+const int D01_04_e159_053_mes01            = 17;
+const int D01_04_e159_053_mes02            = 18;
+const int D01_04_e159_053_mes03            = 19;

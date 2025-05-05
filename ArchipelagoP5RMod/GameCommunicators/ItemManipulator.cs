@@ -154,13 +154,14 @@ public class ItemManipulator
             OnChestOpenedCompleted.Invoke((long)_currChestFlag);
         }
 
+        _flagManipulator.SetBit(FlagManipulator.OVERWRITE_ITEM_TEXT, false);
         ClearItemNameOverride();
         _currChestFlag = null;
     }
 
     private unsafe char* GetItemNameImpl(ushort itemId)
     {
-        if (_itemNameOverrideAdr.IsAllocated)
+        if (_flagManipulator.CheckBit(FlagManipulator.OVERWRITE_ITEM_TEXT) && _itemNameOverrideAdr.IsAllocated)
         {
             return (char*)_itemNameOverrideAdr.AddrOfPinnedObject();
         }
@@ -237,7 +238,7 @@ public class ItemManipulator
             _flagManipulator.SetCount(FlagManipulator.AP_CURR_REWARD_ITEM_ID, e.ApItem.Id);
             _flagManipulator.SetCount(FlagManipulator.AP_CURR_REWARD_ITEM_NUM, e.ApItem.Count);
 
-            FlowFunctionWrapper.CallCustomFlowFunction(ApMethodsIndexes.RewardItemsFunc);
+            FlowFunctionWrapper.CallCustomFlowFunction(CustomApMethodsIndexes.RewardItemsFunc);
 
             _logger.WriteLine($"Opening item window for item {e.ApItem.Id:X}");
         }

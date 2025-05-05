@@ -104,8 +104,10 @@ public class Mod : ModBase // <= Do not Remove.
         _personaManipulator = new PersonaManipulator(_hooks, _logger);
         BfLoader.Setup(_logger);
         SequenceMonitor.Setup();
+        CustomLogic.Setup(_itemManipulator, _flagManipulator);
+        MyLogger.Setup(_logger);
 
-        AddressScanner.Scan(_logger);
+        AddressScanner.Scan();
         _gameTaskListener.FreezeListeners();
 
         _debugTools = new DebugTools();
@@ -125,7 +127,7 @@ public class Mod : ModBase // <= Do not Remove.
         // OnGameLoaded += TestBitManipulator;
         _modSaveLoadManager.OnLoadComplete += (_, success) =>
         {
-            if (success) return; // Only setup if this is the first time we are loading with a new AP file. 
+            if (success) return; // Only setup if this is the first time we are loading with a new AP file.
             _firstTimeSetup.Setup(_flagManipulator, _personaManipulator, _confidantManipulator);
         };
 
@@ -215,7 +217,7 @@ public class Mod : ModBase // <= Do not Remove.
 
         _itemManipulator.SetItemNameOverride("PLACEHOLDER");
         _flagManipulator.SetBit(FlagManipulator.OVERWRITE_ITEM_TEXT, true);
-        FlowFunctionWrapper.CallCustomFlowFunction(ApMethodsIndexes.NotifyConfidantLocation);
+        FlowFunctionWrapper.CallCustomFlowFunction(CustomApMethodsIndexes.NotifyConfidantLocation);
     }
 
     private async void AsyncStartCheckingForGameLoaded()

@@ -16,8 +16,6 @@ public static class AddressScanner
 
     public static bool HasScanned { get; private set; }
 
-    private static ILogger _logger;
-
     public static unsafe BitFlagArrayInfo* BitFlagSectionMap { get; private set; }
 
     private static IntPtr _baseAddress;
@@ -46,9 +44,9 @@ public static class AddressScanner
         {
             if (!suppressWarning)
             {
-                _logger.WriteLine("[WARNING] Registered address after scan was completed. " +
+                MyLogger.Log("[WARNING] Registered address after scan was completed. " +
                                    "This has significant performance impact.");
-                _logger.WriteLine(Environment.StackTrace);
+                MyLogger.Log(Environment.StackTrace);
             }
 
             unsafe
@@ -72,10 +70,8 @@ public static class AddressScanner
         }
     }
 
-    public static void Scan(ILogger logger)
+    public static void Scan()
     {
-        _logger = logger;
-
         var thisProcess = Process.GetCurrentProcess();
 
         if (thisProcess.MainModule == null)

@@ -76,7 +76,7 @@ public class FirstTimeSetup
         flagManipulator.SetBit(84, false);
         flagManipulator.SetBit(85, false);
         flagManipulator.SetBit(86, false);
-        
+
         // local_flag_clear
         flagManipulator.SetCount(144, 0);
         flagManipulator.SetCount(145, 0);
@@ -92,9 +92,8 @@ public class FirstTimeSetup
         flagManipulator.SetBit(8734, true);
 
         // Script -> Kamoshida palace
-        flagManipulator.SetBit( 1072, true );
+        flagManipulator.SetBit(1072, true);
 
-        
         // SUB_ConqusetKamoshida_Start
         confidantManipulator.CmmOpen(Confidant.Morgana);
         confidantManipulator.CmmOpen(Confidant.Ann);
@@ -109,7 +108,7 @@ public class FirstTimeSetup
         personaManipulator.SetPartyLvl(PartyMember.Skull, 99);
         personaManipulator.SetPartyLvl(PartyMember.Mona, 99);
         personaManipulator.SetPartyLvl(PartyMember.Panther, 99);
-        personaManipulator.SetPartyLvl(PartyMember.Fox, 5);
+        // personaManipulator.SetPartyLvl(PartyMember.Fox, 5);
         // personaManipulator.SetPartyLvl(PartyMember.Noir, 5);
         // personaManipulator.SetPartyLvl(PartyMember.Oracle, 5);
         personaManipulator.AddPersonaSkill(PartyMember.Skull, 200);

@@ -41,6 +41,8 @@ public class ChestRewardDirector
 
     private void ProcessScoutedInfo(Dictionary<long, ScoutedItemInfo> scoutedInfo)
     {
+        _logger.WriteLine("Starting to process scouted chest info.");
+
         foreach (var scoutedItemInfo in scoutedInfo)
         {
             long chestId = scoutedItemInfo.Key;
@@ -57,6 +59,8 @@ public class ChestRewardDirector
 
             _rewardName.Add(chestId, shortName);
         }
+        
+        _logger.WriteLine("Done processing scouted chest info.");
     }
 
     public async void CloseUnopenedChests()

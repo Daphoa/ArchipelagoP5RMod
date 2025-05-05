@@ -143,7 +143,7 @@ public class ConfidantManipulator
             // Only show notification for cmm that were actually newly enabled.
             _flagManipulator.SetBit(FlagManipulator.SHOWING_MESSAGE, true);
             _flagManipulator.SetCount(FlagManipulator.AP_CURR_REWARD_CMM_ABILITY, e.ApItem.Id);
-            FlowFunctionWrapper.CallCustomFlowFunction(ApMethodsIndexes.NotifyConfidantAbilityReward);
+            FlowFunctionWrapper.CallCustomFlowFunction(CustomApMethodsIndexes.NotifyConfidantAbilityReward);
         }
 
         e.Handled = true;

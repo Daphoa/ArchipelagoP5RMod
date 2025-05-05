@@ -188,7 +188,7 @@ public static class FlowFunctionWrapper
         return success;
     }
 
-    public static unsafe void CallCustomFlowFunction(ApMethodsIndexes func)
+    public static unsafe void CallCustomFlowFunction(CustomApMethodsIndexes func)
     {
         if (RunFlowFuncFromFile is null)
         {

@@ -8,7 +8,7 @@ public readonly struct ApBitFlagItem(string itemName, uint bitFlag, short? itemI
     public readonly uint BitFlag = bitFlag;
     public readonly short? ItemId = itemId;
     public readonly string ItemName = itemName;
-    
+
     public static ApBitFlagItem Empty => new ApBitFlagItem(itemName: null, bitFlag: 0, itemId: null);
 
     public override int GetHashCode()
@@ -16,14 +16,17 @@ public readonly struct ApBitFlagItem(string itemName, uint bitFlag, short? itemI
         // This is the unique identifier.
         return BitFlag.GetHashCode();
     }
-    
+
     public bool IsEmpty => BitFlag == 0;
 }
 
 public class ApFlagItemRewarder
 {
-    private HashSet<ApBitFlagItem> flagItems = [
-        new( "Grappling Hook", bitFlag: 0x2A3B, itemId: 0x4000 + 154 )
+    private HashSet<ApBitFlagItem> flagItems =
+    [
+        new("Grappling Hook", bitFlag: 0x2A3B, itemId: 0x4000 + 154),
+        new("Randy Right Eye", bitFlag: 6464, itemId: 0x4000 + 116),
+        new("Lustful Left Eye", bitFlag: 6464, itemId: 0x4000 + 117),
     ];
 
     private readonly ILogger _logger;
@@ -36,17 +39,18 @@ public class ApFlagItemRewarder
         _itemManipulator = itemManipulator;
         _flagManipulator = flagManipulator;
     }
-    
+
     public void HandleApItem(object? sender, ApConnector.ApItemReceivedEvent? e)
     {
-        if (e.Handled || e.ApItem.Type != ItemType.FlagItem || _flagManipulator.CheckBit(FlagManipulator.SHOWING_MESSAGE))
+        if (e.Handled || e.ApItem.Type != ItemType.FlagItem ||
+            _flagManipulator.CheckBit(FlagManipulator.SHOWING_MESSAGE))
             return;
 
         var fItem = flagItems.FirstOrDefault(fItem => fItem.BitFlag == e.ApItem.Id % 0x1000000, ApBitFlagItem.Empty);
 
         if (fItem.IsEmpty)
             return;
-        
+
         _flagManipulator.SetBit(fItem.BitFlag, true);
         if (fItem.ItemId.HasValue)
         {
@@ -59,10 +63,11 @@ public class ApFlagItemRewarder
         {
             throw new NotImplementedException("Processing flag items without key items isn't implemented yet.");
         }
+
         _flagManipulator.SetBit(FlagManipulator.SHOWING_MESSAGE, true);
 
-        FlowFunctionWrapper.CallCustomFlowFunction(ApMethodsIndexes.RewardItemsFunc);
-        
+        FlowFunctionWrapper.CallCustomFlowFunction(CustomApMethodsIndexes.RewardItemsFunc);
+
         e.Handled = true;
     }
 }

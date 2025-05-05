@@ -57,7 +57,7 @@ public class InfiltrationManager
             await Task.Delay(500);
         }
         
-        FlowFunctionWrapper.CallCustomFlowFunction(ApMethodsIndexes.NotifyInfiltrationRoute);
+        FlowFunctionWrapper.CallCustomFlowFunction(CustomApMethodsIndexes.NotifyInfiltrationRoute);
     }
 
     private void SetupInfiltration(Palaces palace)
