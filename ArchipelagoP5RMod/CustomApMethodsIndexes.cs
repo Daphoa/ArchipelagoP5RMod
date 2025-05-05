@@ -6,4 +6,5 @@ public enum CustomApMethodsIndexes
     NotifyConfidantAbilityReward = 1,
     NotifyConfidantLocation = 2,
     NotifyInfiltrationRoute = 3,
+    Test = 4,
 }

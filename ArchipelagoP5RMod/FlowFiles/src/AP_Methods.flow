@@ -71,7 +71,7 @@ void NotifyConfidantLocation()
     
     MSG_WND_DSP();
     MSG_SYSTEM( MSG_NOTIFY_AP_LOCATION );
-    // GET_ITEM_WINDOW( ( 0x4000 ), 1, 0 );
+    GET_ITEM_WINDOW( ( 0x4000 ), 1, 0 );
     MSG_WND_CLS();
     BIT_OFF( ( 0x60000000 + 1 ) );
     BIT_OFF( ( 0x60000000 + 3 ) );
@@ -86,4 +86,17 @@ void NotifyInfiltration()
     MSG( MSG_NOTIFY_INFILTRATION_LUST );
     MSG_WND_CLS();
     BIT_OFF( ( 0x60000000 + 1 ) );
+}
+
+// Procedure Index: 4
+void Test()
+{
+    int testVar;
+    // testVar = FLD_LOCAL_FLAG_CHK( 0xC048 );
+    testVar = 5;
+    SET_MSG_VAR(1, testVar, 0);
+    MSG_WND_DSP();
+    MSG( MSG_TEST );
+    MSG_WND_CLS();
+    FLD_LOCAL_FLAG_ON( 0xC048 );
 }
