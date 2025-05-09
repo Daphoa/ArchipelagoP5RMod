@@ -1,6 +1,7 @@
 ﻿#define DEBUG
 
-using System.Diagnostics;
+using System.Security.Cryptography;
+using System.Text;
 using System.Timers;
 using ArchipelagoP5RMod.Configuration;
 using ArchipelagoP5RMod.GameCommunicators;
@@ -63,6 +64,7 @@ public class Mod : ModBase // <= Do not Remove.
     private readonly ScheduleManipulator _scheduleManipulator;
     private readonly InfiltrationManager _infiltrationManager;
     private readonly PersonaManipulator _personaManipulator;
+    private readonly BattleManipulator _battleManipulator;
 
     private readonly DebugTools _debugTools;
 
@@ -77,7 +79,7 @@ public class Mod : ModBase // <= Do not Remove.
         MyLogger.Setup(context.Logger, _configuration);
         FlowFunctionWrapper.Setup(_hooks);
 
-        string apConnectionHash = (_configuration.ServerAddress + _configuration.SlotName).GetHashCode().ToString();
+        string apConnectionHash = GenerateHash(_configuration.ServerAddress + _configuration.SlotName);
 
         _gameTaskListener = new GameTaskListener(_hooks);
         _flagManipulator = new FlagManipulator(_hooks);
@@ -97,6 +99,7 @@ public class Mod : ModBase // <= Do not Remove.
         _scheduleManipulator = new ScheduleManipulator(_flagManipulator, _hooks);
         _infiltrationManager = new InfiltrationManager(_flagManipulator, _itemManipulator);
         _personaManipulator = new PersonaManipulator(_hooks);
+        _battleManipulator = new BattleManipulator(_hooks);
         BfLoader.Setup();
         SequenceMonitor.Setup();
         CustomLogic.Setup(_itemManipulator, _flagManipulator);
@@ -134,43 +137,82 @@ public class Mod : ModBase // <= Do not Remove.
             _confidantManipulator.LoadEnabledCmmData);
 
         _dateManipulator.OnDateChanged += _infiltrationManager.OnDateChangedHandler;
-        
-        var logTimer = new Timer(1000);
-        logTimer.Elapsed += LogStuff;
-        logTimer.AutoReset = true;
 
-        OnGameLoadedFirstTime += (_, _) => logTimer.Start();
-
-        var sequenceTimer = new Timer(1000);
-        sequenceTimer.Elapsed += (object? _, ElapsedEventArgs _) =>
+        _battleManipulator.OnBattleComplete += (battleId, result) =>
         {
-            // _logger.WriteLine($"Sequence: {SequenceMonitor.CurrentSequenceType}");
-
-            // Super hacky debug stuff - this should be moved if it works out well.
-            var thisProcess = Process.GetCurrentProcess();
-            IntPtr someArrayAddress = thisProcess.MainModule?.BaseAddress + 0x293d008 ?? 0x0;
-
-            unsafe
-            {
-                if (someArrayAddress != IntPtr.Zero &&
-                    FlowFunctionWrapper.FlowCommandDataAddress != (FlowCommandData*)0x0)
-                {
-                    int index = FlowFunctionWrapper.FlowCommandDataAddress->someIndex;
-                    uint* flagPointer = (uint*)someArrayAddress + 0x40 * index + 0x10;
-
-                    uint relevantFlagValue = *flagPointer & 0x300;
-
-                    MyLogger.DebugLog($"Relevant flag value: {relevantFlagValue:X}");
-                }
-                else
-                {
-                    // string nullValue = someArrayAddress == IntPtr.Zero ? "SomeArrayAddress" : "FlowCommandData";
-                    // _logger.WriteLine($"Not reporting values because {nullValue} is NULL");
-                }
+            if (result == BattleResult.Victory1 && battleId is 0839 or 0769) {
+                _apConnector.ReportGoalComplete();
             }
         };
-        sequenceTimer.AutoReset = true;
-        sequenceTimer.Start();
+
+        // var logTimer = new Timer(1000);
+        // logTimer.Elapsed += LogStuff;
+        // logTimer.AutoReset = true;
+        //
+        // OnGameLoadedFirstTime += (_, _) => logTimer.Start();
+
+        // Test code
+        OnGameLoadedFirstTime += (_, _) =>
+        {
+            // // Disable infiltration route.
+            // _flagManipulator.SetBit(0x20000000 + 209, false);
+            // _flagManipulator.SetBit(0x20000000 + 281,
+            //     false); // This is a test - it might be for the giant door in front of the treasure.
+
+            // // Looking for keys
+            // _flagManipulator.SetBit( 9647, true );
+            // _flagManipulator.SetBit( 6410, true );
+            // _flagManipulator.SetBit( 6412, true );
+            // _flagManipulator.SetBit( 6413, true );
+            // _flagManipulator.SetBit( 6462, true );
+            // _flagManipulator.SetBit( 6492, false );
+            // _flagManipulator.SetBit( 6683, true );
+
+            // Found Key 1
+            // _flagManipulator.SetBit(1908, true);
+            // _flagManipulator.SetBit(6390, true);
+            // _flagManipulator.SetBit(6439, true);
+            // _flagManipulator.SetBit(6463, true);
+
+            // Found Key 2
+            // _flagManipulator.SetBit(1909, true);
+            // _flagManipulator.SetBit(6440, true);
+            // _flagManipulator.SetBit(6464, true);
+            // _flagManipulator.SetBit(6492, true);
+            // _flagManipulator.SetBit(11492, true);
+            // _flagManipulator.SetBit(11560, true);
+        };
+
+        // var sequenceTimer = new Timer(1000);
+        // sequenceTimer.Elapsed += (object? _, ElapsedEventArgs _) =>
+        // {
+        //     // _logger.WriteLine($"Sequence: {SequenceMonitor.CurrentSequenceType}");
+        //
+        //     // Super hacky debug stuff - this should be moved if it works out well.
+        //     var thisProcess = Process.GetCurrentProcess();
+        //     IntPtr someArrayAddress = thisProcess.MainModule?.BaseAddress + 0x293d008 ?? 0x0;
+        //
+        //     unsafe
+        //     {
+        //         if (someArrayAddress != IntPtr.Zero &&
+        //             FlowFunctionWrapper.FlowCommandDataAddress != (FlowCommandData*)0x0)
+        //         {
+        //             int index = FlowFunctionWrapper.FlowCommandDataAddress->someIndex;
+        //             uint* flagPointer = (uint*)someArrayAddress + 0x40 * index + 0x10;
+        //
+        //             uint relevantFlagValue = *flagPointer & 0x300;
+        //
+        //             MyLogger.DebugLog($"Relevant flag value: {relevantFlagValue:X}");
+        //         }
+        //         else
+        //         {
+        //             // string nullValue = someArrayAddress == IntPtr.Zero ? "SomeArrayAddress" : "FlowCommandData";
+        //             // _logger.WriteLine($"Not reporting values because {nullValue} is NULL");
+        //         }
+        //     }
+        // };
+        // sequenceTimer.AutoReset = true;
+        // sequenceTimer.Start();
 
         // _itemManipulator.OnChestOpened += id => { _logger.WriteLine($"StartOpenChest got flag: 0x{id:X}"); };
 
@@ -183,7 +225,23 @@ public class Mod : ModBase // <= Do not Remove.
 
         AsyncStartCheckingForGameLoaded();
     }
-    
+
+    private string GenerateHash(string input)
+    {
+        using HashAlgorithm algorithm = SHA256.Create();
+        
+        StringBuilder sb = new StringBuilder();
+        var hashArray = algorithm.ComputeHash(
+            Encoding.UTF8.GetBytes(input));
+
+        foreach (byte b in hashArray)
+        {
+            sb.Append(b.ToString("X2"));
+        }
+            
+        return sb.ToString();
+    }
+
     private void EveryGameLoadedChanges()
     {
         _itemManipulator.SetItemNumImpl(0x3065, 99, 0); // Goho-M

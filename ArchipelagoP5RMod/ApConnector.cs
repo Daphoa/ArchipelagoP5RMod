@@ -287,5 +287,12 @@ public class ApConnector
         }
 
         return retVal;
-    } 
+    }
+
+    public async void ReportGoalComplete()
+    {
+        await WaitForConnection();
+        
+        _session.SetGoalAchieved();
+    }
 }
