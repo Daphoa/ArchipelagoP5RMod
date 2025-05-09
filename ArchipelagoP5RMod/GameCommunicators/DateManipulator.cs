@@ -13,11 +13,16 @@ public class DateManipulator
     /* Fields */
     private readonly FlagManipulator _flagManipulator;
 
+    public static unsafe short CurrTotalDays => DateInfoAddress->currTotalDays;
     public static unsafe DateInfo* DateInfoAddress => *_dateInfoRefAddress;
     private static unsafe DateInfo** _dateInfoRefAddress;
 
     
     private readonly SortedSet<short> _loopDates = [21];
+
+    public delegate void OnDateChangedHandler(short currTotalDays, byte currTime);
+
+    public event OnDateChangedHandler OnDateChanged = delegate { }; 
 
     private bool disablingCalendarAnimation = false;
 
@@ -53,6 +58,11 @@ public class DateManipulator
             _flagManipulator.ToggleBit(CALENDAR_ANIM_TOGGLE);
             disablingCalendarAnimation = false;
         }
+
+        unsafe
+        {
+            OnDateChanged.Invoke(DateInfoAddress->currTotalDays, DateInfoAddress->currTime);
+        }
     }
 
     private short NextDay(short currentDay)
@@ -73,7 +83,7 @@ public class DateManipulator
         var dateInfo = DateInfoAddress;
 
         // Only mess with dates at the end of the day unless we are outside of AP days.
-        if (dateInfo->currTime < 6 && _loopDates.Contains(dateInfo->currTotalDays)) return; 
+        if (dateInfo->currTime < 6 && _loopDates.Contains(dateInfo->currTotalDays)) return;
 
         dateInfo->nextTime = 0;
         dateInfo->nextTotalDays = NextDay(dateInfo->currTotalDays);

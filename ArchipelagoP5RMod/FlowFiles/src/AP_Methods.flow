@@ -82,6 +82,8 @@ void NotifyInfiltration()
 {
     BIT_ON( ( 0x60000000 + 1 ) )
     
+    int palace = GET_COUNT( ( 0x10000000 + 4 ) ) 
+
     MSG_WND_DSP();
     MSG( MSG_NOTIFY_INFILTRATION_LUST );
     MSG_WND_CLS();

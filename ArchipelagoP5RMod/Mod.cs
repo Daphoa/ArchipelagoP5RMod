@@ -131,6 +131,8 @@ public class Mod : ModBase // <= Do not Remove.
         _modSaveLoadManager.RegisterSaveLoad(_confidantManipulator.SaveEnabledCmmData,
             _confidantManipulator.LoadEnabledCmmData);
 
+        _dateManipulator.OnDateChanged += _infiltrationManager.OnDateChangedHandler;
+        
         var logTimer = new Timer(1000);
         logTimer.Elapsed += LogStuff;
         logTimer.AutoReset = true;
@@ -179,7 +181,7 @@ public class Mod : ModBase // <= Do not Remove.
 
         AsyncStartCheckingForGameLoaded();
     }
-
+    
     private void EveryGameLoadedChanges()
     {
         _itemManipulator.SetItemNumImpl(0x3065, 99, 0); // Goho-M

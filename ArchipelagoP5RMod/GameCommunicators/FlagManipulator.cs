@@ -13,7 +13,7 @@ public class FlagManipulator
     public const uint AP_CURR_REWARD_CMM_ABILITY = SectionMask * ExternalCountSection + 1;
     public const uint AP_CURR_REWARD_ITEM_ID = SectionMask * ExternalCountSection + 2;
     public const uint AP_CURR_REWARD_ITEM_NUM = SectionMask * ExternalCountSection + 3;
-
+    public const uint AP_CURR_NOTIFY_PALACE = SectionMask * ExternalCountSection + 4;
     public const uint SHOWING_MESSAGE = SectionMask * ExternalBitSection + 1;
     public const uint SHOWING_GAME_MSG = SectionMask * ExternalBitSection + 2;
     public const uint OVERWRITE_ITEM_TEXT = SectionMask * ExternalBitSection + 3;
@@ -40,8 +40,8 @@ public class FlagManipulator
     // This will have consequences if changed. Should stay at this value ideally.
     private const uint ExternalCountSection = 1;
 
-    const uint NumExternalCounts = 4;
-    private static uint[] externalCounts = new uint[4] { 0, 0, 0, 0 };
+    const uint NumExternalCounts = 5;
+    private static uint[] externalCounts = [0, 0, 0, 0, 0];
     private const int CountTypeSize = sizeof(uint);
 
     public FlagManipulator(IReloadedHooks hooks)

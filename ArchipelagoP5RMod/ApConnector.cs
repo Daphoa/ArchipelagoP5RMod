@@ -35,6 +35,7 @@ public class ApConnector
         private set => _flagManipulator.SetCount(FlagManipulator.AP_LAST_REWARD_INDEX, value);
     }
 
+    private string ServerAddress { get; set; }
     private string ServerPassword { get; set; }
     private string SlotName { get; set; }
 
@@ -44,6 +45,7 @@ public class ApConnector
         _session = ArchipelagoSessionFactory.CreateSession(serverAddress);
         this.ServerPassword = serverPassword;
         this.SlotName = slotName;
+        this.ServerAddress = serverAddress;
 
         this._flagManipulator = flagManipulator;
 
@@ -75,7 +77,7 @@ public class ApConnector
 
             await Task.Delay(waitTime);
 
-            MyLogger.DebugLog($"Connecting as {SlotName}...");
+            MyLogger.Log($"Trying to connect to {ServerAddress} as {SlotName}...");
 
             try
             {
@@ -185,6 +187,7 @@ public class ApConnector
     {
         while (!_session.Socket.Connected)
         {
+            MyLogger.DebugLog("Waiting for connection...");
             await Task.Delay(1000);
         }
     }
