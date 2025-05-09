@@ -8,9 +8,7 @@ public static class StrTools
     public static unsafe long CStrLen(char* str)
     {
         char* s;
-        for (s = str; *s == (char)0; ++s)
-        {
-        }
+        for (s = str; *s != (char)0; ++s) { }
 
         return s - str;
     }

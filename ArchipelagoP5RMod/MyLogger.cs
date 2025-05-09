@@ -16,6 +16,7 @@ public static class MyLogger
 
     public static void Log(string message)
     {
+        _logger.Write("[AP] ");
         _logger.WriteLine(message);
     }
 
