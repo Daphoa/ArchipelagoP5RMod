@@ -1,11 +1,13 @@
 ﻿#define DEBUG
 
+using System.Diagnostics;
 using System.Timers;
 using ArchipelagoP5RMod.Configuration;
 using ArchipelagoP5RMod.GameCommunicators;
+using ArchipelagoP5RMod.Template;
+using ArchipelagoP5RMod.Types;
 using Reloaded.Hooks.ReloadedII.Interfaces;
 using Reloaded.Mod.Interfaces;
-using ArchipelagoP5RMod.Template;
 using Timer = System.Timers.Timer;
 
 namespace ArchipelagoP5RMod;
@@ -145,13 +147,13 @@ public class Mod : ModBase // <= Do not Remove.
             // _logger.WriteLine($"Sequence: {SequenceMonitor.CurrentSequenceType}");
 
             // Super hacky debug stuff - this should be moved if it works out well.
-            var thisProcess = System.Diagnostics.Process.GetCurrentProcess();
+            var thisProcess = Process.GetCurrentProcess();
             IntPtr someArrayAddress = thisProcess.MainModule?.BaseAddress + 0x293d008 ?? 0x0;
 
             unsafe
             {
                 if (someArrayAddress != IntPtr.Zero &&
-                    FlowFunctionWrapper.FlowCommandDataAddress != (Types.FlowCommandData*)0x0)
+                    FlowFunctionWrapper.FlowCommandDataAddress != (FlowCommandData*)0x0)
                 {
                     int index = FlowFunctionWrapper.FlowCommandDataAddress->someIndex;
                     uint* flagPointer = (uint*)someArrayAddress + 0x40 * index + 0x10;

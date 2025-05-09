@@ -3,7 +3,6 @@ using System.Runtime.InteropServices;
 using ArchipelagoP5RMod.Types;
 using Reloaded.Hooks.Definitions;
 using Reloaded.Hooks.Definitions.X86;
-using Reloaded.Mod.Interfaces;
 
 namespace ArchipelagoP5RMod;
 

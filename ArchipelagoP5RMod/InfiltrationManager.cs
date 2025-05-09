@@ -1,5 +1,4 @@
 ﻿using ArchipelagoP5RMod.GameCommunicators;
-using Reloaded.Mod.Interfaces;
 
 namespace ArchipelagoP5RMod;
 

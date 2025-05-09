@@ -1,7 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using Reloaded.Mod.Interfaces;
-
-namespace ArchipelagoP5RMod;
+﻿namespace ArchipelagoP5RMod;
 
 public readonly struct ApBitFlagItem(string itemName, uint bitFlag, short? itemId = null)
 {

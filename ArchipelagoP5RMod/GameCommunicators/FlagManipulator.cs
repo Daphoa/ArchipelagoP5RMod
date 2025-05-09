@@ -1,8 +1,6 @@
-﻿using System.Runtime.InteropServices.ComTypes;
-using ArchipelagoP5RMod.Types;
+﻿using ArchipelagoP5RMod.Types;
 using Reloaded.Hooks.Definitions;
 using Reloaded.Hooks.Definitions.X86;
-using Reloaded.Mod.Interfaces;
 using MemoryStream = System.IO.MemoryStream;
 
 namespace ArchipelagoP5RMod;

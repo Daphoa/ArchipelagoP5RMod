@@ -1,11 +1,6 @@
-﻿using System.Collections.Frozen;
-using System.Collections.ObjectModel;
-using System.Diagnostics;
-using System.Runtime.InteropServices;
+﻿using System.Diagnostics;
 using ArchipelagoP5RMod.Types;
 using Reloaded.Memory.Sigscan;
-using Reloaded.Memory.SigScan.ReloadedII.Interfaces;
-using Reloaded.Mod.Interfaces;
 
 namespace ArchipelagoP5RMod;
 

@@ -1,6 +1,5 @@
 ﻿using System.Reflection;
 using System.Runtime.InteropServices;
-using Reloaded.Mod.Interfaces;
 
 namespace ArchipelagoP5RMod;
 

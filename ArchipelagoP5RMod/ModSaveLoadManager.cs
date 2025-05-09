@@ -1,7 +1,4 @@
-﻿using System.Runtime.InteropServices.ComTypes;
-using System.Text;
-using Reloaded.Memory.Extensions;
-using Reloaded.Mod.Interfaces;
+﻿using System.Text;
 
 namespace ArchipelagoP5RMod;
 

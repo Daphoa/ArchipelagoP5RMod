@@ -1,8 +1,4 @@
-﻿using System.Runtime.InteropServices;
-using Reloaded.Memory.SigScan.ReloadedII.Interfaces;
-using Reloaded.Mod.Interfaces;
-
-namespace ArchipelagoP5RMod;
+﻿namespace ArchipelagoP5RMod;
 
 public class DebugTools
 {

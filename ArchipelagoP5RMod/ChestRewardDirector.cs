@@ -1,5 +1,4 @@
 ﻿using Archipelago.MultiClient.Net.Models;
-using Reloaded.Mod.Interfaces;
 
 namespace ArchipelagoP5RMod;
 
