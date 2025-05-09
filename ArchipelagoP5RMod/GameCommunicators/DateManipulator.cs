@@ -17,7 +17,8 @@ public class DateManipulator
     public static unsafe DateInfo* DateInfoAddress => *_dateInfoRefAddress;
     private static unsafe DateInfo** _dateInfoRefAddress;
 
-    
+    private static int[] DAYS_IN_MONTH = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+
     private readonly SortedSet<short> _loopDates = [21];
 
     public delegate void OnDateChangedHandler(short currTotalDays, byte currTime);
@@ -44,6 +45,24 @@ public class DateManipulator
         }
 
         MyLogger.DebugLog("Created DateManipulator Hooks");
+    }
+
+    private Month GetMonthFromTotalDays(int totalGameDays)
+    {
+        int month = 3;
+        totalGameDays %= 365;
+        // Looks a little odd because it mimics the decompiled C version of this method in the game.
+        int i = 0;
+        do
+        {
+            if (totalGameDays < DAYS_IN_MONTH[month % 12])
+                break;
+            totalGameDays -= DAYS_IN_MONTH[month % 12];
+            i += 1;
+            month += 1 % 12;
+        } while (i < 12);
+
+        return (Month)month;
     }
 
     private void OnTimeUpdateCreated()
