@@ -291,6 +291,19 @@ public class ApConnector
         return retVal;
     }
 
+    public async Task<IEnumerable<long>> GetFoundLocations(IEnumerable<long>? locationIds = null)
+    {
+        await WaitForConnection();
+
+        IEnumerable<long> retVal = _session.Locations.AllLocationsChecked;
+        if (locationIds is not null)
+        {
+            retVal = retVal.Intersect(locationIds);
+        }
+
+        return retVal;
+    }
+
     public async void ReportGoalComplete()
     {
         await WaitForConnection();

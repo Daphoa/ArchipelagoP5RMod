@@ -14,7 +14,7 @@ public class ChestRewardDirector
     [
         0x200001C2, 0x200001D6, 0x200001D5, 0x200001C4, 0x200001C5, 0x20000173, 0x200001D3, 0x200001D4, 0x200001CA,
         0x200001C9, 0x200001CB, 0x200001D8, 0x200001CC, 0x200001C6, 0x200001C3, 0x200001D9, 0x200001C7, 0x200001CD,
-        0x200001D2, 0x200001CE, 0x200001C8, 0x200001D1, 0x200001CF, 0x200013FD, 0x200013FC, 0x200013FB
+        0x200001D2, 0x200001CE, 0x200001C8, 0x200001D1, 0x200001CF, 0x200013FD, 0x200013FC, 0x200013FB,
     ];
 
 
@@ -60,6 +60,12 @@ public class ChestRewardDirector
         MyLogger.DebugLog("Done processing scouted chest info.");
     }
 
+    public void MatchChestStateToAp()
+    {
+        CloseUnopenedChests();
+        OpenCollectedChests();
+    }
+    
     public async void CloseUnopenedChests()
     {
         var unopenedChests = _apConnector.GetUnfoundLocations(_chestFlags);
@@ -70,6 +76,19 @@ public class ChestRewardDirector
             MyLogger.DebugLog($"Trying to close tbox ID: {id:X}");
             
             _flagManipulator.SetBit((uint)id, false);
+        }
+    }
+    
+    public async void OpenCollectedChests()
+    {
+        var openedChests = _apConnector.GetFoundLocations(_chestFlags);
+        await openedChests;
+
+        foreach (ulong id in openedChests.Result)
+        {
+            MyLogger.DebugLog($"Trying to open tbox ID: {id:X}");
+            
+            _flagManipulator.SetBit((uint)id, true);
         }
     }
 

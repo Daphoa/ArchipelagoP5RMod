@@ -9,7 +9,6 @@ using ArchipelagoP5RMod.Template;
 using ArchipelagoP5RMod.Types;
 using Reloaded.Hooks.ReloadedII.Interfaces;
 using Reloaded.Mod.Interfaces;
-using Timer = System.Timers.Timer;
 
 namespace ArchipelagoP5RMod;
 
@@ -116,17 +115,10 @@ public class Mod : ModBase // <= Do not Remove.
             _apConnector.OnItemReceivedEvent += _apFlagItemRewarder.HandleApItem;
         };
 
-        _modSaveLoadManager.OnLoadComplete += (_, _) => EveryGameLoadedChanges();
-        _modSaveLoadManager.OnLoadComplete += (_, _) => _apConnector.StartCollectionAsync();
-        _modSaveLoadManager.OnLoadComplete += (_, _) => _chestRewardDirector.CloseUnopenedChests();
+        _modSaveLoadManager.OnLoadComplete += (_, success) => OnGameFileLoaded(success);
 
         // OnGameLoaded += TestFlowFuncWrapper;
         // OnGameLoaded += TestBitManipulator;
-        _modSaveLoadManager.OnLoadComplete += (_, success) =>
-        {
-            if (success) return; // Only setup if this is the first time we are loading with a new AP file.
-            _firstTimeSetup.Setup(_flagManipulator, _personaManipulator, _confidantManipulator);
-        };
 
         OnGameLoadedFirstTime += (_, _) => _apConnector.ReadyToCollect();
 
@@ -140,7 +132,9 @@ public class Mod : ModBase // <= Do not Remove.
 
         _battleManipulator.OnBattleComplete += (battleId, result) =>
         {
-            if (result == BattleResult.Victory1 && battleId is 0839 or 0769) {
+            if (result == BattleResult.Victory1 && battleId is 0839 or 0769)
+            {
+                // Kamoshida boss fight won.
                 _apConnector.ReportGoalComplete();
             }
         };
@@ -229,7 +223,7 @@ public class Mod : ModBase // <= Do not Remove.
     private string GenerateHash(string input)
     {
         using HashAlgorithm algorithm = SHA256.Create();
-        
+
         StringBuilder sb = new StringBuilder();
         var hashArray = algorithm.ComputeHash(
             Encoding.UTF8.GetBytes(input));
@@ -238,15 +232,34 @@ public class Mod : ModBase // <= Do not Remove.
         {
             sb.Append(b.ToString("X2"));
         }
-            
+
         return sb.ToString();
     }
 
-    private void EveryGameLoadedChanges()
+    private async void OnGameFileLoaded(bool success)
     {
+        MyLogger.DebugLog("OnGameFileLoaded... waiting for sequence to be ready to show message.");
+        
+        while (!SequenceMonitor.SequenceCanShowMessage)
+        {
+            await Task.Delay(1000);
+        }
+        
+        MyLogger.DebugLog("Calling setup after loading a file.");
+
+        _apConnector.StartCollectionAsync();
+        
+        if (!success)
+        {
+            // Only setup if this is the first time we are loading with a new AP file.
+            _firstTimeSetup.Setup(_flagManipulator, _personaManipulator, _confidantManipulator);
+        }
+
         _itemManipulator.SetItemNumImpl(0x3065, 99, 0); // Goho-M
         _itemManipulator.SetItemNumImpl(0x306D, 99, 0); // Silk Yarn (Lockpicks)
         _itemManipulator.SetItemNumImpl(0x306F, 99, 0); // Tin Clasp (Lockpicks)
+
+        _chestRewardDirector.MatchChestStateToAp();
     }
 
     private async void ReportCmmLvl(ushort cmmId, short rank)
