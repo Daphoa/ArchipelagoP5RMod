@@ -184,7 +184,6 @@ public class ApConnector
     {
         while (!_session.Socket.Connected)
         {
-            MyLogger.DebugLog("Waiting for connection...");
             await Task.Delay(1000);
         }
     }

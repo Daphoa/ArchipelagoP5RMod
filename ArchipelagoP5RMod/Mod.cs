@@ -64,6 +64,7 @@ public class Mod : ModBase // <= Do not Remove.
     private readonly InfiltrationManager _infiltrationManager;
     private readonly PersonaManipulator _personaManipulator;
     private readonly BattleManipulator _battleManipulator;
+    private readonly SocialStatManipulator _socialStatManipulator;
 
     private readonly DebugTools _debugTools;
 
@@ -99,6 +100,7 @@ public class Mod : ModBase // <= Do not Remove.
         _infiltrationManager = new InfiltrationManager(_flagManipulator, _itemManipulator);
         _personaManipulator = new PersonaManipulator(_hooks);
         _battleManipulator = new BattleManipulator(_hooks);
+        _socialStatManipulator = new SocialStatManipulator(_hooks);
         BfLoader.Setup();
         SequenceMonitor.Setup();
         CustomLogic.Setup(_itemManipulator, _flagManipulator);
@@ -252,7 +254,7 @@ public class Mod : ModBase // <= Do not Remove.
         if (!success)
         {
             // Only setup if this is the first time we are loading with a new AP file.
-            _firstTimeSetup.Setup(_flagManipulator, _personaManipulator, _confidantManipulator);
+            _firstTimeSetup.Setup(_flagManipulator, _personaManipulator, _confidantManipulator, _socialStatManipulator);
         }
 
         _itemManipulator.SetItemNumImpl(0x3065, 99, 0); // Goho-M
