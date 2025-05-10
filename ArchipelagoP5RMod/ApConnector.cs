@@ -232,14 +232,16 @@ public class ApConnector
         MyLogger.DebugLog($"session: {LastRewardIndex}");
         while (LastRewardIndex < _session.Items.AllItemsReceived.Count)
         {
-            MyLogger.DebugLog(
-                $"Collecting item {LastRewardIndex}: {_session.Items.AllItemsReceived[(int)LastRewardIndex].ItemName}");
-
             var itemInfo = _session.Items.AllItemsReceived[(int)LastRewardIndex];
-            
+
             var item = new ApItem(itemInfo.ItemId);
 
-            var e = new ApItemReceivedEvent(item, itemInfo.Player.Alias, itemInfo.Player.IsRelatedTo(_session.Players.ActivePlayer));
+            MyLogger.DebugLog(string.IsNullOrEmpty(itemInfo.ItemName)
+                ? $"Collecting item {LastRewardIndex}: {item.ToString()}"
+                : $"Collecting item {LastRewardIndex}: {itemInfo.ItemName}");
+
+            var e = new ApItemReceivedEvent(item, itemInfo.Player.Alias,
+                itemInfo.Player.IsRelatedTo(_session.Players.ActivePlayer));
             OnItemReceivedEvent.Invoke(this, e);
             if (!e.Handled)
             {
@@ -248,9 +250,9 @@ public class ApConnector
                 continue;
             }
 
-            LastRewardIndex++;
-
             MyLogger.DebugLog($"Processed index {LastRewardIndex} for item {item.ToString()}");
+
+            LastRewardIndex++;
         }
 
         _isProcessingItems = false;
@@ -267,7 +269,7 @@ public class ApConnector
         Action<Dictionary<long, ScoutedItemInfo>> scoutLocationsCallback)
     {
         await WaitForConnection();
-        
+
         MyLogger.DebugLog("Connection made - scouting locations");
 
         var results = _session.Locations.ScoutLocationsAsync(locationIds);
@@ -292,7 +294,7 @@ public class ApConnector
     public async void ReportGoalComplete()
     {
         await WaitForConnection();
-        
+
         _session.SetGoalAchieved();
     }
 }
