@@ -109,6 +109,8 @@ public class GameTaskListener
         int param_5, uint param_6, GameTaskOnUpdate* runtimeFunc, long param_8, GameTaskOnDestroy* onDestroyFunc,
         IntPtr args, IntPtr param_11)
     {
+        // MyLogger.DebugLog("[CREATE GAME TASK] " + StrTools.CStrToString(taskName));
+        
         if (_frozenCreateListeners.ContainsKey((IntPtr)runtimeFunc))
         {
             _frozenCreateListeners[(IntPtr)runtimeFunc].Invoke();

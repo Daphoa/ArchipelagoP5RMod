@@ -59,7 +59,10 @@ public class FirstTimeSetup
         0x30000000 + 227, 0x30000000 + 293, 0x30000000 + 300, 0 + 234, 0x20000000 + 171, 0x20000000 + 5102,
         0x20000000 + 172, 0x20000000 + 4666, 0x20000000 + 4665, 0x20000000 + 4664, 0x20000000 + 43, 0x20000000 + 44,
         0x20000000 + 170, 0x20000000 + 165, 0x20000000 + 166, 0x20000000 + 167, 0x20000000 + 168, 0x20000000 + 169,
-        0x20000000 + 5103
+        0x20000000 + 5103,
+
+        // Events
+        0x20000000 + 5116, 0x20000000 + 5117, // Red Lust Seed Event
     ];
 
     public void Setup(FlagManipulator flagManipulator, PersonaManipulator personaManipulator,
@@ -104,10 +107,10 @@ public class FirstTimeSetup
         personaManipulator.AddPersonaStock(131);
         personaManipulator.AddPersonaStock(4);
         personaManipulator.AddPersonaStock(121);
-        personaManipulator.SetPartyLvl(PartyMember.Joker, 99);
-        personaManipulator.SetPartyLvl(PartyMember.Skull, 99);
-        personaManipulator.SetPartyLvl(PartyMember.Mona, 99);
-        personaManipulator.SetPartyLvl(PartyMember.Panther, 99);
+        personaManipulator.SetPartyLvl(PartyMember.Joker, 5);
+        personaManipulator.SetPartyLvl(PartyMember.Skull, 5);
+        personaManipulator.SetPartyLvl(PartyMember.Mona, 5);
+        personaManipulator.SetPartyLvl(PartyMember.Panther, 5);
         // personaManipulator.SetPartyLvl(PartyMember.Fox, 5);
         // personaManipulator.SetPartyLvl(PartyMember.Noir, 5);
         // personaManipulator.SetPartyLvl(PartyMember.Oracle, 5);
@@ -155,7 +158,7 @@ public class FirstTimeSetup
         flagManipulator.SetBit(11246, true);
 
         // Party members
-        flagManipulator.SetBit(11779, true); // Can Edit Party
+        // flagManipulator.SetBit(11779, true); // Can Edit Party
         flagManipulator.SetBit(11824, true); // Ryuji
         flagManipulator.SetBit(11825, true); // Morgana
         flagManipulator.SetBit(11826, true); // Ann
