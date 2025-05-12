@@ -66,7 +66,7 @@ public class FirstTimeSetup
     ];
 
     public void Setup(FlagManipulator flagManipulator, PersonaManipulator personaManipulator,
-        ConfidantManipulator confidantManipulator)
+        ConfidantManipulator confidantManipulator, SocialStatManipulator socialStatManipulator)
     {
         // DbgScript_150_000
         flagManipulator.SetBit(6144, true);
@@ -173,5 +173,8 @@ public class FirstTimeSetup
         {
             flagManipulator.SetBit(adr, true);
         }
+
+        // Social stats
+        socialStatManipulator.AddPcAllParam(34, 6, 14, 11, 12);
     }
 }
