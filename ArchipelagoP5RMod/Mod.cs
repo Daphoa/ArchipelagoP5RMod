@@ -268,9 +268,16 @@ public class Mod : ModBase // <= Do not Remove.
         _chestRewardDirector.MatchChestStateToAp();
     }
 
+    // TODO figure out somewhere better for this to go.
     private async void ReportCmmLvl(ushort cmmId, short rank)
     {
-        // TODO figure out somewhere better for this to go.
+        if (cmmId != 0x6 && cmmId != 0x8 && cmmId != 0xE)
+        {
+            // Only report handled cmms.
+            MyLogger.DebugLog($"Not reporting cmm to AP, as it isn't handled. CmmId: {cmmId}, Rank: {rank}");
+            return;
+        }
+        
         // TODO convert friend zone cmmId to default ids.
         long locId = 0x60000000L + cmmId * 0x10L + rank;
 
