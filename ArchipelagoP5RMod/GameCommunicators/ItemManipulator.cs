@@ -136,6 +136,13 @@ public class ItemManipulator
             // Never actually add blank items to the player's inventory.
             return;
         }
+        
+        // TODO move this logic somewhere external to the class
+        if (itemId is >= 0x40E1 and < 0x4100 && newItemCount == 0)
+        {
+            // Never remove Will Seeds... ever. For progression reasons.
+            return;
+        }
 
         _setItemNumHook.OriginalFunction(itemId, newItemCount, shouldUpdateRecentItem);
 
