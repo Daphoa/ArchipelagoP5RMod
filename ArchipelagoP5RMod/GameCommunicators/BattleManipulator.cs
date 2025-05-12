@@ -64,6 +64,7 @@ public class BattleManipulator
         if (*_CALL_EVENTBATTLE_STATE == 0)
         {
             _currBattleId = (FlowFunctionWrapper.GetFlowscriptInt4Arg?.Invoke(2) ?? 0) % 1000;
+            MyLogger.DebugLog($"Call Event Battle: {_currBattleId}");
         }
 
         return _callEventBattleFlowHook.OriginalFunction(param1, param2, param3, param4);
