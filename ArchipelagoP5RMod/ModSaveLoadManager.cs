@@ -42,6 +42,12 @@ public class ModSaveLoadManager(string saveDirectory, string uniqueApConnectionS
         {
             return;
         }
+        
+        if (string.IsNullOrEmpty(saveDirectory))
+        {
+            MyLogger.DebugLog("Got empty save directory.");
+            return;
+        }
 
         string fileName = GetFilename(fileIndex);
         string backupFileName = fileName + "_bak";
@@ -58,9 +64,18 @@ public class ModSaveLoadManager(string saveDirectory, string uniqueApConnectionS
             File.Move(fileName, backupFileName);
         }
 
-        // Create the file.
-        using FileStream fs = File.Create(fileName);
-        SaveToStream(fs);
+        try
+        {
+            // Create the file.
+            using FileStream fs = File.Create(fileName);
+            SaveToStream(fs);
+            // D:\Documents\AP Mod Save Directory
+        }
+        catch (Exception ex)
+        {
+            MyLogger.DebugLog(ex.Message);
+            MyLogger.DebugLog(ex.StackTrace ?? "");
+        }
     }
 
     public void Load(uint fileIndex)

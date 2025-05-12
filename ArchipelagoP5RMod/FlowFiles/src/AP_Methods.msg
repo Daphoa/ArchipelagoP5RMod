@@ -1,6 +1,9 @@
 ﻿[msg MSG_TEST [高巻 ¸]]
 [s][bup 0 4 0 65535 0]Got new AP items. Test Value:[var 1][n][f 1 3 65535][w][e]
 
+[msg MSG_ERROR_NO_SAVE_DIRECTORY]
+[s]Your save directory isn't set in the AP mod settings![n]You can't save the game without it! Please close the[n]game now.[n][f 1 3 65535][w][e]
+
 [msg MSG_NOTIFY_AP_LOCATION]
 [s]Sent AP items![n][f 1 3 65535][w][e]
 

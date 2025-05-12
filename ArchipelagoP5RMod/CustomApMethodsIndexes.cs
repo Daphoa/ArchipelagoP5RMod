@@ -7,4 +7,5 @@ public enum CustomApMethodsIndexes
     NotifyConfidantLocation = 2,
     NotifyInfiltrationRoute = 3,
     Test = 4,
+    NotifyMissingSaveDirectoryError = 5,
 }

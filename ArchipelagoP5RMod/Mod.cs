@@ -247,6 +247,13 @@ public class Mod : ModBase // <= Do not Remove.
             await Task.Delay(1000);
         }
         
+        if (string.IsNullOrEmpty(_configuration.SaveDirectory))
+        {
+            MyLogger.DebugLog("Empty save directory message displayed.");
+            FlowFunctionWrapper.CallCustomFlowFunction(CustomApMethodsIndexes.NotifyMissingSaveDirectoryError);
+            return;
+        }
+        
         MyLogger.DebugLog("Calling setup after loading a file.");
 
         _apConnector.StartCollectionAsync();
@@ -295,7 +302,7 @@ public class Mod : ModBase // <= Do not Remove.
             await Task.Delay(500);
         }
 
-        _itemManipulator.SetItemNameOverride("PLACEHOLDER");
+        _itemManipulator.SetItemNameOverride("AP Item");
         _flagManipulator.SetBit(FlagManipulator.OVERWRITE_ITEM_TEXT, true);
         FlowFunctionWrapper.CallCustomFlowFunction(CustomApMethodsIndexes.NotifyConfidantLocation);
     }

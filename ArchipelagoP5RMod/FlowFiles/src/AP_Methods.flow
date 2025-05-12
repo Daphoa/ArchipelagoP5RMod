@@ -102,3 +102,14 @@ void Test()
     MSG_WND_CLS();
     FLD_LOCAL_FLAG_ON( 0xC048 );
 }
+
+void NotifyMissingSaveDirectory()
+{
+        BIT_ON( ( 0x60000000 + 1 ) )
+        
+        MSG_WND_DSP();
+        MSG_SYSTEM( MSG_ERROR_NO_SAVE_DIRECTORY );
+        MSG_WND_CLS();
+        BIT_OFF( ( 0x60000000 + 1 ) );
+
+}
