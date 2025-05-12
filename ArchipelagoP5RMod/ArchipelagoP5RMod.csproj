@@ -66,7 +66,7 @@
         <None Update="FEmulator\PAK\EN.CPK\CMM.BIN\cmmFunctionName.ctd">
           <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
-        <None Update="P5REssentials\CPK\en.cpk\field\init\*S.bf">
+        <None Update="P5REssentials\CPK\en.cpk\field\init\*.bf">
           <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
     </ItemGroup>

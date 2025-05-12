@@ -33,6 +33,15 @@ public class ApFlagItemRewarder
         _flagManipulator = flagManipulator;
     }
 
+    public void SyncWithInventory()
+    {
+        foreach (var item in flagItems)
+        {
+            bool hasItem = _itemManipulator.HasItem((ushort)item.ItemId);
+            _flagManipulator.SetBit(item.BitFlag, hasItem);
+        }
+    }
+
     public void HandleApItem(object? sender, ApConnector.ApItemReceivedEvent? e)
     {
         if (e.Handled || e.ApItem.Type != ItemType.FlagItem ||

@@ -261,6 +261,10 @@ public class Mod : ModBase // <= Do not Remove.
         _itemManipulator.SetItemNumImpl(0x306D, 99, 0); // Silk Yarn (Lockpicks)
         _itemManipulator.SetItemNumImpl(0x306F, 99, 0); // Tin Clasp (Lockpicks)
 
+        _apFlagItemRewarder.SyncWithInventory(); // This will try to ensure flags match if they are in inventory or not.
+        
+        MyLogger.DebugLog($"Grappling hook flag: {_flagManipulator.CheckBit(0x2A3B)}");
+        
         _chestRewardDirector.MatchChestStateToAp();
     }
 
