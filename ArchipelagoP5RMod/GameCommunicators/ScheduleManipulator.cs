@@ -11,6 +11,9 @@ public class ScheduleManipulator
     private delegate IntPtr RunScheduleForDay(uint month, uint day, byte time);
 
     private IHook<RunScheduleForDay> _runScheduleForDayHook;
+    private const uint SETUP_MONTH = 4;
+    private const uint SETUP_DAY = DateManipulator.SETUP_TOTAL_DAY + 1 % 31;
+    private const byte SETUP_TIME = DateManipulator.SETUP_TIME;
 
     public ScheduleManipulator(FlagManipulator flagManipulator, IReloadedHooks hooks)
     {
@@ -27,6 +30,12 @@ public class ScheduleManipulator
         uint newMonth;
         uint newDay;
 
+        if (month == SETUP_MONTH && day == SETUP_DAY && time == SETUP_TIME)
+        {
+            MyLogger.DebugLog("Trying to call custom schedule for setup day.");
+            return FlowFunctionWrapper.CallCustomFlowFunction(CustomApMethodsIndexes.NewGameSetupSdl);
+        }
+        
         // Not FULLY sure what these flags do, but copied them from the flow script. 
         if (!_flagManipulator.CheckBit(1040) && _flagManipulator.CheckBit(6393))
         {

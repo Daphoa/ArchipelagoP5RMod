@@ -66,8 +66,75 @@ public class FirstTimeSetup
     ];
 
     public void Setup(FlagManipulator flagManipulator, PersonaManipulator personaManipulator,
-        ConfidantManipulator confidantManipulator, SocialStatManipulator socialStatManipulator)
+        ConfidantManipulator confidantManipulator, SocialStatManipulator socialStatManipulator,
+        DateManipulator dateManipulator)
     {
+        // sdl04_05_PM_D
+        flagManipulator.SetBit(80, true);
+        flagManipulator.SetBit(12308, true);
+        // SCENE_CHANGE_WAIT();
+        // RECOVERY_ALL();
+        flagManipulator.SetBit(8735, true);
+        flagManipulator.SetCount(144, 0);
+        // CALL_FIELD( 150, 2, 0, 0 );
+
+
+        // MAIN_SetConquestFlag
+        // TODO investigate this
+
+        // DbgScript_200_030 - seems to be general setup
+        flagManipulator.SetCount(6, 7);
+        flagManipulator.SetBit(6353, true);
+        flagManipulator.SetCount(174, 40000);
+        flagManipulator.SetCount(145, 55000);
+        flagManipulator.SetBit(6495, true);
+        flagManipulator.SetBit(6496, true);
+        flagManipulator.SetBit(6497, true);
+        flagManipulator.SetBit(6498, true);
+        flagManipulator.SetBit(6499, true);
+        flagManipulator.SetBit(6500, true);
+        // PARTY_IN(2);
+        // flagManipulator.SetBit(11824, true); // Ryuji flag
+        // PARTY_IN(3);
+        // flagManipulator.SetBit(11825, true);
+        // PARTY_IN(4);
+        // flagManipulator.SetBit(11826, true);
+        // flagManipulator.SetBit(11827, false);
+        // flagManipulator.SetBit(11828, false);
+        // flagManipulator.SetBit(11829, false);
+        // flagManipulator.SetBit(11830, false);
+        // flagManipulator.SetBit(11831, false);
+        flagManipulator.SetBit(8735, true);
+        flagManipulator.SetBit(8734, true);
+        flagManipulator.SetBit(113, true);
+        flagManipulator.SetBit(1040, true);
+        flagManipulator.SetBit(6345, true);
+        flagManipulator.SetBit(6346, true);
+        flagManipulator.SetBit(6347, true);
+        flagManipulator.SetBit(6348, true);
+        flagManipulator.SetBit(6349, true);
+        flagManipulator.SetBit(6350, true);
+        flagManipulator.SetBit(6351, true);
+        flagManipulator.SetBit(6352, true);
+        flagManipulator.SetBit(6353, true);
+        flagManipulator.SetBit(6354, true);
+        flagManipulator.SetBit(6393, true);
+        flagManipulator.SetBit(6344, true);
+        flagManipulator.SetBit(6235, true);
+        flagManipulator.SetBit(6193, true);
+        flagManipulator.SetBit(6194, true);
+        flagManipulator.SetBit(6195, true);
+        flagManipulator.SetBit(6196, true);
+        flagManipulator.SetBit(6197, true);
+        flagManipulator.SetBit(11276, true);
+        flagManipulator.SetBit(6233, true);
+        flagManipulator.SetBit(6345, true);
+        flagManipulator.SetBit(6346, true);
+        flagManipulator.SetBit(6347, true);
+        flagManipulator.SetBit(6348, true);
+        flagManipulator.SetBit(6349, true);
+        flagManipulator.SetBit(6350, true);
+
         // DbgScript_150_000
         flagManipulator.SetBit(6144, true);
         flagManipulator.SetBit(12538, true);
@@ -158,7 +225,7 @@ public class FirstTimeSetup
         flagManipulator.SetBit(11246, true);
 
         // Party members
-        // flagManipulator.SetBit(11779, true); // Can Edit Party
+        flagManipulator.SetBit(11779, true); // Can Edit Party
         flagManipulator.SetBit(11824, true); // Ryuji
         flagManipulator.SetBit(11825, true); // Morgana
         flagManipulator.SetBit(11826, true); // Ann
@@ -175,6 +242,7 @@ public class FirstTimeSetup
         }
 
         // Social stats
-        socialStatManipulator.AddPcAllParam(34, 6, 14, 11, 12);
+        // socialStatManipulator.AddPcAllParam(34, 6, 14, 11, 12);
+        socialStatManipulator.AddPcAllParam(0, 0, 0, 11, 0);
     }
 }

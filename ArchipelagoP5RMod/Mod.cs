@@ -46,7 +46,7 @@ public class Mod : ModBase // <= Do not Remove.
     /// <summary>
     /// 
     /// </summary>
-    private event EventHandler OnGameLoadedFirstTime;
+    private event EventHandler OnGameContextLoadedFirstTime;
 
     private readonly GameTaskListener _gameTaskListener;
     private readonly ApConnector _apConnector;
@@ -67,6 +67,8 @@ public class Mod : ModBase // <= Do not Remove.
     private readonly SocialStatManipulator _socialStatManipulator;
 
     private readonly DebugTools _debugTools;
+    // Used to detect if the game was started as a new game.
+    private bool loadedSuccess = false;
 
     public Mod(ModContext context)
     {
@@ -110,19 +112,19 @@ public class Mod : ModBase // <= Do not Remove.
 
         _debugTools = new DebugTools();
 
-        OnGameLoadedFirstTime += (_, _) =>
+        OnGameContextLoadedFirstTime += (_, _) =>
         {
             _apConnector.OnItemReceivedEvent += _itemManipulator.HandleApItem;
             _apConnector.OnItemReceivedEvent += _confidantManipulator.HandleApItem;
             _apConnector.OnItemReceivedEvent += _apFlagItemRewarder.HandleApItem;
         };
 
-        _modSaveLoadManager.OnLoadComplete += (_, success) => OnGameFileLoaded(success);
+        _modSaveLoadManager.OnLoadComplete += (_, success) => OnGameFileLoaded(!success);
 
         // OnGameLoaded += TestFlowFuncWrapper;
         // OnGameLoaded += TestBitManipulator;
 
-        OnGameLoadedFirstTime += (_, _) => _apConnector.ReadyToCollect();
+        OnGameContextLoadedFirstTime += (_, _) => _apConnector.ReadyToCollect();
 
         _chestRewardDirector.Setup(_apConnector, _itemManipulator, _flagManipulator);
 
@@ -141,76 +143,13 @@ public class Mod : ModBase // <= Do not Remove.
             }
         };
 
-        // var logTimer = new Timer(1000);
-        // logTimer.Elapsed += LogStuff;
-        // logTimer.AutoReset = true;
-        //
-        // OnGameLoadedFirstTime += (_, _) => logTimer.Start();
-
-        // Test code
-        OnGameLoadedFirstTime += (_, _) =>
+        // New game detection
+        OnGameContextLoadedFirstTime += (_, _) =>
         {
-            // // Disable infiltration route.
-            // _flagManipulator.SetBit(0x20000000 + 209, false);
-            // _flagManipulator.SetBit(0x20000000 + 281,
-            //     false); // This is a test - it might be for the giant door in front of the treasure.
+            if (loadedSuccess) return;
 
-            // // Looking for keys
-            // _flagManipulator.SetBit( 9647, true );
-            // _flagManipulator.SetBit( 6410, true );
-            // _flagManipulator.SetBit( 6412, true );
-            // _flagManipulator.SetBit( 6413, true );
-            // _flagManipulator.SetBit( 6462, true );
-            // _flagManipulator.SetBit( 6492, false );
-            // _flagManipulator.SetBit( 6683, true );
-
-            // Found Key 1
-            // _flagManipulator.SetBit(1908, true);
-            // _flagManipulator.SetBit(6390, true);
-            // _flagManipulator.SetBit(6439, true);
-            // _flagManipulator.SetBit(6463, true);
-
-            // Found Key 2
-            // _flagManipulator.SetBit(1909, true);
-            // _flagManipulator.SetBit(6440, true);
-            // _flagManipulator.SetBit(6464, true);
-            // _flagManipulator.SetBit(6492, true);
-            // _flagManipulator.SetBit(11492, true);
-            // _flagManipulator.SetBit(11560, true);
+            OnGameFileLoaded(true);
         };
-
-        // var sequenceTimer = new Timer(1000);
-        // sequenceTimer.Elapsed += (object? _, ElapsedEventArgs _) =>
-        // {
-        //     // _logger.WriteLine($"Sequence: {SequenceMonitor.CurrentSequenceType}");
-        //
-        //     // Super hacky debug stuff - this should be moved if it works out well.
-        //     var thisProcess = Process.GetCurrentProcess();
-        //     IntPtr someArrayAddress = thisProcess.MainModule?.BaseAddress + 0x293d008 ?? 0x0;
-        //
-        //     unsafe
-        //     {
-        //         if (someArrayAddress != IntPtr.Zero &&
-        //             FlowFunctionWrapper.FlowCommandDataAddress != (FlowCommandData*)0x0)
-        //         {
-        //             int index = FlowFunctionWrapper.FlowCommandDataAddress->someIndex;
-        //             uint* flagPointer = (uint*)someArrayAddress + 0x40 * index + 0x10;
-        //
-        //             uint relevantFlagValue = *flagPointer & 0x300;
-        //
-        //             MyLogger.DebugLog($"Relevant flag value: {relevantFlagValue:X}");
-        //         }
-        //         else
-        //         {
-        //             // string nullValue = someArrayAddress == IntPtr.Zero ? "SomeArrayAddress" : "FlowCommandData";
-        //             // _logger.WriteLine($"Not reporting values because {nullValue} is NULL");
-        //         }
-        //     }
-        // };
-        // sequenceTimer.AutoReset = true;
-        // sequenceTimer.Start();
-
-        // _itemManipulator.OnChestOpened += id => { _logger.WriteLine($"StartOpenChest got flag: 0x{id:X}"); };
 
         _itemManipulator.OnChestOpenedCompleted += id => { _apConnector.ReportLocationCheckAsync(id); };
         _confidantManipulator.OnCmmSetLv += ReportCmmLvl;
@@ -218,8 +157,9 @@ public class Mod : ModBase // <= Do not Remove.
         // Register save/load events
         _gameSaveLoadConnector.OnGameFileSaved += _modSaveLoadManager.Save;
         _gameSaveLoadConnector.OnGameFileLoaded += _modSaveLoadManager.Load;
+        _gameSaveLoadConnector.OnGameFileLoaded += _ => { loadedSuccess = true; };
 
-        AsyncStartCheckingForGameLoaded();
+    AsyncStartCheckingForGameLoaded();
     }
 
     private string GenerateHash(string input)
@@ -238,7 +178,7 @@ public class Mod : ModBase // <= Do not Remove.
         return sb.ToString();
     }
 
-    private async void OnGameFileLoaded(bool success)
+    private async void OnGameFileLoaded(bool firstTimeLoad)
     {
         MyLogger.DebugLog("OnGameFileLoaded... waiting for sequence to be ready to show message.");
         
@@ -258,10 +198,11 @@ public class Mod : ModBase // <= Do not Remove.
 
         _apConnector.StartCollectionAsync();
         
-        if (!success)
+        if (firstTimeLoad)
         {
             // Only setup if this is the first time we are loading with a new AP file.
-            _firstTimeSetup.Setup(_flagManipulator, _personaManipulator, _confidantManipulator, _socialStatManipulator);
+            _firstTimeSetup.Setup(_flagManipulator, _personaManipulator, _confidantManipulator, _socialStatManipulator, 
+                _dateManipulator);
         }
 
         _itemManipulator.SetItemNumImpl(0x3065, 99, 0); // Goho-M
@@ -269,8 +210,6 @@ public class Mod : ModBase // <= Do not Remove.
         _itemManipulator.SetItemNumImpl(0x306F, 99, 0); // Tin Clasp (Lockpicks)
 
         _apFlagItemRewarder.SyncWithInventory(); // This will try to ensure flags match if they are in inventory or not.
-        
-        MyLogger.DebugLog($"Grappling hook flag: {_flagManipulator.CheckBit(0x2A3B)}");
         
         _chestRewardDirector.MatchChestStateToAp();
     }
@@ -320,7 +259,7 @@ public class Mod : ModBase // <= Do not Remove.
         // await Task.Delay(5000);
 
         MyLogger.DebugLog("Game loaded, calling onGameLoaded");
-        OnGameLoadedFirstTime.Invoke(this, EventArgs.Empty);
+        OnGameContextLoadedFirstTime.Invoke(this, EventArgs.Empty);
     }
 
     private void LogStuff(object? sender, ElapsedEventArgs elapsedEventArgs)

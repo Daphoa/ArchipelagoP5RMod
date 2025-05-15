@@ -103,13 +103,25 @@ void Test()
     FLD_LOCAL_FLAG_ON( 0xC048 );
 }
 
+// Procedure Index: 5
 void NotifyMissingSaveDirectory()
 {
-        BIT_ON( ( 0x60000000 + 1 ) )
-        
-        MSG_WND_DSP();
-        MSG_SYSTEM( MSG_ERROR_NO_SAVE_DIRECTORY );
-        MSG_WND_CLS();
-        BIT_OFF( ( 0x60000000 + 1 ) );
+    BIT_ON( ( 0x60000000 + 1 ) )
+    
+    MSG_WND_DSP();
+    MSG_SYSTEM( MSG_ERROR_NO_SAVE_DIRECTORY );
+    MSG_WND_CLS();
+    BIT_OFF( ( 0x60000000 + 1 ) );
+}
 
+// Procedure Index: 6
+void NewGameSetupSdl()
+{
+    CALL_EVENT(101, 1);
+    CALL_EVENT(104, 1);
+    BIT_OFF( 1037 );
+    SCENE_CHANGE_WAIT();
+    BIT_OFF( 12305 );
+    BIT_OFF( 12543 );
+    DATE_DISP( 1 );
 }

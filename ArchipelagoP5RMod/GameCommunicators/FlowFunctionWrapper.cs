@@ -178,13 +178,13 @@ public static class FlowFunctionWrapper
         return success;
     }
 
-    public static unsafe void CallCustomFlowFunction(CustomApMethodsIndexes func)
+    public static unsafe IntPtr CallCustomFlowFunction(CustomApMethodsIndexes func)
     {
         if (RunFlowFuncFromFile is null)
         {
             throw new NullReferenceException("RunFlowFuncFromFile is null");
         }
 
-        RunFlowFuncFromFile(8, (IntPtr)BfLoader.ApMethodsBfFilePointer, BfLoader.ApMethodsBfFileLength, (uint)func);
+        return RunFlowFuncFromFile(8, (IntPtr)BfLoader.ApMethodsBfFilePointer, BfLoader.ApMethodsBfFileLength, (uint)func);
     }
 }

@@ -8,4 +8,5 @@ public enum CustomApMethodsIndexes
     NotifyInfiltrationRoute = 3,
     Test = 4,
     NotifyMissingSaveDirectoryError = 5,
+    NewGameSetupSdl = 6,
 }
