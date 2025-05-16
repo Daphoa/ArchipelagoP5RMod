@@ -30,7 +30,8 @@ public class DateManipulator
 
     public const short SETUP_TOTAL_DAY = 6;
     public const byte SETUP_TIME = 4;
-    private readonly SortedSet<short> _loopDates = [21];
+    private static readonly SortedSet<short> _allLoopDates = [21, 52];
+    private SortedSet<short> _loopDates = [21, 52];
 
     public delegate void OnDateChangedHandler(short currTotalDays, byte currTime);
 
@@ -71,7 +72,7 @@ public class DateManipulator
     {
         MyLogger.DebugLog($"SetDateDisplay called with display: {display}");
         _dateDisplay(display ? 100L : 0L, 1);
-        
+
         // FlowFunctionWrapper.CallFlowFunctionSetup(display ? 1L : 0L);
         //
         // _dateDisplayFlow();
@@ -79,7 +80,7 @@ public class DateManipulator
         // FlowFunctionWrapper.CallFlowFunctionCleanup();
     }
 
-    private Month GetMonthFromTotalDays(int totalGameDays)
+    public static Month GetMonthFromTotalDays(int totalGameDays)
     {
         int month = 3;
         totalGameDays %= 365;
@@ -95,6 +96,64 @@ public class DateManipulator
         } while (i < 12);
 
         return (Month)month;
+    }
+
+    public static int GetTotalDays(uint month, uint day)
+    {
+        // Looks a little odd because it mimics the decompiled C version of this method in the game... but at least
+        // someone else checked it was correct.
+        if (month == 4)
+            return (int)(day - 1);
+
+        uint prevMonth = month - 1;
+        if (month - 1 == 0)
+        {
+            prevMonth = 12;
+        }
+
+        int totalDays = DAYS_IN_MONTH[(prevMonth - 1) % 12];
+        long iVar1 = prevMonth - 1;
+        long monthCounter = iVar1;
+        while (prevMonth != 4)
+        {
+            if (monthCounter == 0)
+            {
+                monthCounter = 12;
+            }
+
+            totalDays += DAYS_IN_MONTH[(monthCounter - 1) % 12];
+            iVar1 = monthCounter - 1;
+            prevMonth = (uint)monthCounter;
+            monthCounter = iVar1;
+        }
+
+        return (int)(day + -1 + totalDays);
+    }
+
+    public static TypeOfDay ToTypeOfDay(uint month, uint day)
+    {
+        int totalDays = GetTotalDays(month, day);
+        return ToTypeOfDay(totalDays);
+    }
+
+    public static TypeOfDay ToTypeOfDay(long totalDays)
+    {
+        if (totalDays == SETUP_TOTAL_DAY)
+        {
+            return TypeOfDay.Setup;
+        }
+
+        if (_allLoopDates.Contains((short)totalDays))
+        {
+            return TypeOfDay.LoopDay;
+        }
+
+        if (_allLoopDates.Contains((short)(totalDays - 1)))
+        {
+            return TypeOfDay.InfiltrationDay;
+        }
+
+        return TypeOfDay.None;
     }
 
     private void OnTimeUpdateCreated()
@@ -118,10 +177,12 @@ public class DateManipulator
 
     private short NextDay(short currentDay)
     {
+        MyLogger.DebugLog($"NextDay called currentDay:{currentDay}");
         foreach (short date in _loopDates)
         {
             if (currentDay < date)
             {
+                MyLogger.DebugLog($"Got day:{date}");
                 return date;
             }
         }
@@ -132,16 +193,28 @@ public class DateManipulator
     private unsafe void ManipulateInGameDate()
     {
         var dateInfo = DateInfoAddress;
+        MyLogger.DebugLog($"ManipulateInGameDate called currentDay:{dateInfo->currTotalDays} time:{dateInfo->currTime}");
 
-        // Only mess with dates at the end of the day unless we are outside of AP days.
-        if ((_loopDates.Contains(dateInfo->currTotalDays) || SETUP_TOTAL_DAY == dateInfo->currTotalDays) 
-            && dateInfo->currTime < 6) return;
+        // Only mess with dates at the end of the day
+        if (dateInfo->currTime < 6 && dateInfo->currTotalDays >= SETUP_TOTAL_DAY)
+        {
+            return;
+        }
 
         if (dateInfo->currTotalDays < SETUP_TOTAL_DAY)
         {
             MyLogger.DebugLog("Going to setup day.");
             dateInfo->nextTime = SETUP_TIME;
             dateInfo->nextTotalDays = SETUP_TOTAL_DAY;
+            return;
+        }
+
+        Palaces palace = ConquestManager.TotalDaysToPalace(dateInfo->currTotalDays);
+        bool isCurrentlyInfiltrating = InfiltrationManager.IsCurrentlyInfiltrating(_flagManipulator, palace);
+        if (_loopDates.Contains(dateInfo->currTotalDays) && isCurrentlyInfiltrating)
+        {
+            dateInfo->nextTime = 0;
+            dateInfo->nextTotalDays = (short)(dateInfo->currTotalDays + 1);
             return;
         }
 

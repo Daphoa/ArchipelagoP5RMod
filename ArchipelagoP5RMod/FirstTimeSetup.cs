@@ -60,6 +60,7 @@ public class FirstTimeSetup
         0x20000000 + 172, 0x20000000 + 4666, 0x20000000 + 4665, 0x20000000 + 4664, 0x20000000 + 43, 0x20000000 + 44,
         0x20000000 + 170, 0x20000000 + 165, 0x20000000 + 166, 0x20000000 + 167, 0x20000000 + 168, 0x20000000 + 169,
         0x20000000 + 5103,
+        1188, 1189, 1199, // Infiltration tutorials
 
         // Events
         0x20000000 + 5116, 0x20000000 + 5117, // Red Lust Seed Event
@@ -69,6 +70,11 @@ public class FirstTimeSetup
         ConfidantManipulator confidantManipulator, SocialStatManipulator socialStatManipulator,
         DateManipulator dateManipulator)
     {
+        foreach (uint adr in _onBits)
+        {
+            flagManipulator.SetBit(adr, true);
+        }
+
         // sdl04_05_PM_D
         flagManipulator.SetBit(80, true);
         flagManipulator.SetBit(12308, true);
@@ -104,6 +110,7 @@ public class FirstTimeSetup
         // flagManipulator.SetBit(11829, false);
         // flagManipulator.SetBit(11830, false);
         // flagManipulator.SetBit(11831, false);
+
         flagManipulator.SetBit(8735, true);
         flagManipulator.SetBit(8734, true);
         flagManipulator.SetBit(113, true);
@@ -158,11 +165,41 @@ public class FirstTimeSetup
         flagManipulator.SetCount(151, 0);
 
         // palace_clear_flag
-        flagManipulator.SetBit(8735, true);
-        flagManipulator.SetBit(8734, true);
+        // flagManipulator.SetBit(8735, true);
+        // flagManipulator.SetBit(8734, true);
 
         // Script -> Kamoshida palace
         flagManipulator.SetBit(1072, true);
+
+        // Some flags stolen from debug that might be helpful
+        // flagManipulator.SetBit(11974, true);
+        // flagManipulator.SetBit(3920, false);
+        // flagManipulator.SetBit(105, false);
+        // flagManipulator.SetBit(6206, false);
+        // flagManipulator.SetBit(6724, true);
+        // flagManipulator.SetBit(8826, false);
+        // flagManipulator.SetBit(8828, false);
+        // flagManipulator.SetBit(8830, true);
+        // flagManipulator.SetBit(8843, true);
+        // flagManipulator.SetCount(159, 1);
+        // flagManipulator.SetBit(6211, false);
+        // flagManipulator.SetBit(6217, false);
+        // flagManipulator.SetBit(6723, true);
+        // flagManipulator.SetBit(10808, true);
+        // flagManipulator.SetBit(10810, true);
+        // flagManipulator.SetBit(6194, true);
+        // flagManipulator.SetBit(6403, true);
+        // flagManipulator.SetBit(8829, false);
+        // flagManipulator.SetBit(8830, false);
+        // flagManipulator.SetBit(10760, true);
+        // flagManipulator.SetBit(10761, true);
+        // flagManipulator.SetBit(11541, true);
+        // flagManipulator.SetBit(11556, true);
+        // flagManipulator.SetBit(6176, false);
+        // flagManipulator.SetBit(6180, false);
+        // flagManipulator.SetBit(6195, true);
+        // flagManipulator.SetBit(6400, true);
+        // flagManipulator.SetBit(11246, true);
 
         // SUB_ConqusetKamoshida_Start
         confidantManipulator.CmmOpen(Confidant.Morgana);
@@ -183,46 +220,17 @@ public class FirstTimeSetup
         // personaManipulator.SetPartyLvl(PartyMember.Oracle, 5);
         personaManipulator.AddPersonaSkill(PartyMember.Skull, 200);
         personaManipulator.AddPersonaSkill(PartyMember.Mona, 325);
-        flagManipulator.SetBit(4012, true);
-        flagManipulator.SetBit(11971, true);
-        flagManipulator.SetBit(11972, true);
-        flagManipulator.SetBit(11973, true);
-        flagManipulator.SetBit(11974, true);
-        flagManipulator.SetBit(11467, true);
-        flagManipulator.SetBit(6309, true);
-        flagManipulator.SetBit(11464, true);
-        flagManipulator.SetBit(11496, true);
-        flagManipulator.SetBit(11276, true);
-
-        // Some flags stolen from debug that might be helpful
-        flagManipulator.SetBit(11974, true);
-        flagManipulator.SetBit(3920, false);
-        flagManipulator.SetBit(105, false);
-        flagManipulator.SetBit(6206, false);
-        flagManipulator.SetBit(6724, true);
-        flagManipulator.SetBit(8826, false);
-        flagManipulator.SetBit(8828, false);
-        flagManipulator.SetBit(8830, true);
-        flagManipulator.SetBit(8843, true);
-        flagManipulator.SetCount(159, 1);
-        flagManipulator.SetBit(6211, false);
-        flagManipulator.SetBit(6217, false);
-        flagManipulator.SetBit(6723, true);
-        flagManipulator.SetBit(10808, true);
-        flagManipulator.SetBit(10810, true);
-        flagManipulator.SetBit(6194, true);
-        flagManipulator.SetBit(6403, true);
-        flagManipulator.SetBit(8829, false);
-        flagManipulator.SetBit(8830, false);
-        flagManipulator.SetBit(10760, true);
-        flagManipulator.SetBit(10761, true);
-        flagManipulator.SetBit(11541, true);
-        flagManipulator.SetBit(11556, true);
-        flagManipulator.SetBit(6176, false);
-        flagManipulator.SetBit(6180, false);
-        flagManipulator.SetBit(6195, true);
-        flagManipulator.SetBit(6400, true);
-        flagManipulator.SetBit(11246, true);
+        // flagManipulator.SetBit(6349, true);
+        // flagManipulator.SetBit(4012, true);
+        // flagManipulator.SetBit(11971, true);
+        // flagManipulator.SetBit(11972, true);
+        // flagManipulator.SetBit(11973, true);
+        // flagManipulator.SetBit(11974, true);
+        // flagManipulator.SetBit(11467, true);
+        // flagManipulator.SetBit(6309, true);
+        // flagManipulator.SetBit(11464, true);
+        // flagManipulator.SetBit(11496, true);
+        // flagManipulator.SetBit(11276, true);
 
         // Party members
         flagManipulator.SetBit(11779, true); // Can Edit Party
@@ -236,10 +244,7 @@ public class FirstTimeSetup
         // flagManipulator.SetBit(11831, true); // Aketchi
         // flagManipulator.SetBit(11832, true); // Kasumi
 
-        foreach (uint adr in _onBits)
-        {
-            flagManipulator.SetBit(adr, true);
-        }
+        // dateManipulator.SetDateDisplay(true);
 
         // Social stats
         // socialStatManipulator.AddPcAllParam(34, 6, 14, 11, 12);

@@ -62,6 +62,7 @@ public class Mod : ModBase // <= Do not Remove.
     private readonly MessageManipulator _messageManipulator;
     private readonly ScheduleManipulator _scheduleManipulator;
     private readonly InfiltrationManager _infiltrationManager;
+    private readonly ConquestManager _conquestManager;
     private readonly PersonaManipulator _personaManipulator;
     private readonly BattleManipulator _battleManipulator;
     private readonly SocialStatManipulator _socialStatManipulator;
@@ -100,6 +101,7 @@ public class Mod : ModBase // <= Do not Remove.
         _messageManipulator = new MessageManipulator(_flagManipulator, _hooks);
         _scheduleManipulator = new ScheduleManipulator(_flagManipulator, _hooks);
         _infiltrationManager = new InfiltrationManager(_flagManipulator, _itemManipulator);
+        _conquestManager = new ConquestManager(_flagManipulator);
         _personaManipulator = new PersonaManipulator(_hooks);
         _battleManipulator = new BattleManipulator(_hooks);
         _socialStatManipulator = new SocialStatManipulator(_hooks);
@@ -133,6 +135,7 @@ public class Mod : ModBase // <= Do not Remove.
             _confidantManipulator.LoadEnabledCmmData);
 
         _dateManipulator.OnDateChanged += _infiltrationManager.OnDateChangedHandler;
+        _dateManipulator.OnDateChanged += _conquestManager.OnDateChangedHandler;
 
         _battleManipulator.OnBattleComplete += (battleId, result) =>
         {

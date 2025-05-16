@@ -18,41 +18,21 @@ public class InfiltrationManager
 
         itemManipulator.OnItemCountChanged += (item, _) => InfiltrationCheck(item);
     }
-
-    public static Palaces TotalDaysToPalace(short totalDays)
-    {
-        switch (totalDays)
-        {
-            case >= 17 and <= 31:
-                return Palaces.KAMOSHIDA;
-            case >= 47 and <= 65:
-                return Palaces.MADARAME;
-            case >= 81 and <= 99:
-                return Palaces.KANESHIRO;
-            case >= 116 and <= 142:
-                return Palaces.FUTABA;
-            case >= 171 and <= 193:
-                return Palaces.OKUMURA;
-            case >= 212 and <= 233:
-                return Palaces.SAE;
-            case >= 238 and <= 261:
-                return Palaces.SHIDO;
-            case 267:
-                return Palaces.MEMENTOS_DEPTHS;
-            case >= 284 and <= 308:
-                return Palaces.MARUKI;
-            default:
-                return Palaces.NONE;
-        }
-    }
-
+    
     public void OnDateChangedHandler(short currTotalDays, byte currTime)
     {
-        var palace = TotalDaysToPalace(currTotalDays);
+        var palace = ConquestManager.TotalDaysToPalace(currTotalDays);
         bool canInfiltrate = CanInfiltrate(palace);
+        MyLogger.DebugLog($"Date changed: can infiltrate: {canInfiltrate}");
         SetupInfiltration(palace, canInfiltrate);
     }
 
+    // Not FULLY sure what these flags do, but copied them from the flow script. 
+    public static bool IsCurrentlyInfiltrating(FlagManipulator flagManipulator, Palaces palace)
+    {
+        return !flagManipulator.CheckBit(1040) && flagManipulator.CheckBit(6393);
+    }
+    
     public bool CanInfiltrate(Palaces palace)
     {
         switch (palace)
@@ -76,7 +56,7 @@ public class InfiltrationManager
         if (CanInfiltrate(Palaces.KAMOSHIDA))
         {
             NotifyInfiltration(Palaces.KAMOSHIDA);
-            if (TotalDaysToPalace(DateManipulator.CurrTotalDays) == Palaces.KAMOSHIDA)
+            if (ConquestManager.TotalDaysToPalace(DateManipulator.CurrTotalDays) == Palaces.KAMOSHIDA)
             {
                 SetupInfiltration(Palaces.KAMOSHIDA, true);
             }
@@ -99,13 +79,12 @@ public class InfiltrationManager
 
     private void SetupInfiltration(Palaces palace, bool canInfiltrate)
     {
-        _flagManipulator.SetBit(6230, false);
         switch (palace)
         {
             case Palaces.KAMOSHIDA:
                 _flagManipulator.SetBit(0x20000000 + 209, canInfiltrate);
                 _flagManipulator.SetBit(0x20000000 + 200, false); // This should be false even before infiltration is ready - probably represents if dungeon is cleared.
-                _flagManipulator.SetBit(0x20000000 + 281, true); // This is a test - it might be for the giant door in front of the treasure.
+                // _flagManipulator.SetBit(0x20000000 + 281, true); // This is a test - it might be for the giant door in front of the treasure.
                 break;
             case Palaces.MADARAME:
                 _flagManipulator.SetBit(0x20000000 + 609, canInfiltrate);
