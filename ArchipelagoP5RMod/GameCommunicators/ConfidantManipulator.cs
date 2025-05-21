@@ -124,6 +124,11 @@ public class ConfidantManipulator
         0x6E, // Fortune: Special Fate Reading
         0x10F, // Fortune: Celestial Reading
         0x11D, // Fortune: True Affinity Reading
+        0x71, // Strength: Group Guillotine
+        0x6F, // Strength: Lockdown
+        0x110, // Strength: Special Treatment
+        0x76, // Strength: Guillotine Booster
+        0x78, // Strength: VIP Treatment
         0x7D, // Hanged Man: Discount 
         0x114, // Hanged Man: Starter Customization 
         0x115, // Hanged Man: Camo Customization 
@@ -139,6 +144,24 @@ public class ConfidantManipulator
         0x91, // Temperance: Free Time
         0x93, // Temperance: Super Housekeeping
         0x96, // Temperance: Special Massage
+        0x118, // Devil: Rumor-filled Scoop
+        0x11A, // Devil: Shocking Scoop
+        0x11C, // Devil: Unbelievable Scoop
+        0x11E, // Devil: Outrageous Scoop
+        0x121, // Devil: Legendary Scoop
+        0xA1, // Tower: Down Shot
+        0xA2, // Tower: Bullet Hail
+        0xA3, // Tower: Warning Shot
+        0x111, // Tower: Laced Bullets
+        0xA6, // Tower: Cheap Shot
+        0xA8, // Tower: Electric Slug
+        0xAA, // Tower: Oda Special
+        0xAB, // Star: Koma Sabaki
+        0xAD, // Star: Uchikomi
+        0xAF, // Star: Kakoi Kuzushi
+        0xB1, // Star: Narikin
+        0xB3, // Star: Touryou
+        0xB4, // Star: Togo System
         0xBE, // Moon: Mishima's Support
         0xB5, // Moon: Mishima's Enthusiasm
         0x24, // Moon: Mishima's Desperation
@@ -149,6 +172,7 @@ public class ConfidantManipulator
         0xC3, // Sun: Manipulation
         0xC6, // Sun: Mind Control
         0xC8, // Sun: Charismatic Speech
+        // 0xD2, // Judgement: True Justice
         0xFA, // Faith: Tumbling
         0xFE, // Faith: Chaînés Hook
         0xFC, // Faith: Follow Up
