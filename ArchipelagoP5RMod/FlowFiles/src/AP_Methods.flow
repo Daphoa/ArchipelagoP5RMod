@@ -117,8 +117,8 @@ void NotifyMissingSaveDirectory()
 // Procedure Index: 6
 void NewGameSetupSdl()
 {
-    CALL_EVENT(101, 1);
-    CALL_EVENT(104, 1);
+    CALL_EVENT(101, 1); // Select difficulty and name
+    CALL_EVENT(104, 1); // Butterfly animation
     BIT_OFF( 1037 );
     SCENE_CHANGE_WAIT();
     BIT_OFF( 12305 );
