@@ -18,7 +18,7 @@ public class ConfidantManipulator
     [Function(CallingConventions.Fastcall)]
     public delegate void CmmOpenFunc(ushort cmmId);
 
-    private IntPtr _getCmmOpenPtr;
+    private IHook<CmmOpenFunc> _cmmOpenHook;
 
     public CmmOpenFunc _cmmOpen { get; private set; }
 
@@ -218,15 +218,16 @@ public class ConfidantManipulator
             address => _cmmSetLvHook = hooks.CreateHook<CmmSetLv>(CmmSetLvImpl, address).Activate());
         AddressScanner.DelayedScanPattern(
             "48 89 5C 24 ?? 48 89 74 24 ?? 57 48 83 EC 20 48 8B 35 ?? ?? ?? ?? 33 FF 0F B7 D9",
-            address => _cmmOpen =
-                hooks.CreateWrapper<CmmOpenFunc>(address, out _getCmmOpenPtr));
+            address => _cmmOpenHook = hooks.CreateHook<CmmOpenFunc>(CmmOpenImpl, address).Activate());
+
 
         MyLogger.DebugLog("Created ItemManipulator Hooks");
     }
 
+
     public void CmmOpen(Confidant confidant)
     {
-        _cmmOpen((ushort)confidant);
+        _cmmOpenHook.OriginalFunction((ushort)confidant);
     }
 
     public bool EnableCmmFeature(uint feature)
@@ -269,6 +270,16 @@ public class ConfidantManipulator
 
         return val;
     }
+    
+    private void CmmOpenImpl(ushort cmmId)
+    {
+        _cmmOpenHook.OriginalFunction(cmmId);
+
+        MyLogger.DebugLog($"CmmOpen called with id: {cmmId}");
+
+        OnCmmSetLv?.Invoke(cmmId, 1);
+    }
+
 
     public void HandleApItem(object? sender, ApConnector.ApItemReceivedEvent e)
     {
