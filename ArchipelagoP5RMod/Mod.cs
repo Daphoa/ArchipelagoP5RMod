@@ -131,6 +131,7 @@ public class Mod : ModBase // <= Do not Remove.
         _chestRewardDirector.Setup(_apConnector, _itemManipulator, _flagManipulator);
 
         _modSaveLoadManager.RegisterSaveLoad(_flagManipulator.SaveCountData, _flagManipulator.LoadCountData);
+        _modSaveLoadManager.RegisterSaveLoad(_apConnector.SaveConnectionData, _apConnector.LoadConnectionData);
         _modSaveLoadManager.RegisterSaveLoad(_confidantManipulator.SaveEnabledCmmData,
             _confidantManipulator.LoadEnabledCmmData);
 

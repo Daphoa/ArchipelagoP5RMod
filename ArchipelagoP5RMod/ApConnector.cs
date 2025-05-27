@@ -1,15 +1,19 @@
-﻿using Archipelago.MultiClient.Net;
+﻿using System.Runtime.InteropServices;
+using Archipelago.MultiClient.Net;
 using Archipelago.MultiClient.Net.Enums;
 using Archipelago.MultiClient.Net.Helpers;
 using Archipelago.MultiClient.Net.MessageLog.Messages;
 using Archipelago.MultiClient.Net.Models;
 using Archipelago.MultiClient.Net.Packets;
+using Reloaded.Memory.Extensions;
 
 namespace ArchipelagoP5RMod;
 
 public class ApConnector
 {
     private readonly FlagManipulator _flagManipulator;
+    
+    private HashSet<long> _queuedFoundLocations = [];
 
     public class ApItemReceivedEvent(ApItem apItem, string Sender, bool IsSelf) : EventArgs
     {
@@ -188,6 +192,14 @@ public class ApConnector
         }
     }
 
+    private async Task WaitForReportedLocations()
+    {
+        while (_queuedFoundLocations.Count > 0)
+        {
+            await Task.Delay(1000);
+        }
+    }
+
     #endregion
 
     public void ReadyToCollect()
@@ -259,9 +271,13 @@ public class ApConnector
 
     public async Task ReportLocationCheckAsync(params long[] locationIds)
     {
+        _queuedFoundLocations.UnionWith(locationIds);
+
         await WaitForConnection();
 
         await _session.Locations.CompleteLocationChecksAsync(locationIds);
+
+        _queuedFoundLocations.ExceptWith(locationIds);
     }
 
     public async void ScoutLocations(long[]? locationIds,
@@ -279,6 +295,10 @@ public class ApConnector
 
     public async Task<IEnumerable<long>> GetUnfoundLocations(IEnumerable<long>? locationIds = null)
     {
+        await WaitForConnection();
+
+        await WaitForReportedLocations();
+
         await WaitForConnection();
 
         IEnumerable<long> retVal = _session.Locations.AllMissingLocations;
@@ -309,4 +329,66 @@ public class ApConnector
 
         _session.SetGoalAchieved();
     }
+    
+    #region Save/Load
+
+    private const ulong QUEUED_FOUND_LOCATIONS_HEADER = 0xFFFFFFFF;
+    private const ulong LIST_END = 0x0;
+
+    public byte[] SaveConnectionData()
+    {
+        MemoryStream stream = new();
+        
+        stream.Write(QUEUED_FOUND_LOCATIONS_HEADER);
+
+        foreach (long location in _queuedFoundLocations)
+        {
+            stream.Write(location);
+        }
+        
+        stream.Write(LIST_END);
+        
+        return stream.ToArray();
+    }
+
+    public void LoadConnectionData(MemoryStream memStream)
+    {
+        byte loadType = 0;
+        
+        while (true)
+        {
+            byte[] buffer = new byte[sizeof(long)];
+            int readBytes = memStream.Read(buffer, 0, sizeof(long));
+            
+            if (readBytes < sizeof(long))
+            {
+                if (readBytes < 1 || buffer[0] != 0x0)
+                {
+                    MyLogger.DebugLog("WARNING: Read unusual data while loading AP Connection data.");
+                }
+
+                break;
+            }
+
+            ulong longItem = BitConverter.ToUInt64(buffer);
+
+            switch (longItem)
+            {
+                case QUEUED_FOUND_LOCATIONS_HEADER:
+                    loadType = 0;
+                    continue;
+                case LIST_END:
+                    continue;
+            }
+
+            if (loadType == 0)
+            {
+                _queuedFoundLocations.Add((long)longItem);
+            }
+        }
+
+        ReportLocationCheckAsync();
+    }
+    
+    #endregion
 }
