@@ -33,11 +33,11 @@ public class ConfidantManipulator
         0x01, // Fool: Wild Talk 
         0x02, // Fool: Third Eye 
         0x03, // Fool: Arcana Burst 
-        0x04, // Fool: Power Stock (8) 
-        0x05, // Fool: Super Stock (10) 
         0x06, // Fool: High Arcana Burst  
-        0x08, // Fool: Ultra Stock (12)  
         0x0A, // Fool: Max Arcana Burst
+        0x04, // Fool: Power Stock (8)  | Bit: 0x40000040
+        0x05, // Fool: Super Stock (10) | Bit: 0x40000041
+        0x08, // Fool: Ultra Stock (12) | Bit: 0x40000042
         0x0B, // Magician: Infiltration Tools
         0x0C, // Magician: Follow Up
         0x0F, // Magician: Kitty Talk
@@ -228,6 +228,11 @@ public class ConfidantManipulator
     public void CmmOpen(Confidant confidant)
     {
         _cmmOpenHook.OriginalFunction((ushort)confidant);
+    }
+
+    public void CmmSetLevel(Confidant confidant, short level)
+    {
+        _cmmSetLvHook.OriginalFunction((ushort)confidant, level);
     }
 
     public bool EnableCmmFeature(uint feature)
