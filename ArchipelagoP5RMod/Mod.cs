@@ -66,6 +66,7 @@ public class Mod : ModBase // <= Do not Remove.
     private readonly PersonaManipulator _personaManipulator;
     private readonly BattleManipulator _battleManipulator;
     private readonly SocialStatManipulator _socialStatManipulator;
+    private readonly MiscManipulator _miscManipulator;
 
     private readonly DebugTools _debugTools;
     // Used to detect if the game was started as a new game.
@@ -105,6 +106,7 @@ public class Mod : ModBase // <= Do not Remove.
         _personaManipulator = new PersonaManipulator(_hooks);
         _battleManipulator = new BattleManipulator(_hooks);
         _socialStatManipulator = new SocialStatManipulator(_hooks);
+        _miscManipulator = new MiscManipulator(_hooks);
         BfLoader.Setup();
         SequenceMonitor.Setup();
         CustomLogic.Setup(_itemManipulator, _flagManipulator);
