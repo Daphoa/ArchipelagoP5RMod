@@ -1,4 +1,5 @@
-﻿using ArchipelagoP5RMod.Types;
+﻿using System.Diagnostics;
+using ArchipelagoP5RMod.Types;
 using Reloaded.Hooks.Definitions;
 using Reloaded.Hooks.Definitions.X86;
 using MemoryStream = System.IO.MemoryStream;
@@ -41,6 +42,11 @@ public class FlagManipulator
     const uint NumExternalCounts = 5;
     private static uint[] externalCounts = [0, 0, 0, 0, 0];
     private const int CountTypeSize = sizeof(uint);
+
+#if DEVELOP
+    private static readonly uint[] FlagsOfInterest = [];
+    private static readonly uint[] CountsOfInterest = [];
+#endif
 
     public FlagManipulator(IReloadedHooks hooks)
     {
@@ -167,15 +173,17 @@ public class FlagManipulator
 
     private uint SetCountImpl()
     {
-        int countId = FlowFunctionWrapper.GetFlowscriptInt4Arg(0);
+        uint countId = (uint)FlowFunctionWrapper.GetFlowscriptInt4Arg(0);
         uint value = (uint)FlowFunctionWrapper.GetFlowscriptInt4Arg(1);
+
+        PrintCountOfInterest(countId, value);
 
         if (countId == 56 && value == 15)
         {
-            // Doing a sneaky swap of 15 to 13 so Ryuji will hang out with us even if we can send a calling card. 
+            // Doing a sneaky swap of 15 to 13 so Ryuji will hang out with us even if we can send a calling card.
             FlowFunctionWrapper.ReplaceArgInt4(1, 13);
         }
-        
+
         if (countId < SectionMask * ExternalCountSection ||
             countId >= SectionMask * ExternalCountSection + NumExternalCounts)
             return _setCountFlowHook.OriginalFunction();
@@ -218,7 +226,7 @@ public class FlagManipulator
 
         FlowFunctionWrapper.CallFlowFunctionCleanup();
     }
-    
+
     public void ToggleBit(uint bitIndex)
     {
         if (bitIndex is >= ExternalBitSection * SectionMask
@@ -228,7 +236,7 @@ public class FlagManipulator
             externalBitFlags[bit] = !externalBitFlags[bit];
             return;
         }
-        
+
         bool originalValue = _bitChkHook.OriginalFunction(bitIndex) != 0;
         SetBit(bitIndex, !originalValue);
     }
@@ -236,6 +244,8 @@ public class FlagManipulator
     private uint BitOnImpl()
     {
         var bitIndex = (uint)FlowFunctionWrapper.GetFlowscriptInt4Arg(0);
+
+        PrintFlagOfInterest(bitIndex, true);
 
         if (bitIndex is < ExternalBitSection * SectionMask or >= ExternalBitSection * SectionMask + NumExternalBitFlags)
             return _bitOnHook.OriginalFunction();
@@ -251,6 +261,8 @@ public class FlagManipulator
     {
         var bitIndex = (uint)FlowFunctionWrapper.GetFlowscriptInt4Arg(0);
 
+        PrintFlagOfInterest(bitIndex, false);
+
         if (bitIndex is < ExternalBitSection * SectionMask or >= ExternalBitSection * SectionMask + NumExternalBitFlags)
             return _bitOffHook.OriginalFunction();
 
@@ -259,6 +271,28 @@ public class FlagManipulator
         externalBitFlags[bitOffset] = false;
 
         return 1;
+    }
+
+    [Conditional("DEVELOP")]
+    private void PrintFlagOfInterest(uint bitIndex, bool value)
+    {
+        if (!FlagsOfInterest.Contains(bitIndex))
+        {
+            return;
+        }
+
+        MyLogger.DebugLog($"BitIndex: {bitIndex:X} set to {value}");
+    }
+
+    [Conditional("DEVELOP")]
+    private void PrintCountOfInterest(uint countIndex, long value)
+    {
+        if (!CountsOfInterest.Contains(countIndex))
+        {
+            return;
+        }
+
+        MyLogger.DebugLog($"BitIndex: {countIndex:X} set to {value}");
     }
 
     public void SetBit(short section, uint bitIndex, bool value)
