@@ -208,7 +208,7 @@ public class Mod : ModBase // <= Do not Remove.
         {
             // Only setup if this is the first time we are loading with a new AP file.
             _firstTimeSetup.Setup(_flagManipulator, _personaManipulator, _confidantManipulator, _socialStatManipulator, 
-                _dateManipulator);
+                _dateManipulator, _miscManipulator);
         }
 
         _itemManipulator.SetItemNumImpl(0x3065, 99, 0); // Goho-M

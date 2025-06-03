@@ -68,7 +68,7 @@ public class FirstTimeSetup
 
     public void Setup(FlagManipulator flagManipulator, PersonaManipulator personaManipulator,
         ConfidantManipulator confidantManipulator, SocialStatManipulator socialStatManipulator,
-        DateManipulator dateManipulator)
+        DateManipulator dateManipulator, MiscManipulator miscManipulator)
     {
         foreach (uint adr in _onBits)
         {
@@ -164,6 +164,26 @@ public class FirstTimeSetup
         flagManipulator.SetCount(150, 0);
         flagManipulator.SetCount(151, 0);
 
+        // Setup Kamoshida palace flags
+        flagManipulator.SetCount(145, 40100);
+        flagManipulator.SetBit(6741, false);
+        flagManipulator.SetBit(11974, true);
+        flagManipulator.SetBit(3920, false);
+        flagManipulator.SetBit(105, false);
+        flagManipulator.SetBit(6206, false);
+        miscManipulator.VltFilterVisibleFlow(true);
+
+        // Fusion tutorial
+        // flagManipulator.SetBit(11929, true);
+        // flagManipulator.SetBit(11930, false);
+        // flagManipulator.SetBit(11784, false);
+        // confidantManipulator.CmmOpen(Confidant.Igor);
+        // confidantManipulator.CmmSetLevel(Confidant.Igor, 2);
+        // flagManipulator.SetBit(253, true);
+        // flagManipulator.SetBit(11860, true);
+        // flagManipulator.SetBit(11861, true);
+
+
         // palace_clear_flag
         // flagManipulator.SetBit(8735, true);
         // flagManipulator.SetBit(8734, true);
@@ -201,25 +221,51 @@ public class FirstTimeSetup
         // flagManipulator.SetBit(6400, true);
         // flagManipulator.SetBit(11246, true);
 
+        // Party members
+        #if DEVELOP
+        flagManipulator.SetBit(11779, true); // Can Edit Party
+        flagManipulator.SetBit(11824, true); // Ryuji
+        flagManipulator.SetBit(11825, true); // Morgana
+        flagManipulator.SetBit(11826, true); // Ann
+        flagManipulator.SetBit(11827, true); // Yusuke
+        flagManipulator.SetBit(11828, true); // Makoto
+        flagManipulator.SetBit(11829, true); // Haru
+        flagManipulator.SetBit(11830, true); // Futaba
+        flagManipulator.SetBit(11831, true); // Aketchi
+        flagManipulator.SetBit(11832, true); // Kasumi
+        #endif
+
+        // Skip fusion tutorial guess
+        // flagManipulator.SetBit(6350, false);
+        flagManipulator.SetBit(6393, true);
+
         // SUB_ConqusetKamoshida_Start
+        confidantManipulator.CmmOpen(Confidant.Igor);
         confidantManipulator.CmmOpen(Confidant.Morgana);
         confidantManipulator.CmmOpen(Confidant.Ann);
         confidantManipulator.CmmOpen(Confidant.Ryuji);
-        // confidantManipulator.CmmOpen(Confidant.Takemi);
-        // confidantManipulator.CmmOpen(Confidant.Sojiro);
-        personaManipulator.AddPersonaStock(201);
-        personaManipulator.AddPersonaStock(131);
-        personaManipulator.AddPersonaStock(4);
-        personaManipulator.AddPersonaStock(121);
-        personaManipulator.SetPartyLvl(PartyMember.Joker, 5);
-        personaManipulator.SetPartyLvl(PartyMember.Skull, 5);
-        personaManipulator.SetPartyLvl(PartyMember.Mona, 5);
-        personaManipulator.SetPartyLvl(PartyMember.Panther, 5);
-        // personaManipulator.SetPartyLvl(PartyMember.Fox, 5);
-        // personaManipulator.SetPartyLvl(PartyMember.Noir, 5);
-        // personaManipulator.SetPartyLvl(PartyMember.Oracle, 5);
+        confidantManipulator.CmmOpen(Confidant.Mishima);
+        confidantManipulator.CmmOpen(Confidant.Maruki);
+        confidantManipulator.CmmOpen(Confidant.Sumire);
+        confidantManipulator.CmmOpen(Confidant.Sae);
+        confidantManipulator.CmmOpen(Confidant.Akechi);
+        confidantManipulator.CmmOpen(Confidant.Futaba);
+        personaManipulator.AddPersonaStock(201); // Arsene
+        #if DEVELOP
+        // personaManipulator.AddPersonaStock(131);
+        // personaManipulator.AddPersonaStock(4);
+        // personaManipulator.AddPersonaStock(121);
+        personaManipulator.SetPartyLvl(PartyMember.Joker, 99); // Arsene
+        personaManipulator.SetPartyLvl(PartyMember.Skull, 99);
+        personaManipulator.SetPartyLvl(PartyMember.Mona, 99);
+        personaManipulator.SetPartyLvl(PartyMember.Panther, 99);
+        personaManipulator.SetPartyLvl(PartyMember.Fox, 99);
+        personaManipulator.SetPartyLvl(PartyMember.Queen, 99);
+        personaManipulator.SetPartyLvl(PartyMember.Noir, 99);
+        personaManipulator.SetPartyLvl(PartyMember.Oracle, 99);
         personaManipulator.AddPersonaSkill(PartyMember.Skull, 200);
         personaManipulator.AddPersonaSkill(PartyMember.Mona, 325);
+        #endif
         // flagManipulator.SetBit(6349, true);
         // flagManipulator.SetBit(4012, true);
         // flagManipulator.SetBit(11971, true);
@@ -231,18 +277,6 @@ public class FirstTimeSetup
         // flagManipulator.SetBit(11464, true);
         // flagManipulator.SetBit(11496, true);
         // flagManipulator.SetBit(11276, true);
-
-        // Party members
-        flagManipulator.SetBit(11779, true); // Can Edit Party
-        flagManipulator.SetBit(11824, true); // Ryuji
-        flagManipulator.SetBit(11825, true); // Morgana
-        flagManipulator.SetBit(11826, true); // Ann
-        // flagManipulator.SetBit(11827, true); // Yusuke
-        // flagManipulator.SetBit(11828, true); // Makoto
-        // flagManipulator.SetBit(11829, true); // Haru
-        // flagManipulator.SetBit(11830, true); // Futaba
-        // flagManipulator.SetBit(11831, true); // Aketchi
-        // flagManipulator.SetBit(11832, true); // Kasumi
 
         // dateManipulator.SetDateDisplay(true);
 

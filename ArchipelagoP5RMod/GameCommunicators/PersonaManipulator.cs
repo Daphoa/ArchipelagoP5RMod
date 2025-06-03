@@ -24,7 +24,12 @@ public class PersonaManipulator
             { PartyMember.Skull, 202 },
             { PartyMember.Mona, 203 },
             { PartyMember.Panther, 204 },
-            { PartyMember.Fox, 205 }
+            { PartyMember.Fox, 205 },
+            { PartyMember.Queen, 206 },
+            { PartyMember.Noir, 207 },
+            { PartyMember.Oracle, 208 },
+            { PartyMember.Crow, 209 },
+            { PartyMember.Violet, 210 },
         };
         _characterPersona = characterPersona.ToFrozenDictionary();
 
