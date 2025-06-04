@@ -41,21 +41,58 @@ public class ConquestManager(FlagManipulator flagManipulator)
     {
         _flagManipulator.SetBit(6230, false);
 
+        _flagManipulator.SetBit(0x20000000 + 249, palace > Palaces.KAMOSHIDA);
+
+        if (palace > Palaces.KAMOSHIDA)
+        {
+            _flagManipulator.SetBit(0x20000000 + 209, true);
+        }
+
+        // Bosses defeated
+        _flagManipulator.SetBit(0x20000000 + 200, palace > Palaces.KAMOSHIDA);
+        _flagManipulator.SetBit(0x20000000 + 600, palace > Palaces.MADARAME);
+        _flagManipulator.SetBit(0x20000000 + 1000, palace > Palaces.KANESHIRO);
+        _flagManipulator.SetBit(0x20000000 + 1000, palace > Palaces.KANESHIRO);
+        _flagManipulator.SetBit(0x20000000 + 1400, palace > Palaces.FUTABA);
+        _flagManipulator.SetBit(0x20000000 + 1800, palace > Palaces.OKUMURA);
+        _flagManipulator.SetBit(0x20000000 + 2200, palace > Palaces.SAE);
+        _flagManipulator.SetBit(0x20000000 + 2700, palace > Palaces.SHIDO);
+        // TODO Depths?
+        _flagManipulator.SetBit(0x20000000 + 0x1000, palace > Palaces.MARUKI);
+
+
+        _flagManipulator.SetBit(0x20000000 + 201, palace >= Palaces.KAMOSHIDA);
+        _flagManipulator.SetBit(0x20000000 + 601, palace >= Palaces.MADARAME);
+
+        _flagManipulator.SetBit(0x20000000 + 611, palace > Palaces.MADARAME);
+
+        _flagManipulator.SetBit(0x20000000 + 249, palace != Palaces.KAMOSHIDA);
+
+        // Hideout
+        _flagManipulator.SetBit(74, palace == Palaces.KAMOSHIDA);
+        _flagManipulator.SetBit(75, palace is >= Palaces.MADARAME and < Palaces.SAE);
+        _flagManipulator.SetBit(76, palace is >= Palaces.SAE and < Palaces.MEMENTOS_DEPTHS);
+        _flagManipulator.SetBit(77, palace >= Palaces.MEMENTOS_DEPTHS);
+
+        // flagManipulator.SetBit(1040, true);
+        // flagManipulator.SetBit(6393, true);
+
         switch (palace)
         {
             case Palaces.KAMOSHIDA:
-                _flagManipulator.SetBit(0x20000000 + 201, true);
-                _flagManipulator.SetBit(0x20000000 + 200, false);
-                _flagManipulator.SetBit(0x20000000 + 249, false);
+                // _flagManipulator.SetBit(0x20000000 + 201, true);
+                // _flagManipulator.SetBit(0x20000000 + 200, false);
+                // _flagManipulator.SetBit(0x20000000 + 249, false);
                 break;
             case Palaces.MADARAME:
-                _flagManipulator.SetBit(0x20000000 + 600, false);
-
-                // 
-                flagManipulator.SetBit(1040, true);
-                flagManipulator.SetBit(6393, true);
+                // _flagManipulator.SetBit(0x20000000 + 601, true);
+                // _flagManipulator.SetBit(0x20000000 + 600, false);
+                // _flagManipulator.SetBit(0x20000000 + 611, false);
+                // // Pretend Kamoshida is cleared
+                // _flagManipulator.SetBit(0x20000000 + 209, true);
+                // flagManipulator.SetBit(1040, true);
+                // flagManipulator.SetBit(6393, true);
                 break;
         }
     }
-
 }

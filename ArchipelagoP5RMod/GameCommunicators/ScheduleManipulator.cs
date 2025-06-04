@@ -38,27 +38,41 @@ public class ScheduleManipulator
                     MyLogger.DebugLog("Trying to call custom schedule for setup day.");
                     return FlowFunctionWrapper.CallCustomFlowFunction(CustomApMethodsIndexes.NewGameSetupSdl);
                 }
-                (newMonth, newDay) = GetBoringDay(time);
+
+                (newMonth, newDay) = GetBoringDay(month, day, time);
                 break;
             case TypeOfDay.InfiltrationDay:
-                (newMonth, newDay) = GetInfiltrationDay(month, time);
+                (newMonth, newDay) = GetInfiltrationDay(month, day, time);
                 break;
             case TypeOfDay.None:
             case TypeOfDay.LoopDay:
             default:
-                (newMonth, newDay) = GetBoringDay(time);
+                (newMonth, newDay) = GetBoringDay(month, day, time);
                 break;
         }
 
         return _runScheduleForDayHook.OriginalFunction(newMonth, newDay, time);
     }
 
-    private (uint month, uint day) GetBoringDay(byte time)
+    private (uint month, uint day) GetBoringDay(uint month, uint day, byte time)
     {
-        return (4, 1);
+        if (time is < 4 or > 6)
+        {
+            return (4, 1);
+        }
+
+        switch (month)
+        {
+            case 4:
+                return (4, 1);
+            case 5:
+                return (5, 20);
+            default:
+                return (month, day);
+        }
     }
 
-    private (uint month, uint day) GetInfiltrationDay(uint month, byte time)
+    private (uint month, uint day) GetInfiltrationDay(uint month, uint day, byte time)
     {
         return (4, 28);
     }

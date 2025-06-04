@@ -68,7 +68,7 @@ public class FirstTimeSetup
 
     public void Setup(FlagManipulator flagManipulator, PersonaManipulator personaManipulator,
         ConfidantManipulator confidantManipulator, SocialStatManipulator socialStatManipulator,
-        DateManipulator dateManipulator, MiscManipulator miscManipulator)
+        DateManipulator dateManipulator, MiscManipulator miscManipulator, ItemManipulator itemManipulator)
     {
         foreach (uint adr in _onBits)
         {
@@ -93,12 +93,15 @@ public class FirstTimeSetup
         flagManipulator.SetBit(6353, true);
         flagManipulator.SetCount(174, 40000);
         flagManipulator.SetCount(145, 55000);
-        flagManipulator.SetBit(6495, true);
-        flagManipulator.SetBit(6496, true);
-        flagManipulator.SetBit(6497, true);
-        flagManipulator.SetBit(6498, true);
-        flagManipulator.SetBit(6499, true);
-        flagManipulator.SetBit(6500, true);
+
+        // Safe rooms
+        // flagManipulator.SetBit(6495, true);
+        // flagManipulator.SetBit(6496, true);
+        // flagManipulator.SetBit(6497, true);
+        // flagManipulator.SetBit(6498, true);
+        // flagManipulator.SetBit(6499, true);
+        // flagManipulator.SetBit(6500, true);
+        
         // PARTY_IN(2);
         // flagManipulator.SetBit(11824, true); // Ryuji flag
         // PARTY_IN(3);
@@ -171,58 +174,13 @@ public class FirstTimeSetup
         flagManipulator.SetBit(3920, false);
         flagManipulator.SetBit(105, false);
         flagManipulator.SetBit(6206, false);
-        miscManipulator.VltFilterVisibleFlow(true);
-
-        // Fusion tutorial
-        // flagManipulator.SetBit(11929, true);
-        // flagManipulator.SetBit(11930, false);
-        // flagManipulator.SetBit(11784, false);
-        // confidantManipulator.CmmOpen(Confidant.Igor);
-        // confidantManipulator.CmmSetLevel(Confidant.Igor, 2);
-        // flagManipulator.SetBit(253, true);
-        // flagManipulator.SetBit(11860, true);
-        // flagManipulator.SetBit(11861, true);
-
-
-        // palace_clear_flag
-        // flagManipulator.SetBit(8735, true);
-        // flagManipulator.SetBit(8734, true);
+        miscManipulator.VltFilterVisibleFlow(false);
 
         // Script -> Kamoshida palace
         flagManipulator.SetBit(1072, true);
 
-        // Some flags stolen from debug that might be helpful
-        // flagManipulator.SetBit(11974, true);
-        // flagManipulator.SetBit(3920, false);
-        // flagManipulator.SetBit(105, false);
-        // flagManipulator.SetBit(6206, false);
-        // flagManipulator.SetBit(6724, true);
-        // flagManipulator.SetBit(8826, false);
-        // flagManipulator.SetBit(8828, false);
-        // flagManipulator.SetBit(8830, true);
-        // flagManipulator.SetBit(8843, true);
-        // flagManipulator.SetCount(159, 1);
-        // flagManipulator.SetBit(6211, false);
-        // flagManipulator.SetBit(6217, false);
-        // flagManipulator.SetBit(6723, true);
-        // flagManipulator.SetBit(10808, true);
-        // flagManipulator.SetBit(10810, true);
-        // flagManipulator.SetBit(6194, true);
-        // flagManipulator.SetBit(6403, true);
-        // flagManipulator.SetBit(8829, false);
-        // flagManipulator.SetBit(8830, false);
-        // flagManipulator.SetBit(10760, true);
-        // flagManipulator.SetBit(10761, true);
-        // flagManipulator.SetBit(11541, true);
-        // flagManipulator.SetBit(11556, true);
-        // flagManipulator.SetBit(6176, false);
-        // flagManipulator.SetBit(6180, false);
-        // flagManipulator.SetBit(6195, true);
-        // flagManipulator.SetBit(6400, true);
-        // flagManipulator.SetBit(11246, true);
-
         // Party members
-        #if DEVELOP
+#if DEVELOP
         flagManipulator.SetBit(11779, true); // Can Edit Party
         flagManipulator.SetBit(11824, true); // Ryuji
         flagManipulator.SetBit(11825, true); // Morgana
@@ -233,13 +191,23 @@ public class FirstTimeSetup
         flagManipulator.SetBit(11830, true); // Futaba
         flagManipulator.SetBit(11831, true); // Aketchi
         flagManipulator.SetBit(11832, true); // Kasumi
-        #endif
+        // Group chat
+        flagManipulator.SetBit(527, true); // Kasumi
+        flagManipulator.SetBit(1168, true); // Ryuji
+        flagManipulator.SetBit(1169, true); // Ann 
+        flagManipulator.SetBit(1170, true); // Yusuke 
+        flagManipulator.SetBit(1171, true); // Makoto
+        flagManipulator.SetBit(1172, true); // Futaba
+        flagManipulator.SetBit(1173, true); // Haru
+        flagManipulator.SetBit(1174, true); // Akechi 
+        
+#endif
 
         // Skip fusion tutorial guess
         // flagManipulator.SetBit(6350, false);
         flagManipulator.SetBit(6393, true);
 
-        // SUB_ConqusetKamoshida_Start
+        // Open automatic confidants
         confidantManipulator.CmmOpen(Confidant.Igor);
         confidantManipulator.CmmOpen(Confidant.Morgana);
         confidantManipulator.CmmOpen(Confidant.Ann);
@@ -250,8 +218,10 @@ public class FirstTimeSetup
         confidantManipulator.CmmOpen(Confidant.Sae);
         confidantManipulator.CmmOpen(Confidant.Akechi);
         confidantManipulator.CmmOpen(Confidant.Futaba);
+
+        // SUB_ConqusetKamoshida_Start
         personaManipulator.AddPersonaStock(201); // Arsene
-        #if DEVELOP
+#if DEVELOP
         // personaManipulator.AddPersonaStock(131);
         // personaManipulator.AddPersonaStock(4);
         // personaManipulator.AddPersonaStock(121);
@@ -263,9 +233,11 @@ public class FirstTimeSetup
         personaManipulator.SetPartyLvl(PartyMember.Queen, 99);
         personaManipulator.SetPartyLvl(PartyMember.Noir, 99);
         personaManipulator.SetPartyLvl(PartyMember.Oracle, 99);
+        personaManipulator.SetPartyLvl(PartyMember.Crow, 99);
+        personaManipulator.SetPartyLvl(PartyMember.Violet, 99);
         personaManipulator.AddPersonaSkill(PartyMember.Skull, 200);
         personaManipulator.AddPersonaSkill(PartyMember.Mona, 325);
-        #endif
+#endif
         // flagManipulator.SetBit(6349, true);
         // flagManipulator.SetBit(4012, true);
         // flagManipulator.SetBit(11971, true);
@@ -280,8 +252,19 @@ public class FirstTimeSetup
 
         // dateManipulator.SetDateDisplay(true);
 
+        // QoL flags
+        flagManipulator.SetBit(1195, true); // Allows Yongen-Jaya travel at night 
+        flagManipulator.SetBit(1184, true); // Allows full map travel at night
+        flagManipulator.SetBit(2134, true); // Unlock traits 
+
+#if DEVELOP
+        flagManipulator.SetBit(0x2A3B, true); // Grapple hook
+        itemManipulator.RewardItem(0x4000 + 154, 1); // Grapple hook item
+        confidantManipulator.EnableCmmFeature(0x50); // Instant kill
+#endif
+
         // Social stats
         // socialStatManipulator.AddPcAllParam(34, 6, 14, 11, 12);
-        socialStatManipulator.AddPcAllParam(0, 0, 0, 11, 0);
+        // socialStatManipulator.AddPcAllParam(0, 0, 0, 11, 0);
     }
 }

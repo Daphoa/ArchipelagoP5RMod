@@ -281,7 +281,7 @@ public class FlagManipulator
             return;
         }
 
-        MyLogger.DebugLog($"BitIndex: {bitIndex:X} set to {value}");
+        MyLogger.DebugLog($"[DEV] BitIndex: 0x{bitIndex:X} set to {value}");
     }
 
     [Conditional("DEVELOP")]
@@ -292,7 +292,7 @@ public class FlagManipulator
             return;
         }
 
-        MyLogger.DebugLog($"BitIndex: {countIndex:X} set to {value}");
+        MyLogger.DebugLog($"[DEV] BitIndex: {countIndex} set to {value}");
     }
 
     public void SetBit(short section, uint bitIndex, bool value)

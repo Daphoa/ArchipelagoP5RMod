@@ -16,14 +16,14 @@ public class InfiltrationManager
         _flagManipulator = flagManipulator;
         _itemManipulator = itemManipulator;
 
-        itemManipulator.OnItemCountChanged += (item, _) => InfiltrationCheck(item);
+        itemManipulator.OnItemCountChanged += (item, _) => InfiltrationChangedCheck(item);
     }
     
     public void OnDateChangedHandler(short currTotalDays, byte currTime)
     {
         var palace = ConquestManager.TotalDaysToPalace(currTotalDays);
         bool canInfiltrate = CanInfiltrate(palace);
-        MyLogger.DebugLog($"Date changed: can infiltrate: {canInfiltrate}");
+        MyLogger.DebugLog($"Date changed: can infiltrate {palace.ToString()}: {canInfiltrate}");
         SetupInfiltration(palace, canInfiltrate);
     }
 
@@ -45,7 +45,7 @@ public class InfiltrationManager
         }
     }
 
-    private void InfiltrationCheck(ushort itemId)
+    private void InfiltrationChangedCheck(ushort itemId)
     {
         if (itemId != RED_LUST_SEED && itemId != GREEN_LUST_SEED && itemId != BLUE_LUST_SEED)
         {
@@ -83,36 +83,28 @@ public class InfiltrationManager
         {
             case Palaces.KAMOSHIDA:
                 _flagManipulator.SetBit(0x20000000 + 209, canInfiltrate);
-                _flagManipulator.SetBit(0x20000000 + 200, false); // This should be false even before infiltration is ready - probably represents if dungeon is cleared.
                 // _flagManipulator.SetBit(0x20000000 + 281, true); // This is a test - it might be for the giant door in front of the treasure.
                 break;
             case Palaces.MADARAME:
                 _flagManipulator.SetBit(0x20000000 + 609, canInfiltrate);
-                _flagManipulator.SetBit(0x20000000 + 600, false);
                 break;
             case Palaces.KANESHIRO:
                 _flagManipulator.SetBit(0x20000000 + 1010, canInfiltrate);
-                _flagManipulator.SetBit(0x20000000 + 1000, false);
                 break;
             case Palaces.FUTABA:
                 _flagManipulator.SetBit(0x20000000 + 1410, canInfiltrate);
-                _flagManipulator.SetBit(0x20000000 + 1400, false);
                 break;
             case Palaces.OKUMURA:
                 _flagManipulator.SetBit(0x20000000 + 1806, canInfiltrate);
-                _flagManipulator.SetBit(0x20000000 + 1800, false);
                 break;
             case Palaces.SAE:
                 _flagManipulator.SetBit(0x20000000 + 2214, canInfiltrate);
-                _flagManipulator.SetBit(0x20000000 + 2200, false);
                 break;
             case Palaces.SHIDO:
                 _flagManipulator.SetBit(0x20000000 + 2703, canInfiltrate);
-                _flagManipulator.SetBit(0x20000000 + 2700, false);
                 break;
             case Palaces.MARUKI:
                 _flagManipulator.SetBit(0x20000000 + 4105, canInfiltrate);
-                _flagManipulator.SetBit(0x20000000 + 0x1000, false);
                 break;
         }
     }
