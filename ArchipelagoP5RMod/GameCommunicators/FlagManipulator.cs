@@ -36,6 +36,34 @@ public class FlagManipulator
     private const uint NumExternalBitFlags = 4;
     private static bool[] externalBitFlags = new bool[NumExternalBitFlags];
 
+    private static readonly uint[] neverTouchFlags =
+    [
+        // Disallows add/remove members from current party in Stats menu 
+        11779, 0x40000000 + 0003,
+        11780, 0x40000000 + 0004,
+        11784, 0x40000000 + 0008,
+        11785, 0x40000000 + 0009,
+        11786, 0x40000000 + 0010,
+        // Party Members
+        11824, 0x40000000 + 48, // Ryuji
+        11825, 0x40000000 + 49, // Morgana
+        11826, 0x40000000 + 50, // Ann
+        11827, 0x40000000 + 51, // Yosuke
+        11828, 0x40000000 + 52, // Makoto
+        11829, 0x40000000 + 53, // Haru
+        11830, 0x40000000 + 54, // Futaba
+        11831, 0x40000000 + 55, // Aketchi
+        11832, 0x40000000 + 56, // Kasumi
+        1168, //  Ryuji Group Chat
+        1169, // Ann Group Chat
+        1170, // Yosuke Group Chat
+        1171, // Makoto Group Chat
+        1173, // Haru Group Chat
+        1172, // Futaba Group Chat
+        1174, // Aketchi Group Chat
+        527, // Kasumi Group Chat
+    ];
+
     // This will have consequences if changed. Should stay at this value ideally.
     private const uint ExternalCountSection = 1;
 
@@ -247,6 +275,12 @@ public class FlagManipulator
 
         PrintFlagOfInterest(bitIndex, true);
 
+        if (neverTouchFlags.Contains(bitIndex))
+        {
+            MyLogger.DebugLog($"Tried to turn on bit {bitIndex:X2} but we shouldn't touch it.");
+            return 1;
+        }
+
         if (bitIndex is < ExternalBitSection * SectionMask or >= ExternalBitSection * SectionMask + NumExternalBitFlags)
             return _bitOnHook.OriginalFunction();
 
@@ -262,6 +296,12 @@ public class FlagManipulator
         var bitIndex = (uint)FlowFunctionWrapper.GetFlowscriptInt4Arg(0);
 
         PrintFlagOfInterest(bitIndex, false);
+
+        if (neverTouchFlags.Contains(bitIndex))
+        {
+            MyLogger.DebugLog($"Tried to turn on bit {bitIndex:X2} but we shouldn't touch it.");
+            return 1;
+        }
 
         if (bitIndex is < ExternalBitSection * SectionMask or >= ExternalBitSection * SectionMask + NumExternalBitFlags)
             return _bitOffHook.OriginalFunction();

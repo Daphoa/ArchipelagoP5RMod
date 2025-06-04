@@ -10,14 +10,15 @@ public static class FlowFunctionWrapper
 {
     [Function(CallingConventions.Fastcall)]
     public delegate uint FlowFuncDelegate4();
+
     [Function(CallingConventions.Fastcall)]
     public delegate ulong FlowFuncDelegate8();
-    
+
     [Function(CallingConventions.Fastcall)]
     public unsafe delegate long OnUpdateDelegate(GameTask* eventInfo);
 
 
-    public delegate void BasicFlowFunc();
+    public delegate long BasicFlowFunc();
 
     public delegate void BitToggleType();
 
@@ -31,14 +32,14 @@ public static class FlowFunctionWrapper
     [Function(CallingConventions.Fastcall)]
     private delegate IntPtr RunFlowFuncFromFileType(int param1, IntPtr file, uint fileSize, uint funcIndex);
 
-    public static GetFlowscriptInt4ArgType? GetFlowscriptInt4Arg { get; set; }
-    private static RunFlowFuncFromFileType? RunFlowFuncFromFile { get; set; }
+    public static GetFlowscriptInt4ArgType GetFlowscriptInt4Arg { get; set; } = _ => 0;
+    private static RunFlowFuncFromFileType RunFlowFuncFromFile { get; set; } = (_, _, _, _) => 0;
 
     private static IntPtr _getFlowscriptInt4ArgPtr;
     private static IntPtr _runFlowFuncFromFilePtr;
 
     private static IHook<OnUpdateDelegate> _onFlowUpdateDelegate;
-    
+
     public static unsafe FlowCommandData* FlowCommandDataAddress
     {
         get => *_flowCommanderDataRefAddress;
@@ -185,6 +186,7 @@ public static class FlowFunctionWrapper
             throw new NullReferenceException("RunFlowFuncFromFile is null");
         }
 
-        return RunFlowFuncFromFile(8, (IntPtr)BfLoader.ApMethodsBfFilePointer, BfLoader.ApMethodsBfFileLength, (uint)func);
+        return RunFlowFuncFromFile(8, (IntPtr)BfLoader.ApMethodsBfFilePointer, BfLoader.ApMethodsBfFileLength,
+            (uint)func);
     }
 }

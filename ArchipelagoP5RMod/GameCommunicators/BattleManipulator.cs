@@ -53,7 +53,7 @@ public class BattleManipulator
 
     private IntPtr CallBattleFlowImpl(IntPtr param1, IntPtr param2, IntPtr param3, int param4)
     {
-        _currBattleId = (FlowFunctionWrapper.GetFlowscriptInt4Arg?.Invoke(0) ?? 0) % 1000;
+        _currBattleId = FlowFunctionWrapper.GetFlowscriptInt4Arg.Invoke(0) % 1000;
         MyLogger.DebugLog($"Call battle: {_currBattleId}");
 
         return _callBattleFlowHook.OriginalFunction(param1, param2, param3, param4);
@@ -63,7 +63,7 @@ public class BattleManipulator
     {
         if (*_CALL_EVENTBATTLE_STATE == 0)
         {
-            _currBattleId = (FlowFunctionWrapper.GetFlowscriptInt4Arg?.Invoke(2) ?? 0) % 1000;
+            _currBattleId = FlowFunctionWrapper.GetFlowscriptInt4Arg.Invoke(2) % 1000;
             MyLogger.DebugLog($"Call Event Battle: {_currBattleId}");
         }
 

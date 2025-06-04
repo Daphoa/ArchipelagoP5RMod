@@ -1,6 +1,6 @@
 ﻿namespace ArchipelagoP5RMod.Types;
 
-public enum PartyMember
+public enum PartyMember: short
 {
     Joker = 1,
     Skull = 2,

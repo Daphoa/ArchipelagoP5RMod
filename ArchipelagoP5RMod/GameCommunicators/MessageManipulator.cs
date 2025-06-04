@@ -57,7 +57,7 @@ public class MessageManipulator
 
     private ulong MsgWndClsImpl()
     {
-        var retVal = _msgWndCls.OriginalFunction();
+        ulong retVal = _msgWndCls.OriginalFunction();
 
         showingMessage = false;
         _flagManipulator.SetBit(FlagManipulator.SHOWING_GAME_MSG, false);

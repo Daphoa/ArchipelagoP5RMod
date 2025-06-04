@@ -64,11 +64,13 @@ public class Mod : ModBase // <= Do not Remove.
     private readonly InfiltrationManager _infiltrationManager;
     private readonly ConquestManager _conquestManager;
     private readonly PersonaManipulator _personaManipulator;
+    private readonly PartyManipulator _partyManipulator;
     private readonly BattleManipulator _battleManipulator;
     private readonly SocialStatManipulator _socialStatManipulator;
     private readonly MiscManipulator _miscManipulator;
 
     private readonly DebugTools _debugTools;
+
     // Used to detect if the game was started as a new game.
     private bool loadedSuccess = false;
 
@@ -104,6 +106,7 @@ public class Mod : ModBase // <= Do not Remove.
         _infiltrationManager = new InfiltrationManager(_flagManipulator, _itemManipulator);
         _conquestManager = new ConquestManager(_flagManipulator);
         _personaManipulator = new PersonaManipulator(_hooks);
+        _partyManipulator = new PartyManipulator(_flagManipulator, _hooks);
         _battleManipulator = new BattleManipulator(_hooks);
         _socialStatManipulator = new SocialStatManipulator(_hooks);
         _miscManipulator = new MiscManipulator(_hooks);
@@ -149,6 +152,10 @@ public class Mod : ModBase // <= Do not Remove.
             }
         };
 
+#if DEVELOP
+        _itemManipulator.OnChestOpened += id => MyLogger.DebugLog($"Chest opened: {id:X2}");
+#endif
+
         // New game detection
         OnGameContextLoadedFirstTime += (_, _) =>
         {
@@ -165,7 +172,7 @@ public class Mod : ModBase // <= Do not Remove.
         _gameSaveLoadConnector.OnGameFileLoaded += _modSaveLoadManager.Load;
         _gameSaveLoadConnector.OnGameFileLoaded += _ => { loadedSuccess = true; };
 
-    AsyncStartCheckingForGameLoaded();
+        AsyncStartCheckingForGameLoaded();
     }
 
     private string GenerateHash(string input)
@@ -187,28 +194,28 @@ public class Mod : ModBase // <= Do not Remove.
     private async void OnGameFileLoaded(bool firstTimeLoad)
     {
         MyLogger.DebugLog("OnGameFileLoaded... waiting for sequence to be ready to show message.");
-        
+
         while (!SequenceMonitor.SequenceCanShowMessage)
         {
             await Task.Delay(1000);
         }
-        
+
         if (string.IsNullOrEmpty(_configuration.SaveDirectory))
         {
             MyLogger.DebugLog("Empty save directory message displayed.");
             FlowFunctionWrapper.CallCustomFlowFunction(CustomApMethodsIndexes.NotifyMissingSaveDirectoryError);
             return;
         }
-        
+
         MyLogger.DebugLog("Calling setup after loading a file.");
 
         _apConnector.StartCollectionAsync();
-        
+
         if (firstTimeLoad)
         {
             // Only setup if this is the first time we are loading with a new AP file.
-            _firstTimeSetup.Setup(_flagManipulator, _personaManipulator, _confidantManipulator, _socialStatManipulator, 
-                _dateManipulator, _miscManipulator, _itemManipulator);
+            _firstTimeSetup.Setup(_flagManipulator, _personaManipulator, _confidantManipulator, _socialStatManipulator,
+                _dateManipulator, _miscManipulator, _itemManipulator, _partyManipulator);
         }
 
         _itemManipulator.SetItemNumImpl(0x3065, 99, 0); // Goho-M
@@ -216,7 +223,7 @@ public class Mod : ModBase // <= Do not Remove.
         _itemManipulator.SetItemNumImpl(0x306F, 99, 0); // Tin Clasp (Lockpicks)
 
         _apFlagItemRewarder.SyncWithInventory(); // This will try to ensure flags match if they are in inventory or not.
-        
+
         _chestRewardDirector.MatchChestStateToAp();
     }
 
@@ -229,7 +236,7 @@ public class Mod : ModBase // <= Do not Remove.
             MyLogger.DebugLog($"Not reporting cmm to AP, as it isn't handled. CmmId: {cmmId}, Rank: {rank}");
             return;
         }
-        
+
         // TODO convert friend zone cmmId to default ids.
         long locId = 0x60000000L + cmmId * 0x10L + rank;
 

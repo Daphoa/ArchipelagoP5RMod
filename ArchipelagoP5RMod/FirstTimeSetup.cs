@@ -68,7 +68,8 @@ public class FirstTimeSetup
 
     public void Setup(FlagManipulator flagManipulator, PersonaManipulator personaManipulator,
         ConfidantManipulator confidantManipulator, SocialStatManipulator socialStatManipulator,
-        DateManipulator dateManipulator, MiscManipulator miscManipulator, ItemManipulator itemManipulator)
+        DateManipulator dateManipulator, MiscManipulator miscManipulator, ItemManipulator itemManipulator,
+        PartyManipulator partyManipulator)
     {
         foreach (uint adr in _onBits)
         {
@@ -180,27 +181,18 @@ public class FirstTimeSetup
         flagManipulator.SetBit(1072, true);
 
         // Party members
-#if DEVELOP
         flagManipulator.SetBit(11779, true); // Can Edit Party
-        flagManipulator.SetBit(11824, true); // Ryuji
-        flagManipulator.SetBit(11825, true); // Morgana
-        flagManipulator.SetBit(11826, true); // Ann
-        flagManipulator.SetBit(11827, true); // Yusuke
-        flagManipulator.SetBit(11828, true); // Makoto
-        flagManipulator.SetBit(11829, true); // Haru
-        flagManipulator.SetBit(11830, true); // Futaba
-        flagManipulator.SetBit(11831, true); // Aketchi
-        flagManipulator.SetBit(11832, true); // Kasumi
-        // Group chat
-        flagManipulator.SetBit(527, true); // Kasumi
-        flagManipulator.SetBit(1168, true); // Ryuji
-        flagManipulator.SetBit(1169, true); // Ann 
-        flagManipulator.SetBit(1170, true); // Yusuke 
-        flagManipulator.SetBit(1171, true); // Makoto
-        flagManipulator.SetBit(1172, true); // Futaba
-        flagManipulator.SetBit(1173, true); // Haru
-        flagManipulator.SetBit(1174, true); // Akechi 
-        
+#if DEVELOP
+        partyManipulator.UnlockPartyMember(PartyMember.Skull);
+        partyManipulator.UnlockPartyMember(PartyMember.Mona);
+        partyManipulator.UnlockPartyMember(PartyMember.Panther);
+        partyManipulator.UnlockPartyMember(PartyMember.Fox);
+        partyManipulator.UnlockPartyMember(PartyMember.Queen);
+        partyManipulator.UnlockPartyMember(PartyMember.Noir);
+        partyManipulator.UnlockPartyMember(PartyMember.Oracle);
+        partyManipulator.UnlockPartyMember(PartyMember.Crow);
+        partyManipulator.UnlockPartyMember(PartyMember.Violet);
+        flagManipulator.SetBit(12048, true); // Black Mask
 #endif
 
         // Skip fusion tutorial guess
