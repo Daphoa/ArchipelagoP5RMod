@@ -9,4 +9,5 @@ public enum CustomApMethodsIndexes
     Test = 4,
     NotifyMissingSaveDirectoryError = 5,
     NewGameSetupSdl = 6,
+    NotifyPartyMemberJoined = 7,
 }

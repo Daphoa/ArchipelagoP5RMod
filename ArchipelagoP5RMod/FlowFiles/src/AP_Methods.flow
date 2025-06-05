@@ -125,3 +125,33 @@ void NewGameSetupSdl()
     BIT_OFF( 12543 );
     DATE_DISP( 1 );
 }
+
+// Procedure Index: 7
+void NotifyPartyMemberJoined() 
+{
+    BIT_ON( ( 0x60000000 + 1 ) )
+    int partyMem = GET_COUNT( ( 0x10000000 + 1 ) ) 
+    
+    MSG_WND_DSP();
+    if ( partyMem == 2 ) {
+        MSG( MSG_PARTY_SKULL ); 
+    } else if ( partyMem == 3 ) {
+        MSG( MSG_PARTY_MONA );
+    } else if ( partyMem == 4 ) {
+        MSG( MSG_PARTY_PANTHER );
+    } else if ( partyMem == 5 ) {
+        MSG( MSG_PARTY_FOX );
+    } else if ( partyMem == 6 ) {
+        MSG( MSG_PARTY_QUEEN );
+    } else if ( partyMem == 7 ) {
+        MSG( MSG_PARTY_NOIR );
+    } else if ( partyMem == 8 ) {
+        MSG( MSG_PARTY_ORACLE );
+    } else if ( partyMem == 9 ) {
+        MSG( MSG_PARTY_CROW );
+    } else if ( partyMem == 10 ) {
+        MSG( MSG_PARTY_VIOLET );
+    }
+    MSG_WND_CLS();
+    BIT_OFF( ( 0x60000000 + 1 ) );
+}

@@ -5,13 +5,13 @@ namespace ArchipelagoP5RMod.GameCommunicators;
 
 public class PartyManipulator
 {
-    private FlagManipulator _flagManipulator;
+    private readonly FlagManipulator _flagManipulator;
     private IHook<FlowFunctionWrapper.BasicFlowFunc> _partyAddHook;
     public const uint MAX_PARTY_SIZE = 4;
 
     private unsafe PartyMember* _currentPartyMembers; // ushort[4]
 
-    private static HashSet<PartyMember> _unlockedPartyMembers = [];
+    private static readonly HashSet<PartyMember> _unlockedPartyMembers = [];
 
     public PartyManipulator(FlagManipulator flagManipulator, IReloadedHooks hooks)
     {
@@ -72,9 +72,9 @@ public class PartyManipulator
         return true;
     }
 
-    public void UnlockPartyMember(PartyMember partyMember)
+    public bool UnlockPartyMember(PartyMember partyMember)
     {
-        _unlockedPartyMembers.Add(partyMember);
+        bool added = _unlockedPartyMembers.Add(partyMember);
 
         switch (partyMember)
         {
@@ -119,6 +119,28 @@ public class PartyManipulator
         {
             PartyAdd(partyMember);
         }
+
+        return added;
+    }
+
+    public void HandleApItem(object? sender, ApConnector.ApItemReceivedEvent? e)
+    {
+        if (e is null || e.Handled || e.ApItem.Type != ItemType.PartyMember ||
+            _flagManipulator.CheckBit(FlagManipulator.SHOWING_MESSAGE))
+            return;
+
+        PartyMember partyMember = (PartyMember)e.ApItem.Id;
+        bool added = UnlockPartyMember(partyMember);
+
+        if (added)
+        {
+            _flagManipulator.SetCount(FlagManipulator.AP_CURR_REWARD_CMM_ABILITY, e.ApItem.Id);
+            _flagManipulator.SetBit(FlagManipulator.SHOWING_MESSAGE, true);
+
+            FlowFunctionWrapper.CallCustomFlowFunction(CustomApMethodsIndexes.NotifyPartyMemberJoined);
+        }
+
+        e.Handled = true;
     }
 
     private long PartyAddFlowImpl()

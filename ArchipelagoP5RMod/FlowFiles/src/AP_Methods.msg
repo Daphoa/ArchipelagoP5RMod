@@ -48,3 +48,30 @@
 
 [msg MSG_NOTIFY_INFILTRATION_LUST [Morgana]]
 [f 0 5 65278][f 2 1][f 4 6 0 3 0 0 0][f 4 10 65535 0 0][f 3 1 8 0 0 20 65535 0]We've got a route to [clr 10]Kamoshida's Palace[clr 0].[n][f 1 3 65535][f 1 1][e]
+
+[msg MSG_PARTY_SKULL [Skull]]
+[s][bup 0 2 122 0 1][clr 14]Skull[clr 0] joined the party![n][w][e]
+
+[msg MSG_PARTY_MONA [Mona]]
+[s][bup 0 3 2 0 1][clr 14]Mona[clr 0] joined the party![n][w][e]
+
+[msg MSG_PARTY_PANTHER [Panther]]
+[s][bup 0 4 122 0 1][clr 14]Panther[clr 0] joined the party![n][w][e]
+
+[msg MSG_PARTY_FOX [Fox]]
+[s][bup 0 5 122 0 1][clr 14]Fox[clr 0] joined the party![n][w][e]
+
+[msg MSG_PARTY_QUEEN [Queen]]
+[s][bup 0 6 122 0 1][clr 14]Queen[clr 0] joined the party![n][w][e]
+
+[msg MSG_PARTY_NOIR [Noir]]
+[s][bup 0 7 122 0 1][clr 14]Noir[clr 0] joined the party![n][w][e]
+
+[msg MSG_PARTY_ORACLE [Oracle]]
+[s][bup 0 8 122 0 1][clr 14]Oracle[clr 0] joined the party![n][w][e]
+
+[msg MSG_PARTY_CROW [Crow]]
+[s][bup 0 9 122 0 1][clr 14]Crow[clr 0] joined the party![n][w][e]
+
+[msg MSG_PARTY_VIOLET [Violet]]
+[s][bup 0 10 122 0 1][clr 14]Violet[clr 0] joined the party![n][w][e]

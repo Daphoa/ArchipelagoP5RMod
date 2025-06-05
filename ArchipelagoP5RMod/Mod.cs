@@ -124,6 +124,7 @@ public class Mod : ModBase // <= Do not Remove.
             _apConnector.OnItemReceivedEvent += _itemManipulator.HandleApItem;
             _apConnector.OnItemReceivedEvent += _confidantManipulator.HandleApItem;
             _apConnector.OnItemReceivedEvent += _apFlagItemRewarder.HandleApItem;
+            _apConnector.OnItemReceivedEvent += _partyManipulator.HandleApItem;
         };
 
         _modSaveLoadManager.OnLoadComplete += (_, success) => OnGameFileLoaded(!success);
@@ -153,7 +154,7 @@ public class Mod : ModBase // <= Do not Remove.
         };
 
 #if DEVELOP
-        _itemManipulator.OnChestOpened += id => MyLogger.DebugLog($"Chest opened: {id:X2}");
+        _itemManipulator.OnChestOpened += id => MyLogger.DebugLog($"Chest opened: 0x{id:X2}");
 #endif
 
         // New game detection
