@@ -122,31 +122,27 @@ public class FlagManipulator
 
     #region Save/Load
 
-    public byte[] SaveCountData()
+    public byte[] SaveData()
     {
         MemoryStream stream = new();
-        for (int i = 0; i < NumExternalCounts; i++)
-        {
-            stream.Write(BitConverter.GetBytes(externalCounts[i]), 0, CountTypeSize);
-        }
+
+        stream.Write(ByteTools.CollectionToByteArray(externalCounts, BitConverter.GetBytes));
 
         return stream.ToArray();
     }
 
-    public void LoadCountData(MemoryStream data)
+    public void LoadData(MemoryStream data)
     {
-        for (int i = 0; i < NumExternalCounts; i++)
-        {
-            byte[] buffer = new byte[CountTypeSize];
-            int readBytes = data.Read(buffer, 0, CountTypeSize);
-            if (readBytes < CountTypeSize)
-            {
-                throw new InvalidDataException("Tried to read from count data, but got fewer bytes than expected " +
-                                               $"(expected {CountTypeSize * NumExternalCounts}, received {i * NumExternalCounts + readBytes}).");
-            }
+        var results = ByteTools.ByteArrayToCollection<List<uint>, uint>(data, sizeof(uint),
+            b => BitConverter.ToUInt32(b));
 
-            externalCounts[i] = BitConverter.ToUInt16(buffer);
+        if (results.Count != NumExternalCounts)
+        {
+            MyLogger.DebugLog($"Invalid number of external counts got while loading data: {results.Count}");
+            return;
         }
+        
+        externalCounts = results.ToArray();
     }
 
     #endregion

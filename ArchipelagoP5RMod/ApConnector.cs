@@ -12,7 +12,7 @@ namespace ArchipelagoP5RMod;
 public class ApConnector
 {
     private readonly FlagManipulator _flagManipulator;
-    
+
     private HashSet<long> _queuedFoundLocations = [];
 
     public class ApItemReceivedEvent(ApItem apItem, string Sender, bool IsSelf) : EventArgs
@@ -329,66 +329,48 @@ public class ApConnector
 
         _session.SetGoalAchieved();
     }
-    
+
     #region Save/Load
 
     private const ulong QUEUED_FOUND_LOCATIONS_HEADER = 0xFFFFFFFF;
-    private const ulong LIST_END = 0x0;
 
-    public byte[] SaveConnectionData()
+    public byte[] SaveData()
     {
         MemoryStream stream = new();
-        
+
         stream.Write(QUEUED_FOUND_LOCATIONS_HEADER);
 
-        foreach (long location in _queuedFoundLocations)
-        {
-            stream.Write(location);
-        }
-        
-        stream.Write(LIST_END);
-        
+        stream.Write(ByteTools.CollectionToByteArray(_queuedFoundLocations, BitConverter.GetBytes));
+
         return stream.ToArray();
     }
 
-    public void LoadConnectionData(MemoryStream memStream)
+    public void LoadData(MemoryStream memStream)
     {
-        byte loadType = 0;
-        
         while (true)
         {
             byte[] buffer = new byte[sizeof(long)];
-            int readBytes = memStream.Read(buffer, 0, sizeof(long));
-            
-            if (readBytes < sizeof(long))
-            {
-                if (readBytes < 1 || buffer[0] != 0x0)
-                {
-                    MyLogger.DebugLog("WARNING: Read unusual data while loading AP Connection data.");
-                }
+            int readBytes = memStream.Read(buffer, 0, sizeof(ulong));
+            ulong header = BitConverter.ToUInt64(buffer);
 
+            if (readBytes < sizeof(ulong))
+            {
+                // Done parsing saved data
                 break;
             }
 
-            ulong longItem = BitConverter.ToUInt64(buffer);
-
-            switch (longItem)
+            switch (header)
             {
                 case QUEUED_FOUND_LOCATIONS_HEADER:
-                    loadType = 0;
-                    continue;
-                case LIST_END:
-                    continue;
-            }
-
-            if (loadType == 0)
-            {
-                _queuedFoundLocations.Add((long)longItem);
+                    var loaded = ByteTools.ByteArrayToCollection<HashSet<long>, long>(memStream, sizeof(long),
+                        b => BitConverter.ToInt64(b));
+                    _queuedFoundLocations.UnionWith(loaded);
+                    break;
             }
         }
 
         ReportLocationCheckAsync();
     }
-    
+
     #endregion
 }

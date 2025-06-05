@@ -253,7 +253,7 @@ public class ItemManipulator
     public unsafe string GetOriginalItemName(ushort itemId)
     {
         char* str = _getItemNameHook.OriginalFunction(itemId);
-        return StrTools.CStrToString(str);
+        return ByteTools.CStrToString(str);
     }
 
     public unsafe char* GetOriginalItemNameCStr(ushort itemId)

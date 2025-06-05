@@ -5,7 +5,7 @@ using Reloaded.Hooks.Definitions.X86;
 
 namespace ArchipelagoP5RMod;
 
-using idType = uint;
+using IdType = uint;
 
 public class ConfidantManipulator
 {
@@ -28,7 +28,7 @@ public class ConfidantManipulator
     private IHook<CmmSetLv> _cmmSetLvHook;
 
 
-    private static readonly HashSet<idType> allCmmFuncIds =
+    private static readonly HashSet<IdType> allCmmFuncIds =
     [
         0x01, // Fool: Wild Talk 
         0x02, // Fool: Third Eye 
@@ -191,10 +191,10 @@ public class ConfidantManipulator
     ];
 
     // TODO get this from AP settings eventually.
-    private readonly HashSet<idType> _controlledCmmFuncIds = [..allCmmFuncIds];
+    private readonly HashSet<IdType> _controlledCmmFuncIds = [..allCmmFuncIds];
 
     // TODO move this to flag manipulator so they are saved.
-    private readonly HashSet<idType> _acquiredCmmFuncIds =
+    private readonly HashSet<IdType> _acquiredCmmFuncIds =
     [
         0x01, // Fool: Wild Talk 
         0x02, // Fool: Third Eye 
@@ -253,7 +253,7 @@ public class ConfidantManipulator
         _acquiredCmmFuncIds.Clear();
     }
 
-    private long CmmCheckEnableFuncImpl(idType funcId)
+    private long CmmCheckEnableFuncImpl(IdType funcId)
     {
         // _logger.WriteLine($"{nameof(CmmCheckEnableFuncImpl)} called with {nameof(funcId)}: {funcId}");
         if (!_controlledCmmFuncIds.Contains(funcId))
@@ -275,7 +275,7 @@ public class ConfidantManipulator
 
         return val;
     }
-    
+
     private void CmmOpenImpl(ushort cmmId)
     {
         _cmmOpenHook.OriginalFunction(cmmId);
@@ -308,43 +308,22 @@ public class ConfidantManipulator
 
     #region Save/Load
 
-    public byte[] SaveEnabledCmmData()
+    public byte[] SaveData()
     {
         MemoryStream stream = new();
 
-        foreach (idType id in _acquiredCmmFuncIds)
-        {
-            stream.Write(BitConverter.GetBytes(id));
-        }
-
-        // EOL
-        stream.WriteByte(0x0);
+        stream.Write(ByteTools.CollectionToByteArray(_acquiredCmmFuncIds, BitConverter.GetBytes));
 
         return stream.ToArray();
     }
 
-    public void LoadEnabledCmmData(MemoryStream data)
+    public void LoadData(MemoryStream data)
     {
         _acquiredCmmFuncIds.Clear();
 
-        while (true)
-        {
-            byte[] buffer = new byte[sizeof(idType)];
-            int readBytes = data.Read(buffer, 0, sizeof(idType));
-
-            if (readBytes < sizeof(idType))
-            {
-                if (readBytes < 1 || buffer[0] != 0x0)
-                {
-                    MyLogger.DebugLog("WARNING: Read unusual data while loading CMM data.");
-                }
-
-                return;
-            }
-
-            idType cmmAbility = BitConverter.ToUInt32(buffer);
-            _acquiredCmmFuncIds.Add(cmmAbility);
-        }
+        var loaded = ByteTools.ByteArrayToCollection<HashSet<IdType>, IdType>(data, sizeof(IdType), b => BitConverter.ToUInt32(b));
+        
+        _acquiredCmmFuncIds.UnionWith(loaded);
     }
 
     #endregion

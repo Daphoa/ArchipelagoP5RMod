@@ -136,10 +136,10 @@ public class Mod : ModBase // <= Do not Remove.
 
         _chestRewardDirector.Setup(_apConnector, _itemManipulator, _flagManipulator);
 
-        _modSaveLoadManager.RegisterSaveLoad(_flagManipulator.SaveCountData, _flagManipulator.LoadCountData);
-        _modSaveLoadManager.RegisterSaveLoad(_apConnector.SaveConnectionData, _apConnector.LoadConnectionData);
-        _modSaveLoadManager.RegisterSaveLoad(_confidantManipulator.SaveEnabledCmmData,
-            _confidantManipulator.LoadEnabledCmmData);
+        _modSaveLoadManager.RegisterSaveLoad(_flagManipulator.SaveData, _flagManipulator.LoadData);
+        _modSaveLoadManager.RegisterSaveLoad(_apConnector.SaveData, _apConnector.LoadData);
+        _modSaveLoadManager.RegisterSaveLoad(_confidantManipulator.SaveData, _confidantManipulator.LoadData);
+        _modSaveLoadManager.RegisterSaveLoad(_partyManipulator.SaveData, _partyManipulator.LoadData);
 
         _dateManipulator.OnDateChanged += _infiltrationManager.OnDateChangedHandler;
         _dateManipulator.OnDateChanged += _conquestManager.OnDateChangedHandler;

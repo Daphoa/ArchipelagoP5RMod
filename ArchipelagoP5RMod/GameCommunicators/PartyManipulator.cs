@@ -157,4 +157,27 @@ public class PartyManipulator
 
         return _partyAddHook.OriginalFunction();
     }
+
+    #region Save/Load
+
+    public byte[] SaveData()
+    {
+        MemoryStream stream = new();
+
+        stream.Write(ByteTools.CollectionToByteArray(_unlockedPartyMembers,
+            mem => BitConverter.GetBytes((short)mem), PartyMember.None));
+
+        return stream.ToArray();
+    }
+
+    public void LoadData(MemoryStream data)
+    {
+        var results = ByteTools.ByteArrayToCollection<HashSet<PartyMember>, PartyMember>(data, sizeof(PartyMember),
+            b => (PartyMember)BitConverter.ToInt16(b), PartyMember.None);
+
+        _unlockedPartyMembers.Clear();
+        _unlockedPartyMembers.UnionWith(results);
+    }
+
+    #endregion
 }

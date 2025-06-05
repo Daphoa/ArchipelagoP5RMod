@@ -2,6 +2,7 @@
 
 public enum PartyMember: short
 {
+    None = 0,
     Joker = 1,
     Skull = 2,
     Mona = 3,
