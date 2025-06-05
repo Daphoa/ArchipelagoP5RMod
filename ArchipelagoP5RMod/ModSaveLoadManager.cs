@@ -2,9 +2,9 @@
 
 namespace ArchipelagoP5RMod;
 
-public class ModSaveLoadManager(string saveDirectory, string uniqueApConnectionStr)
+public class ModSaveLoadManager(string saveDirectory)
 {
-    private const string Filename = "{0}/AP_Mod_Save_Data_{1}_{2:d2}";
+    private const string Filename = "{0}/AP_Mod_Save_Data_{1:d2}";
 
     private readonly Dictionary<byte, Func<byte[]>> _registeredSaveMethods = new();
     private readonly Dictionary<byte, Action<MemoryStream>> _registeredLoadMethods = new();
@@ -33,7 +33,7 @@ public class ModSaveLoadManager(string saveDirectory, string uniqueApConnectionS
     
     private string GetFilename(uint fileIndex)
     {
-        return String.Format(Filename, saveDirectory, uniqueApConnectionStr, fileIndex);
+        return String.Format(Filename, saveDirectory, fileIndex);
     }
 
     public void Save(uint fileIndex)
@@ -197,7 +197,7 @@ public class ModSaveLoadManager(string saveDirectory, string uniqueApConnectionS
 
     #region TestingCode
 
-    private ModSaveLoadManager() : this(null, null)
+    private ModSaveLoadManager() : this(null)
     {
     }
 

@@ -85,14 +85,12 @@ public class Mod : ModBase // <= Do not Remove.
         MyLogger.Setup(context.Logger, _configuration);
         FlowFunctionWrapper.Setup(_hooks);
 
-        string apConnectionHash = GenerateHash(_configuration.ServerAddress + _configuration.SlotName);
-
         _gameTaskListener = new GameTaskListener(_hooks);
         _flagManipulator = new FlagManipulator(_hooks);
         _dateManipulator = new DateManipulator(_gameTaskListener, _flagManipulator, _hooks);
         _itemManipulator = new ItemManipulator(_flagManipulator, _hooks);
         _gameSaveLoadConnector = new GameSaveLoadConnector(_hooks);
-        _modSaveLoadManager = new ModSaveLoadManager(_configuration.SaveDirectory, apConnectionHash);
+        _modSaveLoadManager = new ModSaveLoadManager(_configuration.SaveDirectory);
         _confidantManipulator = new ConfidantManipulator(_flagManipulator, _hooks);
         _apConnector = new ApConnector(serverAddress: _configuration.ServerAddress,
             serverPassword: _configuration.ServerPassword,
