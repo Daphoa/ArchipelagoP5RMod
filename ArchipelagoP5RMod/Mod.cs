@@ -83,7 +83,7 @@ public class Mod : ModBase // <= Do not Remove.
         _modConfig = context.ModConfig;
 
         MyLogger.Setup(context.Logger, _configuration);
-        
+        FlowFunctionWrapper.Setup(_hooks);
 
         _gameTaskListener = new GameTaskListener(_hooks);
         _flagManipulator = new FlagManipulator(_hooks);
@@ -218,8 +218,8 @@ public class Mod : ModBase // <= Do not Remove.
         }
 
         _itemManipulator.SetItemNumImpl(0x3065, 99, 0); // Goho-M
-        //itemManipulator.SetItemNumImpl(0x306D, 99, 0); // Silk Yarn (Lockpicks)
-        //_itemManipulator.SetItemNumImpl(0x306F, 99, 0); // Tin Clasp (Lockpicks)
+        _itemManipulator.SetItemNumImpl(0x306D, 99, 0); // Silk Yarn (Lockpicks)
+        _itemManipulator.SetItemNumImpl(0x306F, 99, 0); // Tin Clasp (Lockpicks)
 
         _apFlagItemRewarder.SyncWithInventory(); // This will try to ensure flags match if they are in inventory or not.
 
