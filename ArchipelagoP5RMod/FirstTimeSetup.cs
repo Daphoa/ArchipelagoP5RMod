@@ -4,7 +4,7 @@ using ArchipelagoP5RMod.Types;
 namespace ArchipelagoP5RMod;
 
 /**
- * Intended to be call the first time a save is loaded with AP integrated.
+ * Intended to be called the first time a save is loaded with AP integrated.
  */
 public class FirstTimeSetup
 {
